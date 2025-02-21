@@ -2654,3 +2654,44 @@ a.customButton {
     padding: 0 8px !important;
   }
 }
+
+/* Papers */
+.paper-info {
+  padding: 1em;
+  text-align: left;
+  background: #fff;
+  border-radius: 0 0 8px 8px;
+}
+
+.paper-info h3 {
+  margin: 0;
+  font-size: 1.1em;
+  color: #3e3e3e;
+}
+
+.paper-details {
+  margin: 0.5em 0 0 0;
+  font-size: 0.9em;
+  color: #666;
+}
+
+/* Hover effect for paper thumbnails */
+.image.featured {
+  overflow: hidden;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s ease-in-out;
+  background: #fff;
+  margin-bottom: 2em;
+}
+
+.image.featured:hover {
+  transform: translateY(-5px);
+}
+
+.image.featured img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 8px 8px 0 0;
+}
