@@ -2598,18 +2598,32 @@ body > article {
 .customButton {
   border: 1px solid #000000;
   border-radius: 10px;
-  padding: 10px;
+  padding: 12px 24px; /* Increased padding */
   margin: 30px;
   background-color: #f9f9f9;
   color: #000000;
   font-weight: normal;
   opacity: 1;
-  transition: 1s;
+  transition: all 0.3s ease; /* Smoother transition */
+  text-decoration: none !important; /* Remove underline */
+  display: inline-block; /* Better spacing control */
 }
+
 .customButton:hover {
   cursor: pointer;
   background-color: #f9f9f9;
   opacity: 0.5;
-  transition: 1s;
   color: #000000;
+  text-decoration: none !important; /* Ensure no underline on hover */
+}
+
+/* Add this to override any default link styles */
+a.customButton {
+  text-decoration: none !important;
+}
+
+/* Container for better spacing */
+.download-container {
+  margin-top: 3em;
+  text-align: center;
 }
