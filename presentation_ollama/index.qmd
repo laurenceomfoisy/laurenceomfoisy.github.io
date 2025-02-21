@@ -1,0 +1,236 @@
+---
+title: Beyond Multiple Choices
+subtitle: Capturing Nuanced Public Opinion with Large Language Models
+author: Laurence-Olivier M. Foisy<br>Hubert Cadieux<br>Étienne Proulx<br>Yannick Dufresne
+institute: Université Laval
+format:
+  revealjs:
+    mermaid: 
+      theme: dark
+    theme: night
+    logo: images/ul_logo.png
+    footer: "Beyond Multiple Choices"
+    transition: slide
+    transition-speed: fast
+    
+---
+
+## Can open-source language models be trusted to reliably clean and analyze open-ended survey questions?{.center}
+
+## Pros and cons of open-ended questions{.center .smaller}
+
+::::{.columns}
+
+:::{.column width=50%}
+
+### Pros
+
+- More depth and nuance
+
+- Doesn't limit respondent's answers
+
+- Does not cue respondents about possible causes
+
+- Allow for unexpected insights
+
+- Allow the detection of new trends
+
+:::
+
+:::{.column width=50%}
+
+### Cons
+
+- Respondants often skip open-ended questions
+
+- Troublesome for mobile users
+
+- Difficult to analyze
+
+- Time-consuming to code manually
+
+- Grammar and spelling errors
+
+:::
+::::
+
+## Classic Methods and their Limitations{.smaller}
+
+::::{.columns}
+
+:::{.column width=33%}
+
+**Manual Coding**
+
+  - Time-consuming
+  - Subjective
+  - Costly
+:::
+
+:::{.column width=33%}
+
+**Dictionary-based methods**
+
+  - Limited to pre-defined categories
+  - Time-consuming to create
+  - Limited to the dictionary's scope
+
+:::
+
+:::{.column width=33%}
+
+**Machine Learning**
+
+  - Requires a lot of data
+  - Difficult to train
+  - Requires a lot of time
+
+:::
+
+::::
+
+## Method{.smaller}
+
+::::{.columns}
+
+:::{.column width=25%}
+**CES 2021 Survey**
+
+- Question: "What is the most important issue to you personally in this federal election?"
+
+:::
+
+:::{.column width=25%}
+
+**CAPP's 12 categories of issues**
+
+:::
+
+:::{.column width=25%}
+
+**Human Coder as ground truth**
+
+- Accuracy
+- F1 Score
+- Above 0.8 is good for multi class categorization
+
+:::
+
+:::{.column width=25%}
+
+**Models**
+
+- Open-Source
+  - Llama3
+  - Phi3
+  - Mistral
+
+- Commercial
+  - GPT-4
+
+:::
+
+::::
+
+## Manual Coding
+
+<center>
+
+![](images/issue_distribution.png){width="75%"}
+
+</center>
+
+## Ollama
+
+- Open-source
+- Large Language Models
+- Easy to use API
+
+![](images/ollama.png){.absolute top=200 right=0 width=40%}
+
+## CLELLM{auto-animate="true"}
+
+```{.r code-line-numbers="1,2"}
+# Use devtools to install the clellm package from github
+devtools::install_github("clessn/clellm")
+```
+
+## CLELLM{auto-animate=true}
+
+```{.r code-line-numbers="4,5"}
+# Use devtools to install the clellm package from github
+devtools::install_github("clessn/clellm")
+
+#Use the install_ollama() function to install ollama, only on linux
+clellm::install_ollama()
+```
+## CLELLM{auto-animate=true}
+
+```{.r code-line-numbers="7,8"}
+# Use devtools to install the clellm package from github
+devtools::install_github("clessn/clellm")
+
+#Use the install_ollama() function to install ollama, only on linux
+clellm::install_ollama()
+
+# Use the ollama_install_model() function to install models
+clellm::ollama_install_model("model_name")
+```
+## CLELLM{auto-animate=true}
+
+```{.r code-line-numbers="10,11"}
+# Use devtools to install the clellm package from github
+devtools::install_github("clessn/clellm")
+
+#Use the install_ollama() function to install ollama, only on linux
+clellm::install_ollama()
+
+# Use the ollama_install_model() function to install models
+clellm::ollama_install_model("model_name")
+
+# Use the ollama_prompt() function to prompt any model you want
+prompt <- clellm::ollama_prompt("prompt", model = "model_name")
+```
+
+## Prompt{.smaller}
+
+`[1] "In this survey question, respondents had to name their most important issue. Please read the answer and determine to which of the following 12 categories it belongs: 'Law and Crime', 'Culture and Nationalism', 'Public Lands and Agriculture', 'Governments and Governance', 'Immigration', 'Rights, Liberties, Minorities, and Discrimination', 'Health and Social Services', 'Economy and Employment', 'Education', 'Environment and Energy', 'International Affairs and Defense', 'Technology'. Use your judgement and only output a single issue category. The answer your need to categorize is: pension reform."`
+
+## Accuracy
+
+<center>
+
+![](images/accuracy.png){width="75%"}
+
+</center>
+
+## F1 Score results{.smaller}
+
+|Issue Category                                    |Llama3 |Phi3 |Mistral |GPT-4 |Dict |
+|:-------------------------------------------------|:------|:----|:-------|:-----|:----|
+|Culture and Nationalism                           |NA     |NA   |1       |NA    |NA   |
+|<span style="background-color: #FFFFFF; font-weight: bold; color: black">Economy and Employment</span>                            |<span style="background-color: #C0C0C0; font-weight: bold; color: black">0.9</span>    |<span style="background-color: #CD7F32; font-weight: bold; color: black">0.87</span> |NA      |<span style="background-color: #FFD700; font-weight: bold; color: black">0.94</span>  |0.21 |
+|Education                                         |0.67   |0.67 |1       |0.67  |NA   |
+|Environment and Energy                            |0.88   |0.8  |0.8     |0.84  |0.08 |
+|<span style="background-color: #FFFFFF; font-weight: bold; color: black">Governments and Governance</span>                        |0.41   |<span style="background-color: #CD7F32; font-weight: bold; color: black">0.47</span> |<span style="background-color: #C0C0C0; font-weight: bold; color: black">0.56</span>    |<span style="background-color: #FFD700; font-weight: bold; color: black">0.65</span>  |0.03 |
+|<span style="background-color: #FFFFFF; font-weight: bold; color: black">Health and Social Services</span>                        |<span style="background-color: #C0C0C0; font-weight: bold; color: black">0.94</span>   |0.83 |<span style="background-color: #CD7F32; font-weight: bold; color: black">0.91</span>    |<span style="background-color: #FFD700; font-weight: bold; color: black">0.96</span>  |0.34 |
+|Immigration                                       |1      |1    |1       |1     |NA   |
+|Law and Crime                                     |1      |1    |1       |1     |NA   |
+|Rights, Liberties, Minorities, and Discrimination |0.86   |0.86 |0.71    |0.57  |0.29 |
+|<span style="background-color: #FFFFFF; font-weight: bold; color: black">Weighted Mean</span>                                     |<span style="background-color: #C0C0C0; font-weight: bold; color: black">0.81</span>   |<span style="background-color: #CD7F32; font-weight: bold; color: black">0.77</span> |0.5     |<span style="background-color: #FFD700; font-weight: bold; color: black">0.86</span>  |0.19 |
+
+## Conclusion{.smaller}
+
+- Lack context and nuance
+- Very promising
+
+### Limitations
+
+- Prompt limitation
+
+### Future work
+
+- More validation work needs to be done
+- Deploy a survey only with open-ended questions 
+  - Test scale building with factor analysis
+  - Compare with other surveys

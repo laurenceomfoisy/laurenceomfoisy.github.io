@@ -1,0 +1,197 @@
+---
+title: "Ain't No Party Like a GPT Party"
+subtitle: "Assessing GPT-4 Political Alignment Classification Capabilities"
+author: "<table style='margin-top: -290px; width: 100%; text-align: center;'><tr><td style='vertical-align: top; padding-right: 5px;'>Laurence-Olivier M. Foisy<br>Camille Pelletier<br>Hubert Cadieux</td><td style='vertical-align: top;'>Jérémie Drouin<br>Jozef Rivest<br>Yannick Dufresne</td></tr></table>"
+institute: "Université Laval"
+format:
+  revealjs: 
+    theme: night
+    logo: images/ul_logo.png
+    footer: "Ain't No Party Like a GPT Party"
+---
+
+## Can we rely on GPT-4 to correctly classify political parties' ideologies? {.center}
+
+::: {.notes}
+Let's start with a question: Can we rely on ChatGPT to correctly Classify political parties' ideologies? This projet started with us wondering if chatgpt could be used as a tool for voters all around the world to ask information about political parties in their political environment
+:::
+
+## ChatGPT and the rise of AI
+### Context 
+
+- 100 million monthly users
+- Can be used for a wide range of tasks
+- People might rely on AI to obtain quick information about nuanced and complex topics
+
+### Purpose
+Gain a greater understanding of ChatGPT's limitations and capabilities
+
+## Party ideology classification
+Classifying parties by their ideology is a complex task that requires a lot of knowledge about its political context. It's also highly subjective and depends on a lot of factors.
+
+- Number of parties in the system.
+- National context
+- Electoral systems
+- Voter alignments
+
+::: {.notes}
+Number of parties: 2 party systems are going to gravitate to the center, while multiparty systems are going to have more parties on the fringes.
+
+National context: The political context of a country is going to influence the positioning of parties. For example, being a left-wing party in the United States is not the same thing as being a left-wing party in Europe. That is defined by the cleavages present within the national context
+
+Electoral systems: Proportional systems allow for broader competition since there can often be coalition government. In that context, parties can present more niche and distinctive ideologies without compromising electoral success
+
+Voter alignments: Party are going to position themselves according to the voters they want to attract and they may shift their stance on a policy according to the political context.
+
+Overall, it's a complex task that requires a lot of knowledge about the political context of a country. It's also highly subjective and dynamic. Can large language models understand this?
+:::
+
+## Large Language Models
+Text prediction alorigthms that are trained on massive amounts of textual data. GPT-3 was trained on 45TB of textual data.
+
+:::: {.columns}
+
+::: {.column width="50%"}
+### Sources of biases
+
+- Guardrails
+- Model Architecture
+- Training data
+:::
+
+::: {.column width="50%"}
+### Biases
+
+- Leftist bias
+- Western bias
+- English language bias 
+
+:::
+
+::::
+
+::: {.notes}
+Everybody here probably knows what large language models are. 
+
+OpenAI define them as large-scale machine learning models designed to predict the next word in a text based on previous words. Basically, large language models are only highly complex algorithm that rely on a massive database of textual data to make prediction about the likeliness of a word going next to another one. They were trained on terabytes of textual data and are able to find patterns that are most likely undetectable to the human eye. It's basically magic. The result is a AI that's able to generate human like content but that is unable of making any reflexion or having any thoughts. Therefore, it might not be the best at understand complex topics with lots of nuances like party systems and party positioning.
+
+Furthermore, LLMs are full of biases. Three 
+:::
+
+## Question {.smaller}
+
+Is ChatGPT able to provide reliable and trustworthy information regarding the ideological positioning of political parties?
+
+### Hypotheses 
+  - H1: Significant differences in party classifications by GPT-4 and experts.
+  - H0: No significant differences in party classifications by GPT-4 and experts.
+  - H2: Higher accuracy by GPT-4 in Western party positioning.
+  - H3: Better performance by GPT-4 in classifying left-wing parties.
+  - H4: More precise positioning of major parties by GPT-4
+
+## Methodology {.smaller}
+
+### Global Party Survey
+
+- 1891 Experts
+- 1043 Parties
+- 163 Countries
+
+#### Economic left-right scale and Social liberal-conservative scale
+
+Parties can be classified by their current stance on ECONOMIC ISSUES such as privatization, taxes, regulation, government spending, and the welfare state. Those on the economic LEFT want government to play an active role in the economy. Those on the economic RIGHT favor a reduced role for government. Where would you place each party on the following scale?
+
+## Methodology
+
+### GPT Prompting
+
+- Same question as the GPS
+- Party name and country as context
+- 0 to 10 where 0 means Extreme economic left and 10 means Extreme economic right
+- Please answer to the best of your knowledge
+- Take a deep breath and work on this problem step by step
+
+## Methodology
+### GPT
+
+- 3 prompts per party per scale
+- 6258 prompts total
+- The mean of the 3 prompts was used to create an ideological positioning  value for each party for each scale
+- The absolute difference between the GPS value and the GPT value was used to create a distance score for each party
+
+## {background-color="white".smaller}
+
+![GPT Party Alignment by GPS Party Alignment](graphs/h1_scatterplot.png)
+
+::: {.notes}
+For both scales the t value indicate that there is a significant difference between the mean of the GPS and the mean of the GPT. 
+
+The mean difference of the subtraction of the GPS score and GPT is 0.55 for the economic scale and 0.29 for the social scale. This means that GPT-4 is more likely to classify parties as more right-wing than the experts.
+
+The absolute difference, which is our measure of distance and is not related to positining is 1.62 for the economic scale and 1.53 for the social scale
+:::
+
+## {background-color="white".smaller}
+**Significant differences in party classifications between GPT-4 and experts**
+
+![Mean Differences from Paired T-Tests. Economic: 0.55, Social: 0.29](graphs/h1_ttest.png)
+
+::: {.notes}
+Notes
+:::
+
+## {background-color="white".smaller}
+**Higher accuracy by GPT-4 in Western party positioning**
+
+![Mean Distance Between Party Alignments from GPT-4 and GPS by Region. Western avg: 0.98, MENA avg: 2.05](graphs/h2_barplot.png)
+
+::: {.notes}
+Notes
+:::
+
+## {background-color="white".smaller}
+**Better performance by GPT-4 in classifying left-wing parties**
+
+![Distribution between GPS and GPT-4 classifications by alignment. "Right" avg: 1.22, "Left" avg: 1.98](graphs/h3_barplot.png)
+
+::: {.notes}
+Notes
+:::
+
+## {background-color="white".smaller}
+**Better performance by GPT-4 in classifying left-wing parties**
+
+![Distribution of party classification by GPS and GPT](graphs/h3_distggridges.png)
+
+::: {.notes}
+Notes
+:::
+
+## {background-color="white".smaller}
+**More precise positioning of major parties by GPT-4**
+
+![Mean Distance Between Party Alignments between GPS and GPT-4 Classifications by Party Size: Small party avg: 1.68, Large party avg: 1.33](graphs/h4_barplot.png)
+
+::: {.notes}
+Notes
+:::
+
+## Limitations
+- Linguistic limitations
+- Prompt engineering
+- No context
+- Relying on the GPS alone
+
+## Conclusion
+
+Is ChatGPT able to provide reliable and trustworthy information regarding the ideological positioning of political parties?
+
+- Highly subjective. 
+
+- Yes? Only if we're able to understand the limitations.
+
+::: {.notes}
+Notes
+:::
+
+# 

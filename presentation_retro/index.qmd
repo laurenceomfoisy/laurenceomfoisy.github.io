@@ -1,0 +1,207 @@
+---
+title: Examen Rétrospectif
+author: Laurence-Olivier M. Foisy
+institute: Université Laval
+bibliography: references.bib
+format:
+  revealjs:
+    mermaid: 
+      theme: dark
+    theme: simple
+    logo: https://upload.wikimedia.org/wikipedia/fr/b/bf/Universit%C3%A9_Laval_logo_et_texte.svg
+    footer: "Examen Rétrospectif"
+    transition: slide
+    transition-speed: fast
+---
+
+# Question 1 
+
+La reproductibilité 
+
+## Introduction {.center}
+
+- Contexte : Émergence des GML en recherche
+- Promesse : Analyse rapide et facile de données massives
+- Problème : Tension entre efficacité et reproductibilité
+
+## Question {.center}
+
+> Un élément fondamental de la recherche est la reproductibilité des analyses. Expliquez **comment ce principe s'applique à la recherche proposée**, en précisant les limites potentielles de la contribution de ces études.
+
+## Contexte Théorique {.smaller}
+
+Réplicabilité dans différents contextes
+
+:::: {.columns}
+::: {.column width="50%"}
+**Standardisation**
+
+- La science doit être reproductible, transparente et systématique [@king_etal94]
+- On peut analyser le monde à l'aide de modèles formels [@downs57; @olson65; @north_weingast89; @tsebelis95; @cox97; @boix99]
+
+:::
+
+::: {.column width="50%"}
+**Complexité & pluralisme**
+
+- Les phénomènes sociaux sont trop complexes pour être standardisés[@dellaporta_keating08; @brady_collier10]
+- Le savoir local ne peut pas être capturé par des protocoles standardisés [@scott99; @anderson83; @neveu96; @weldon06]
+
+:::
+::::
+
+## Défis Majeurs à la réplicabilité{.center}
+
+1. Complexité Contextuelle et Temporelle
+2. Ambiguïté Catégorielle
+3. Biais de Données et de Représentation
+4. Causalité Complexe
+
+## Défi 1 : Complexité Contextuelle
+
+- Manque de compréhension contextuelle [@scott99; @odonnell93; @dellaporta01]
+
+## Défi 2 : Ambiguïté Catégorielle
+
+### Exemple Concret
+> Q : "Quel enjeu est le plus important pour vous?"
+> R : "Que le gouvernement gère mieux le système de santé"
+
+- Catégorie Santé?
+- Catégorie Gouvernance?
+- Impact sur la reproductibilité des analyses
+
+## Défi 3 : Biais de Données
+
+**Performe moins bien dans les contextes non occidentaux**
+
+- Biais occidentaux systématiques [@hartmann_etal23; @openai22; @johnson_etal22]
+- Common Crawl : 2,6 milliards de pages [@touvron_etal23a]
+- 67% de contenu en anglais [@baack24]
+
+## Défi 4 : Causalité Complexe
+
+- Identification des tendances != Compréhension causale [@yamin_etal24]
+- Rôle du chercheur essentiel dans l'interprétation [@fearon91]
+
+## Solutions Proposées {.smaller}
+
+:::: {.columns}
+::: {.column width="50%"}
+**Satisfaire les standardisateurs**
+
+- Ingénierie des instructions [@mesko23]
+- Choix des modèles [@zhao_etal23]
+- Choix des paramètres [@naveed_etal23]
+- Méthodes de validation [@sarmah_etal24]
+- Documentation transparente [@horton_etal22]
+:::
+
+::: {.column width="50%"}
+**Satisfaire les pluralistes**
+
+- Triangulation des résultats [@dellaporta_keating08; @brady_collier10]
+- Utilisation de modèles open source [@touvron_etal23a; @touvron_etal23b; @meta24; @gruber_weber24; @abdin_etal24; @jiang_etal23]
+- Peaufinage des modèles [@jiang_etal23; @nori_etal23; @touvron_etal23a; @parthasarathy_etal24]
+:::
+::::
+
+## Conclusion
+
+- Approche hybride nécessaire 
+- GML comme outils d'augmentation, non de remplacement
+- Transparence dans le processus
+
+## Discussion 
+
+# Question 2
+Les biais dans les revues de littérature
+
+## Introduction {.center}
+
+- La science s'appuie sur les travaux antérieurs 
+- Les revues de littérature sont essentielles
+- Problème: Biais systématiques dans la sélection et l'analyse
+
+## Question {.center}
+
+> La recherche en science politique nécessite une bonne compréhension des travaux antérieurs. On sait que cet effort de recensement est souvent associé à des biais. En quoi les GML peuvent-ils éviter ces écueils?
+
+## Défi Méthodologique - Biais de sélection {.smaller}
+
+- Sélection sur variable dépendante [@geddes90]
+- Absence de contrefactuels [@fearon91]
+- Transparence méthodologique [@king_etal94; @brady_collier10]
+  - Comment décider quels travaux inclure?
+  - Comment éviter de privilégier certaines traditions intellectuelles?
+
+## Angles Morts Persistants {.smaller}
+
+1. Biais intersectionnels [@weldon06]
+2. Biais occidentaux [@odonnell93]
+3. Savoirs pratiques difficiles à formaliser [@scott99]
+4. Domination de l'anglais [@daoust_etal22]
+
+## Solution: Revues systématiques {.center}
+
+- Approche méthodologique rigoureuse
+- Protocole standardisé et transparent [@muka_etal20]
+- Inclusion de la littérature grise
+- Processus long et complexe (67 semaines) [@marshall_wallace19]
+
+## Apport des GML {.smaller}
+
+:::: {.columns}
+::: {.column width="50%"}
+
+**Automatisation**
+
+- Élimination des doublons [@tsafnat_etal14; @alshami_etal23; @clark_etal20]
+- Triage préliminaire
+- Extraction de données
+
+:::
+::: {.column width="50%"}
+
+**Aide au chercheur**
+
+- Double codage humain-machine
+- Détection de patterns complexes [@vanaltena_etal19a]
+- Connexions interdisciplinaires [@vanaltena_etal19a]
+
+:::
+::::
+
+## Limites des GML {.smaller}
+
+- Données d'entraînement biaisées [@hartmann_etal23]
+- Reproduction des inégalités existantes [@openai22]
+- Biais géographiques [@odonnell93; @scott99; @weldon06]
+- Biais linguistiques [@weldon06; @daoust_etal22]
+- Questions conceptuelles
+
+## Solutions Proposées {.center}
+
+- Critères de sélection prédéfinis  
+- Protocoles rigoureux
+- Approche hybride humain-machine
+- Diversification des sources de données
+- Utilisation de modèles open-source
+
+## Conclusion
+
+- GML comme outil d'amélioration, non de remplacement
+- Nécessité d'une supervision humaine
+- Vers des revues de littérature plus inclusives et rigoureuses
+
+## Discussion
+
+# Conclusion
+
+- La science est imparfaite. 
+- Les méthodes sont imparfaites.
+- Le but est de les améliorer.
+
+## Bibliographie
+
+

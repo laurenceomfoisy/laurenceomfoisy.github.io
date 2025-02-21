@@ -1,0 +1,1148 @@
+---
+title: "Les graphes orientés acycliques (GOA)"
+subtitle: "Méthodologie quantitative POL-2000"
+author: "Laurence-Olivier M. Foisy & Adrien Cloutier"
+institute: "Université Laval"
+format:
+  revealjs: 
+    mermaid: 
+      theme: dark
+    theme: night
+    logo: images/ul_logo.png
+    footer: "Les Graphes Orientés Acycliques (GOA) | POL-2000"
+---
+
+## Aujourd'hui{.smaller}
+
+### Cours 11
+
+- Présentation: Introduction à la causalité: Le problème fondamental de l'inférence causale
+- Les graphes orientés acycliques (GOA)
+  - Termes clés
+  - Les types de chemins
+  - Exemples
+
+![](images/horaire12.png){width=70% height=70% }
+
+## Les graphes orientés acycliques (GOA){.smaller}
+
+### Pourquoi? 
+#### Les trois fonctions des GOA
+
+1. Déterminer si c'est possible d'identifier l'effet causale de la VD sur la VI
+
+1. Identifier les variables de contrôle qui doivent être incluses dans le modèle statistique
+
+1. Dessiner des GOA force le chercheur à révéler ses postulats théoriques de façon explicite et transparente
+
+### Comment?
+
+- Par la connaissance, la littérature, l'intuition
+
+## Produire un GOA:
+
+1. Faire la liste des variables pertinentes pour la question de recherche
+2. Représenter graphiquement les relations causales entre ces variables
+
+#### La relation entre l'éducation et l'idéologie politique{.smaller}
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((Éducation)) --> Y((Idéologie politique));
+```
+
+
+## Étape 1: Faire la liste des variables pertinentes{.smaller}
+
+::::{.columns}
+
+:::{.column width=40%}
+
+1. Éducation augmente le revenu individuel
+    
+2. Revenu individuel augmente l’appui aux partis politiques qui promettent des baisses d’impôts
+    
+3. Revenu des parents augmente l’éducation de leurs enfants
+    
+4. Revenu des parents augmente le revenu de leurs enfants
+
+:::
+
+:::{.column width=60%}
+#### Effet causal, ce qu'on veut étudier:
+
+```{mermaid}
+graph LR;
+    X(Éducation) --> Y(Idéologie politique);
+```
+
+#### Variables pertinentes:
+
+```{mermaid}
+graph LR;
+    X(Éducation, Variable indépendante, cause);
+```
+```{mermaid}
+graph LR;
+    Y(Idéologie politique, Variable dépendante, effet);
+```
+```{mermaid}
+graph LR;
+    Z1(Revenu des parents);
+```
+```{mermaid}
+graph LR;
+    Z2(Revenu individuel);
+```
+:::
+
+::::
+
+## Étape 2: Représenter les relations causales{.smaller}
+
+::::{.columns}
+
+:::{.column width=50%}
+Sources: la littérature scientifique, les connaissances du chercheur, la théorie, la logique, la passion, etc.
+
+::::
+
+:::{.column width=50%}
+
+Relations causales:
+  
+```{mermaid}
+graph LR;
+    X(Éducation) --> Z1(Revenu individuel);
+```
+```{mermaid}
+graph LR;    
+    Z1(Revenu individuel) --> Y(Droite politique);
+```
+```{mermaid}
+graph LR;
+    Z2(Revenu des parents) --> X(Éducation);
+```
+```{mermaid}    
+graph LR;    
+    Z2(Revenu des parents) --> Z1(Revenu individuel);
+```
+:::  
+::::
+  
+## Étape 3: Dessiner le GOA{.smaller}
+
+  
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((Éducation)) --> Z1((Revenu individuel));
+    X --> Y((Idéologie politique));
+    Z1 --> Y;
+    Z2((Revenu des parents)) --> X;
+    Z2 --> Z1;
+```
+
+## Les deux caractéristiques des GOA{.smaller}
+
+
+### 1. Orientés
+
+### 2. Acycliques
+
+
+
+Ces deux caractéristiques sont essentielles pour la validité causale des GOA.
+La preuve mathématique fonctionne seulement si ces deux conditions sont respectés.
+
+## Orientés{.smaller}
+
+Les relations causales d’un GOA sont toujours unidirectionnelles
+
+Quand deux relations causales se suivent, ont dit qu’elle forment un chemin
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+graph LR;
+linkStyle default interpolate basis
+    A((A)) --> B((B));
+    B --> C((C));
+```
+- C est une variable descendante de A et B est une variable descendante de A
+
+- A et B sont l’ancêtre de C
+
+Si il n'y a pas de chemin entre A et C alors il n'y a pas de causalité
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    A((A)) --> B((B));
+    C((C)) --> B;
+```
+
+## Acycliques{.smaller}
+
+- Il ne peut pas y avoir de circuit
+- Les flèches ne doivent pas nous faire revenir sur nos pas, pas de loops
+
+::::{.columns}
+
+:::{.column width=50%}
+Bon exemple:
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    A((A)) --> B((B));
+    B --> D((D));
+    B --> C((C));
+```
+:::
+
+:::{.column width=50%}
+Mauvais exemple:
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    A((A)) --> B((B));
+    B --> D((D));
+    B --> C((C));
+    C --> A;
+```
+:::
+
+::::
+
+## Effet causal vs information statistique{.smaller}
+
+![](images/infostat.png){ width=90% height=90% }
+
+## Effet causal vs information statistique{.smaller}
+
+La causalité circule dans un sens seulement mais l'information statistique peut circuler dans les deux sens
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    x(Température) --> y(Vente de crème glacée);
+    x --> z(Mercure);
+```
+
+Savoir que le mercure est élevé peut donner une bonne indice que la vente de crème glacée va augmenter mais ça ne veut pas dire que le mercure cause la vente de crème glacée
+
+## Trois types de chemins{.smaller}
+
+::::{.columns}
+
+:::{.column width=33%}
+1. Fourchette
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    A((A)) --> B((B));
+    A --> C((C));
+```
+
+Ouvert!
+:::
+
+:::{.column width=33%}
+2. Chaîne
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    A((A)) --> B((B));
+    B --> C((C));
+```
+
+Ouvert!
+:::
+
+:::{.column width=33%}
+3. Collision
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    A((A)) --> B((B));
+    C((C)) --> B;
+```
+
+Fermé!
+:::
+
+::::
+
+#### Conclusions
+
+1. Les chaînes et fourchettes sont ouvertes mais les collisions sont fermées
+2. Quand un modèle de régression contrôle le maillon central, il renverse le flot d’information. Un chemin fermé devient ouvert et un chemin ouvert devient fermé
+
+## Chemin ouvert ou fermé{.smaller}
+
+- Ouvert == l'information statistique circule entre A et C.
+- Fermé == l'information statistique ne circule **PAS** entre A et C.
+
+Contrôler pour le maillon central d'un chemin RENVERSE le flot d'information:
+
+- Chemin ouvert devient fermé.
+- Chemin fermé devient ouvert.
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((Comportements risqués X)) --> Z((Ne pas porter sa ceinture Z));
+    Z --> Y((Se blesser gravement Y));
+```
+
+## Chemin ouvert ou fermé{.smaller}
+
+Pour signifier qu'on contrôle pour une variable, on l'encadre
+
+::::{.columns}
+
+:::{.column width=50%}
+Non contrôlé
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((Comportements risqués X)) --> Z((Ne pas porter sa ceinture Z));
+    Z --> Y((Se blesser gravement Y));
+```
+L'information statistique circule
+:::
+
+:::{.column width=50%}
+Contrôlé
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((Comportements risqués X)) --> Z[Ne pas porter sa ceinture Z];
+    Z --> Y((Se blesser gravement Y));
+```
+L'information statistique ne circule plus
+:::
+
+::::
+
+
+
+
+
+## Chemin ouvert ou fermé{.smaller}
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((Comportements risqués X)) --> Z((Ne pas porter sa ceinture Z));
+    Z --> Y((Se blesser gravement Y));
+```
+
+
+Ici le chemin est ouvert donc l'information statistique circule entre les deux extrémité. Savoir que le comportement est rsiqué donne de l'information sur les chances de se blesser gravement et savoir que la personne est blessée gravement indique qu'il y a peut-être eu un comportement risqué.
+
+
+## Chemin ouvert ou fermé{.smaller}
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((Comportements risqués X)) --> Z[Ne pas porter sa ceinture Z];
+    Z --> Y((Se blesser gravement Y));
+```
+
+Ici le chemin est fermé donc l'information statistique ne circule pas entre les deux extrémité. Si on sait que la personne portait sa ceinture et qu'elle s'est blessée gravement, ça ne nous donne pas d'information sur le comportement risqué.
+
+## Fourchette{.smaller}
+
+Une fourchette c’est une cause avec deux effets
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    x(Température) --> y(Vente de crème glacée);
+    x --> z(Mercure);
+```
+
+L’information statistique circule entre les deux extrémité donc le chemin est ouvert
+
+Si on contrôle le maillon central, on ferme le chemin
+
+Quand on fixe le maillon central, la température, les variation de mercure nous donne plus aucune information sur les ventes de crème glacée
+
+## Chaîne{.smaller}
+
+Une séquence de deux relations causales
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    x(Consommation de sucre) --> y(Diabète de type 2);
+    y --> z(Risque de maladies cardiovasculaires);
+```
+
+Une chaine est ouverte,l’information y circule entre les extremités
+
+Connaître la cause donne de l’info sur l’effet
+
+Connâitre l’effet donne de l’info sur la cause
+
+Contrôler le maillon central ferme le chemin. Si je sais qu’un patient a une maladie cardiovasculaire mais pas de diabète alors je sais que la cause n’est pas la surconsommation de sucre
+
+## Collision{.smaller}
+
+Deux causes et un effet
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    x(Performance de l'équipe) --> y(victoire);
+    z(Biais de l'arbitre) --> y;
+```
+
+La collision est fermée parce que l’info statistique ne circule pas des deux bords.
+
+Par contre si on controle le milieu, Admetton qu’on sait que la performance de l’équipe était nulle et qu’ils ont gagné, ça peut indiquer que l’arbitre était potentiellement biaisé
+
+
+## Fourchettes, Chaînes et collisions
+
+::::{.columns}
+
+:::{.column width=33%}
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart TD;
+    subgraph Fourchettes
+
+    subgraph Ouvert
+    y1((y)) --> x1((x));
+    y1((y)) --> z1((z));
+    end
+
+    subgraph Fermé
+    x6((x)) --> y6[y];
+    z6((z)) --> y6;
+    end
+
+    end
+```
+
+:::
+:::{.column width=33%}
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart TD;
+subgraph Chaînes
+
+    subgraph Ouvert
+    x2((x)) --> y2((y));
+    y2 --> z2((z));
+    end
+
+    subgraph Fermé
+    x5((x)) --> y5[y];
+    y5 --> z5((z));
+    end
+
+    end
+```
+:::
+:::{.column width=33%}
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart TD;
+    subgraph Collisions
+
+    subgraph Fermé
+    x3((x)) --> y3((y));
+    z3((z)) --> y3;
+    end
+
+    subgraph Ouvert
+    x4((x)) --> y4[y];
+    z4((z)) --> y4;
+    end
+
+    end
+```
+:::
+::::
+
+Un chemin peut être composé d'une infinité de combinaison de fourchettes, chaines, et collisions. Le chemin est ouvert si tout est ouvert et fermé si un des lien est fermé.
+
+## Les contrôles{.smaller}
+
+### Les deux conditions
+
+1. Ne pas contrôler pour un descendant de X
+
+- Permet de déterminer quels variables exclure du modèle statistique
+
+2. Fermer tous les chemins par porte arrière (Controler les maillons centraux)
+
+- Permet de déterminer quelles variables inclure dans le modèle statistique
+
+## Ne pas contrôler les descendants de X
+
+Disons que le genre influence le salaire et l’occupation et que l’occupation influence le salaire. Si on controle pour l’occupation, on vient juste observer l’effet du genre sur le salaire mais on obstrue l’effet du genre sur l’occupation sur le salaire. On coupe une part importante de l’effet du genre sur le salaire.
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    x(Genre) --> z(Occupation);
+    x --> y(Salaire);
+    z --> y;
+```
+
+## Fermer les chemins par la porte arrière{.smaller}
+
+### C’est quoi?
+
+1. Un chemin qui lie X à Y   
+2. Une des extrémité pointe vers X
+  
+Les backdoors sont les causes de notre cause. On ne veut pas voir les effets des causes sur nos causes.
+
+### Fermer les backdoors
+
+1. Faire une liste de tous les chemins qui lient la cause à l’effet
+    
+2. Est-ce que certains chemins pointent vers X?
+    
+3. Est-ce que ces chemins sont ouverts ?
+
+## Fermer les chemins par la porte arrière (Suite){.smaller}
+
+#### Relations de l'éclatement familial sur l'itinérance
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    x(Éclatement familial) --> y(itinérance);
+    z(Santé mentale) --> y;
+    z --> x;
+```
+
+Ici si on controle pour la santé mentale. On sait que c’est vrm l’éclatement familiale qui a causé l’itinérance et non la santé mentale qui a causé l’éclatement qui a causé l’itinérance
+
+## Exemple{.smaller}
+
+1. Ne pas contrôler pour un descendant de X
+2. Fermer tous les chemins par porte arrière
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((Éducation)) --> Z1((Revenu individuel));
+    X --> Y;
+    Z1 --> Y((Idéologie politique));
+    Z2((Revenu des parents)) --> X;
+    Z2 --> Z1;
+```
+
+## Exemple (Réponse){.smaller}
+
+1. Ne pas contrôler pour un descendant de X
+2. Fermer tous les chemins par porte arrière
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((Éducation)) --> Z1((Revenu individuel));
+    X --> Y;
+    Z1 --> Y((Idéologie politique));
+    Z2[Revenu des parents] --> X;
+    Z2 --> Z1;
+```
+
+# De la pratique
+
+## Comment déterminer si un chemin est ouvert ou fermé{.smaller}
+
+- Les chaînes et les fourchettes sont ouvertes
+- Les collisions sont fermées
+- Un chemin composé uniquement de chaînes et de fourchettes est ouvert
+- Dès qu'il y a au moins une collision, le chemin est fermé
+
+## Ouvert ou fermé? {.smaller}
+
+![](images/goa17.png){ width=90% height=90% }
+
+
+## Ouvert!{.smaller}
+
+![](images/goa18.png){ width=90% height=90% }
+
+## Ouvert ou fermé?{.smaller}
+
+![](images/goa19.png){ width=90% height=90% }
+
+## Fermé!{.smaller}
+
+![](images/goa20.png){ width=90% height=90% }
+
+## Ouvert ou fermé?{.smaller}
+
+![](images/goa21.png){ width=90% height=90% }
+
+## Ouvert!{.smaller}
+
+![](images/goa22.png){ width=90% height=90% }
+
+## Ouvert ou fermé?{.smaller}
+
+![](images/goa23.png){ width=90% height=90% }
+
+## Fermé!{.smaller}
+
+![](images/goa24.png){ width=90% height=90% }
+
+## Rappelez-vous{.smaller} 
+
+**Contrôler pour le maillon central d'une collision ouvre un chemin**
+
+![](images/goa25.png){ width=90% height=90% }
+
+## Rappelez-vous{.smaller}
+
+**Contrôler pour le maillon central d'une collision ouvre un chemin**
+
+![](images/goa26.png){ width=90% height=90% }
+
+## Contrôler ou pas?{.smaller} 
+
+**La marche à suivre pour savoir quoi contrôler**
+
+1. Faire la liste des variables pour lesquelles il faut **ÉVITER** de contrôler
+    - Tous les descendants de X
+2. Faire la liste de tous les chemins par porte arrière
+    - Tous les chemins qui vont de X à Y et qui ont une flèche qui pointe vers X
+3. Est-ce qu'il y a des chemins par porte arrière qui sont ouverts?
+    - Dès qu'il y a une collision, le chemin est fermé
+4. Est-il possible de bloquer ces chemins?
+5. Donc... est-ce que l'effet causal de X sur Y est identifiable?
+
+
+## Contrôler ou pas?{.smaller} 
+
+1. Y a-t-il des descendants de X? 
+2. Y a-t-il des chemins par porte arrière?
+3. Y a-t-il des chemins par porte arrière ouverts?
+4. Est-il possible de bloquer ces chemins?
+5. L'effet causal de X sur Y est-il identifiable?
+
+![](images/goa27.png){ width=60% height=60% }
+
+
+## Contrôler ou pas?{.smaller} 
+
+1. Y a-t-il des descendants de X? **Oui, Z1, Z2, Z4 et Z5** 
+2. Y a-t-il des chemins par porte arrière? **Oui, Z3**
+3. Y a-t-il des chemins par porte arrière ouverts? **Oui, Z3**
+4. Est-il possible de bloquer ces chemins? **Oui, si on contrôle Z3**
+5. L'effet causal de X sur Y est-il identifiable? **Si on contrôle Z3!**
+
+![](images/goa28.png){width=60% height=60%}
+
+
+## Contrôler ou pas?{.smaller} 
+
+::::{.columns}
+
+:::{.column width=40%}
+
+1. Y a-t-il des descendants de X? 
+2. Y a-t-il des chemins par porte arrière?
+3. Y a-t-il des chemins par porte arrière ouverts?
+4. Est-il possible de bloquer ces chemins?
+5. L'effet causal de X sur Y est-il identifiable?
+
+:::
+
+:::{.column width=60%}
+
+![](images/goa29.png){width=100% height=100%}
+
+:::
+::::
+
+## Contrôler ou pas?{.smaller} 
+
+::::{.columns}
+
+:::{.column width=40%}
+
+1. Y a-t-il des descendants de X? **Oui, Z1, Z2, Z3** 
+2. Y a-t-il des chemins par porte arrière? **Oui, Z4**
+3. Y a-t-il des chemins par porte arrière ouverts? **Oui, Z4**
+4. Est-il possible de bloquer ces chemins? **Oui, si on contrôle Z4**
+5. L'effet causal de X sur Y est-il identifiable? **Oui, si on contrôle Z4**
+
+:::
+
+:::{.column width=60%}
+
+![](images/goa30.png){width=100% height=100%}
+
+:::
+::::
+
+## Contrôler ou pas?{.smaller} 
+
+::::{.columns}
+
+:::{.column width=40%}
+
+1. Y a-t-il des descendants de X? 
+2. Y a-t-il des chemins par porte arrière?
+3. Y a-t-il des chemins par porte arrière ouverts?
+4. Est-il possible de bloquer ces chemins?
+5. L'effet causal de X sur Y est-il identifiable?
+
+:::
+
+:::{.column width=60%}
+
+![](images/goa31.png){width=100% height=100%}
+
+:::
+::::
+
+## Contrôler ou pas?{.smaller} 
+
+::::{.columns}
+
+:::{.column width=40%}
+
+1. Y a-t-il des descendants de X? **Oui, Z1** 
+2. Y a-t-il des chemins par porte arrière? **Oui, Z3**
+3. Y a-t-il des chemins par porte arrière ouverts? **Oui, Z3**
+4. Est-il possible de bloquer ces chemins? **Oui, si on contrôle Z3**
+5. L'effet causal de X sur Y est-il identifiable? **Oui, si on contrôle Z3**
+
+:::
+
+:::{.column width=60%}
+
+![](images/goa31_2.png){width=100% height=100%}
+
+:::
+::::
+
+# En résumé{.smaller}
+
+::::{.columns}
+
+:::{.column width=50%}
+
+- Dessiner un GOA:
+  1. Faire la liste des variables pertinentes pour la question de recherche
+  2. Représenter graphiquement les relations causales entre ces variables
+
+- Contraintes:
+  1. Orienté
+  2. Acyclique
+
+:::
+
+:::{.column width=50%}
+
+- Types de chemins
+  1. Fourchette - ouvert
+  2. Chaîne - ouvert
+  3. Collision - fermé
+
+- Contrôles:
+  1. Ne pas contrôler pour un descendant de X
+  2. Fermer tous les chemins par porte arrière
+
+:::
+
+::::
+
+# Travail de fin de session
+
+## Travail de fin de session{.smaller}
+
+**Vous devrez inclure un GOA!**
+
+- Dessiner les noeuds et les flèches selon la logique
+  - Vous pourrez ensuite lire des articles scientifiques pour compléter
+- En plus de votre X et Y, votre GOA doit inclure 3 autres variables qui pourraient être associées à la VD.
+  - Il n'est pas nécessaire que ces variables existent dans la base de données obligatoire
+  - Mais au moins une! 
+  - Votre base de données choisit devrait être votre premier réflexe
+  - Si votre GOA indique qu'aucun contrôle est nécessaire... aucun contrôle est nécessaire!
+  
+
+## Travail de fin de session{.smaller}
+
+::::{.columns}
+
+:::{.column width=30%}
+
+- Si votre résultat n'est pas significatif? 
+  - Cool! C'est AUSSI une contribution à la science
+- Petit n (échantillon) et grand N (population)
+- _constant == l'intercept
+
+:::
+
+:::{.column width=70%}
+  
+![](images/regExam3.png){ width=100% height=100% }
+
+:::
+::::
+
+
+## Simulations
+ 
+::::{.columns}
+:::{.column width=50%}
+
+``` R
+n <- 100000
+X <- rnorm(n)
+Y <- 1.7 * X + rnorm(n)
+
+mod <- lm(Y ~ X)
+coef(mod)
+```
+
+```{r}
+n <- 100000
+X <- rnorm(n)
+Y <- 1.7 * X + rnorm(n)
+
+mod <- lm(Y ~ X)
+coefs <- coef(mod)
+c(coefs["X"])
+```
+
+:::
+
+:::{.column width=50%}
+
+![](d2_goa/xy_17.svg){.absolute top=0 right=-600 width=300%}
+
+:::
+::::
+
+## Simulation Chaîne
+ 
+::::{.columns}
+:::{.column width=50%}
+
+``` R
+X <- rnorm(n)
+Z <- 3 * X + rnorm(n)
+Y <- 0.5 * Z + rnorm(n)
+mod <- lm(Y ~ X)
+coef(mod)
+```
+
+```{r}
+n <- 100000
+X <- rnorm(n)
+Z <- 3 * X + rnorm(n)
+Y <- 0.5 * Z + rnorm(n)
+mod <- lm(Y ~ X)
+coefs <- coef(mod)
+c(coefs["X"])
+```
+
+``` R
+X <- rnorm(n)
+Z <- 3 * X + rnorm(n)
+Y <- 0.5 * Z + rnorm(n)
+mod <- lm(Y ~ X + Z)
+coef(mod)
+```
+
+```{r}
+n <- 100000
+X <- rnorm(n)
+Z <- 3 * X + rnorm(n)
+Y <- 0.5 * Z + rnorm(n)
+mod <- lm(Y ~ X + Z)
+coefs <- coef(mod)
+c(coefs["X"], coefs["Z"])
+```
+
+:::
+
+:::{.column width=50%}
+
+![](d2_goa/xzy_3_05.svg){.absolute top=0 right=-600 width=300%}
+
+:::
+::::
+
+## Simulation Collision
+ 
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((X)) -- 1.7 --> Y((Y));
+    Y -- 0.8 --> Z((Z));
+    X -- 1.2 --> Z;
+```
+
+``` R
+X <- rnorm(n)
+Y <- 1.7 * X + rnorm(n)
+Z <- 1.2 * X + 0.8 * Y + rnorm(n)
+mod <- lm(Y ~ X)
+coef(mod)
+```
+
+```{r}
+n <- 100000
+X <- rnorm(n)
+Y <- 1.7 * X + rnorm(n)
+Z <- 1.2 * X + 0.8 * Y + rnorm(n)
+mod <- lm(Y ~ X)
+coefs <- coef(mod)
+c(coefs["X"])
+```
+
+
+``` R
+mod <- lm(Y ~ X + Z)
+coef(mod)
+```
+
+```{r}
+n <- 100000
+X <- rnorm(n)
+Y <- 1.7 * X + rnorm(n)
+Z <- 1.2 * X + 0.8 * Y + rnorm(n)
+mod <- lm(Y ~ X + Z)
+coefs <- coef(mod)
+c(coefs["X"], coefs["Z"])
+```
+
+## Simulation Fourchette
+ 
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((X)) -- 2 --> Z1((Z1));
+    Z1 -- 0.25 --> Y((Y));
+    Z2((Z2)) -- 1 --> Y;
+    Z2 -- 1 --> X;
+```
+
+``` R
+Z2 <- rnorm(n)
+X <- Z2 + rnorm(n)
+Z1 <- 2 * X + rnorm(n)
+Y <- 0.25 * Z1 + Z2 + rnorm(n)
+mod <- lm(Y ~ X + Z2)
+coef(mod)
+```
+
+```{r}
+n <- 100000
+Z2 <- rnorm(n)
+X <- Z2 + rnorm(n)
+Z1 <- 2 * X + rnorm(n)
+Y <- 0.25 * Z1 + Z2 + rnorm(n)
+mod <- lm(Y ~ X + Z2)
+coefs <- coef(mod)
+c(coefs["X"], coefs["Z2"])
+```
+
+
+``` R
+mod <- lm(Y ~ X)
+coef(mod)
+```
+
+```{r}
+n <- 100000
+X <- rnorm(n)
+Y <- 1.7 * X + rnorm(n)
+Z <- 1.2 * X + 0.8 * Y + rnorm(n)
+mod <- lm(Y ~ X + Z)
+coefs <- coef(mod)
+c(coefs["X"])
+```
+
+## Simulation complexe{.smaller}
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((X)) -- 2 --> Z2((Z2));
+    Z2 -- 0.5 --> Y((Y));
+    Z2 -- 1 --> Z3((Z3));
+    Y -- 1 --> Z3;
+    Z1((Z1)) -- 1 --> Y;
+    Z1((Z1)) -- 1 --> X;
+```
+
+1. Y a-t-il des descendants de X? 
+2. Y a-t-il des chemins par porte arrière?
+3. Y a-t-il des chemins par porte arrière ouverts?
+4. Est-il possible de bloquer ces chemins?
+5. L'effet causal de X sur Y est-il identifiable?
+
+## Simulation complexe{.smaller}
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((X)) -- 2 --> Z2((Z2));
+    Z2 -- 0.5 --> Y((Y));
+    Z2 -- 1 --> Z3((Z3));
+    Y -- 1 --> Z3;
+    Z1((Z1)) -- 1 --> Y;
+    Z1((Z1)) -- 1 --> X;
+```
+
+1. Y a-t-il des descendants de X? **Oui, Z2 et Z3** 
+2. Y a-t-il des chemins par porte arrière? **Oui, Z1**
+3. Y a-t-il des chemins par porte arrière ouverts? **Oui, Z1**
+4. Est-il possible de bloquer ces chemins? **Oui, si on contrôle Z1**
+5. L'effet causal de X sur Y est-il identifiable? **Oui, si on contrôle Z1**
+
+## Simulation complexe - PREUVE {.smaller}
+
+```{mermaid}
+
+%%{init: {'flowchart' : {'curve' : 'linear'}}}%%
+
+flowchart LR;
+    X((X)) -- 2 --> Z2((Z2));
+    Z2 -- 0.5 --> Y((Y));
+    Z2 -- 1 --> Z3((Z3));
+    Y -- 1 --> Z3;
+    Z1((Z1)) -- 1 --> Y;
+    Z1((Z1)) -- 1 --> X;
+```
+
+``` R
+Z1 <- rnorm(n)
+X <- Z1 + rnorm(n)
+Z2 <- 2 * X + rnorm(n)
+Y <- 0.5 * Z2 + Z1 + rnorm(n)
+Z3 <- Z2 + Y + rnorm(n)
+mod <- lm(Y ~ X + Z1)
+coef(mod)
+```
+
+```{r}
+n <- 100000
+Z1 <- rnorm(n)
+X <- Z1 + rnorm(n)
+Z2 <- 2 * X + rnorm(n)
+Y <- 0.5 * Z2 + Z1 + rnorm(n)
+Z3 <- Z2 + Y + rnorm(n)
+mod <- lm(Y ~ X + Z1)
+coefs <- coef(mod)
+c(coefs["X"], coefs["Z1"])
+```
+
+``` R
+mod <- lm(Y ~ X)
+coef(mod)
+```
+
+```{r}
+n <- 100000
+Z1 <- rnorm(n)
+X <- Z1 + rnorm(n)
+Z2 <- 2 * X + rnorm(n)
+Y <- 0.5 * Z2 + Z1 + rnorm(n)
+Z3 <- Z2 + Y + rnorm(n)
+mod <- lm(Y ~ X)
+coefs <- coef(mod)
+c(coefs["X"])
+```
+
+
+
+# Prochain cours
+
+## Messages{.smaller}
+
+1. Rencontres individuelles la semaine prochaine!!
+    - Pas de cours en classe.
+    - Prenez rendez-vous déjà avec Camille Pelletier (Mac), Alexandre Bouillon (PC), Adrien Cloutier.
+    - Arrivez avec votre GOA, du code, des graphiques, un début de travail!
+2. Dans 2 semaines: Exam 3 (18 avril). Ce sera exactement le même format que l'exam 2 (papier crayon). Ils ont 1h encore. Ça peut couvrir la matière du cours 1 jusqu'à ton cours 12 sur les GOA (inclusivement). Pour étudier:
+    - Faire les Datacamp
+    - Faire les lectures
+    - Relire les diapos
+    - Être capable de rouler le code qu'on a fait en classe et en comprendre la logique.
+
+
+## Messages{.smaller}
+
+3. Dans 3 semaines: Travail final + Datacamp complété pour le vendredi 26 avril 23h59.
+4. Prennez de l'avance dans le travail final. Coder peut être long.
+
+![](images/horaire13.png){ width=90% height=90% }

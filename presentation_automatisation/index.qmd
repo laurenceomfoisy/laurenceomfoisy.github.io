@@ -1,0 +1,100 @@
+---
+title: "Automatisation de la science"
+subtitle: "Une preuve de concept en analyse de données de sondages"
+author: "Laurence-Olivier M. Foisy"
+institute: "Université Laval"
+format:
+  revealjs: 
+    theme: night
+    logo: images/ul_logo.png
+    footer: "Automatisation de la science"
+---
+## Automatisation de la science
+### Deux questions:
+1. Quels sont les éléments constitutifs d'une recherche en analyse de données de sondages canadiens et plus précisément, les éléments d'une revue de littérature en analyse de données de sondages canadiens?
+1. Comment les technologies d'intelligence artificielle (IA) peuvent-elles être utilisées pour automatiser les processus scientifique de recherche, d'analyse et de rédaction?
+
+::: {.notes}
+La première question est divisée en deux parties. Le but ultime du projet est d'automatiser l'ensemble du processus scientifique d'analyse de données de sondages mais il faut commencer quelque part. Ce projet vise seulement à créer une preuve de concept en automatisant la rédaction de la revue de littérature. Pourquoi la revue de litt? C'est l'élément le plus simple à automatiser. Les LLM sont très bons pour résumer des textes et en extraire l'information.
+
+La deuxieme question: Il s'agit ici d'effectuer une preuve de concept. Donc un prototype qui démontre la faisabilité du projet. Il ne s'agit pas de créer un produit fini. Il s'agit de démontrer que c'est possible.
+:::
+
+## Cadre Opératoire
+### Méta-Analyse
+
+- Étude de cas: Analyse de données de sondages canadiens
+- Revue systématique en 24 étapes (Muka et al., 2020)
+
+![(Muka et al., 2020)](images/24_step_process.png)
+
+## Cadre Opératoire
+### Preuve de concept
+- Un LLM, comment ça marche?
+- Cadre évolutif et adaptable, indépendant des modèles
+
+![(Touvron et al., 2023)](images/training_dataset.png)
+
+::: {.notes}
+Llama a été entrainé sur 4800GB de données textuelles. Ça représente environ 8.6 millions d'articles scientifiques de 20 pages.
+
+Le modèle détecte les patterns entre les mots et les phrases en les décomposant en Jetons. (Tokens) Il est par la suite capable de faire des prédictions sur le choix des mots qui constitueraient une suite de mots cohérente dépendament du context d'entrée. 
+
+Un LLM ne fait que de la prédiction. Il est incapable de penser, comprendre, réfléchir, etc. Il est simplement capable de faire des prédictions.
+:::
+
+## Preuve de concept
+
+:::: {.columns}
+
+::: {.column width="60%"}
+- Peaufinage des modèles
+  - Entraînement sur les données collectés durant la méta-analyse
+
+- Développement d'un prototype
+
+- Évaluation du prototype
+  - Évaluateurs humains
+  - Ultimement, évaluation par les pairs
+:::
+
+::: {.column width="40%"}
+![Preuve de concept](images/diagram_devis.png)
+:::
+
+::::
+
+## Preuve de concept
+
+```txt
+┌[ral☮swamp]-(~)
+└> ollama run mistral
+>>> Please answer with yes or no. 
+Is it possible to automate research in political science? 
+Output your answer in JSON format.
+{   
+  "answer": "No"
+}
+
+>>> Send a message (/? for help)
+```
+
+::: {.notes}
+Speaker notes go here. here here here here TEST
+:::
+
+## Automatiser la science?
+### Pourquoi? 
+::: {.incremental}
+- Parce qu'on peut
+- Analyse des données dormantes
+- Contribuer à réduire les barrières à l'entrée de la science
+- Accélération du rythme des avancées scientifiques
+- Repousser la connaissance globale
+:::
+
+::: {.notes}
+Données dormantes: Effectuer des sondages coûte de l'argent. Maximisation des coûts en réutilisant les données existantes.
+:::
+
+# Merci.

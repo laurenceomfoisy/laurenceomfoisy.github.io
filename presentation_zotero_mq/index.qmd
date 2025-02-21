@@ -1,0 +1,126 @@
+---
+title: "Le référencement"
+author: "Laurence-Olivier M. Foisy & Camille Pelletier"
+institute: "Université Laval"
+format:
+  revealjs: 
+    theme: night
+    logo: images/clessn.png
+    footer: "Le référencement"
+---
+
+##
+### C'est quoi un article scientifique?{.center}
+
+:::: {.columns}
+
+::: {.column width="50%"}
+![](images/gaza_nyt.png)
+:::
+
+::: {.column width="50%"}
+![](images/gaza_journal.png)
+:::
+
+::::
+
+## {background-color="white".smaller}
+
+![](images/google_scholar.png)
+
+
+## Pourquoi référencer ?
+
+- Crédibilité académique
+- Contextualisation
+- Reproductibilité
+- Création d’une base de connaissances
+- Attribution du mérite
+- Éviter le plagiat
+- Éviter les biais
+
+## Vous n'aimez pas référencer ? {auto-animate=true auto-animate-easing="ease-in-out"}
+
+::: {.r-hstack}
+::: {data-id="box1" auto-animate-delay="0" style="background: #2780e3; width: 600px; height: 450px; margin: 10px;"}
+
+<center>
+Trop de styles différents?
+</center>
+
+:::
+
+::: {data-id="box2" auto-animate-delay="0.1" style="background: #3fb618; width: 600px; height: 450px; margin: 10px;"}
+
+<center>
+Difficile à formatter?
+</center>
+
+:::
+
+::: {data-id="box3" auto-animate-delay="0.2" style="background: #e83e8c; width: 600px; height: 450px; margin: 10px;"}
+
+<center>
+Écrire les bibliographies à la main et conserver un fichier de bibliographie?
+</center>
+
+:::
+:::
+
+## Zotero {auto-animate=true auto-animate-easing="ease-in-out"}
+
+::: {.r-stack}
+::: {data-id="box1" style="background: #2780e3; width: 350px; height: 350px; border-radius: 200px;"}
+:::
+
+::: {data-id="box2" style="background: #3fb618; width: 250px; height: 250px; border-radius: 200px;"}
+:::
+
+::: {data-id="box3" style="background: #e83e8c; width: 150px; height: 150px; border-radius: 200px;"}
+:::
+
+<center>
+![](images/zotero.png){width=40%}
+</center>
+
+:::
+
+## Zotero
+
+:::: {.columns}
+
+::: {.column width="30%"}
+![](images/zotero.png)
+:::
+
+::: {.column width="70%"}
+
+- Rend le référencement agréable
+- Permet la gestion des PDF
+- Répertoire de styles interchangeables
+- Facilite la collaboration
+
+:::
+
+::::
+
+## Parce que c’est Open Source, Zotero s’intègre dans TOUT!
+
+- Dans votre navigateur<br><br>
+- Dans votre OS<br><br>
+- Dans votre traitement de texte<br><br>
+- En LaTeX et Markdown
+
+![](images/chromium.png){.absolute top=160 right=450 width=7%}
+![](images/firefox.png){.absolute top=160 right=300 width=7%}
+![](images/brave.png){.absolute top=160 right=150 width=7%}
+
+![](images/linux.png){.absolute top=280 right=600 width=7%}
+![](images/windows.png){.absolute top=280 right=450 width=7%}
+![](images/macos.png){.absolute top=280 right=300 width=7%}
+
+![](images/word.png){.absolute top=410 right=320 width=7%}
+![](images/libre.png){.absolute top=410 right=150 width=7%}
+
+![](images/overleaf.png){.absolute top=530 right=450 width=7%}
+![](images/quarto.png){.absolute top=530 right=100 width=23%}

@@ -1,0 +1,268 @@
+---
+title: Git et GitHub 
+author: Laurence-Olivier M. Foisy<br>Adrien Cloutier
+institute: Université Laval
+format:
+  revealjs:
+    mermaid: 
+      theme: dark
+    theme: night
+    logo: img/logo.png
+    footer: "Git et GitHub"
+    transition: slide
+    transition-speed: fast
+---
+
+## À voir aujourd'hui
+
+- Terminal
+- Git
+- GitHub
+- GitHub pages
+
+## Avant de commencer, un peu de terminal{.smaller}
+
+- Ce que vous entrez dans le terminal n'est pas du code, mais des commandes avec des instructions
+- Les commandes sont des applications qui sont déjà installées sur votre ordinateur
+- Chaque commande est un fichier exécutable. `ls` est un fichier dans dans `/bin/ls`
+- Le terminal est l'équivalent d'un explorateur de fichiers, mais en mode texte
+- À tout moment vous êtes dans une location précise, dans un répertoire ou un dossier
+
+
+## Terminal
+
+::::{.columns}
+
+:::{.column width=50%}
+
+### macOS
+
+- Terminal
+
+![](img/terminal.png){width=50%}
+
+:::
+
+:::{.column width=50%}
+
+### Windows
+
+- PowerShell
+
+![](img/powershell.png)
+
+:::
+
+::::
+
+## Pourquoi utiliser le terminal?
+
+- Compréhension accru de l'ordinateur et de votre arborescence
+- Plusieurs outils ne sont disponibles que dans le terminal
+- Se familiariser avec la console de R
+- Git est concentré sur le terminal
+
+- Meilleure raison: Parce que c'est le fun!
+
+## Liste de commandes utiles{.center .smaller}
+
+- `ls` - Liste les fichiers et dossiers dans le répertoire courant
+- `cd` - Change de répertoire
+- `mkdir` - Crée un nouveau dossier
+- `rm` - Supprime un fichier
+- `cp` - Copie un fichier
+- `mv` - Déplace ou renomme un fichier 
+- `cat` - Affiche le contenu d'un fichier
+- `git` - Gestionnaire de version
+
+## Git{.smaller}
+
+::::{.columns}
+
+:::{.column width=50%}
+
+- Créé par Linus Torvalds en 2005
+- Gestion de version
+- Permet de suivre l'évolution d'un projet
+- Utile pour tout ce qui est texte, incluant les articles et les présentations
+- Enregistre tous les changements faits depuis la création du projet (.git)
+- Reproductibilité et transparence
+
+:::
+
+:::{.column width=50%}
+
+![](img/meme_versions.jpg)
+
+:::
+
+::::
+
+## Important
+
+- Télécharger et installer Git depuis [git-scm.com](git-scm.com)
+
+- Configurer git avant de commencer à l'utiliser
+
+  - Dans le terminal:
+
+```bash
+git config --global user.name "username"
+git config --global user.email votre@email.com
+git config --global credential.helper store
+```
+<!--`-->
+
+## Git{.smaller transition="none"}
+
+![](img/git.png)
+
+## GitHub{.smaller transition="none"}
+
+![](img/git_github.png)
+
+
+## GitHub
+
+- GitHub = Git + Internet
+
+- Plateforme de développement collaboratif
+- Héberge des projets Git
+- Acheté par Microsoft pour 7.5 milliards de dollars
+- Lieu d'entreposage de plusieurs projets open source
+
+## Projets open source sur GitHub
+
+::::{.columns}
+
+:::{.column}
+- [Linux](https://github.com/torvalds/linux)
+- [Bitcoin](https://github.com/bitcoin/bitcoin)
+- [Model Summary](https://github.com/vincentarelbundock/modelsummary)
+- [RStudio](https://github.com/rstudio)
+- [Zotero](https://github.com/zotero/zotero)
+:::
+:::{.column}
+- [Overleaf](https://github.com/overleaf/overleaf)
+- [ggplot2](https://github.com/tidyverse/ggplot2)
+- [Advanced-R](https://github.com/hadley/adv-r)
+- [Python](https://github.com/python)
+
+:::
+::::
+
+## Ajouter vos accès{.smaller}
+
+- Créer un compte GitHub :
+- Générer un token d'accès classique :
+    - Connectez-vous à GitHub et allez dans vos Paramètres.
+    - Dans la section Developer Settings, cliquez sur Personal Access Tokens, puis sur Tokens (classic).
+    - Créez un nouveau token en cliquant sur Generate new token (classic).
+    - Choisissez la durée illimité et donnez tous les accès        
+    - Copiez le token généré, car vous ne pourrez plus le visualiser après avoir quitté cette page.
+    
+- Quand Git demandera un identifiant et un mot de passe, entrez :
+    - Identifiant : votre nom d'utilisateur GitHub.
+    - Mot de passe : collez le token que vous avez généré.
+
+## Comment l'utiliser?{.smaller}
+
+1. Cloner un projet existant sur votre ordinateur.
+  - Ce projet est maintenant un dossier sur votre ordinateur. Vous pouvez le modifier, le supprimer, le déplacer, etc.
+
+
+```bash
+git clone https://lien/vers/repo.git
+```
+<!--`-->
+
+2. Modifier le projet, ajouter des fichiers, etc.
+
+```bash
+git pull 
+git add votre_fichier_1 votre_fichier_2
+git commit -m "Message de commit"
+git push
+```
+<!--`-->
+
+## Organiser votre répertoire et placer vos données{.smaller}
+
+```bash
+/MonProjet
+├── data/                
+│   ├── raw_data.csv      
+│   └── cleaned_data.csv  
+├── scripts/             
+│   ├── analyse.R         
+│   └── visualization.R   
+├── results/             
+│   ├── summary_statistics.csv  
+│   └── plots/                  
+│       └── data_distribution.png  
+├── docs/                
+│   ├── methodology.md    
+│   ├── references.bib    
+│   └── project_presentation.qmd  
+└── README.md            
+```
+<!--`-->
+
+## .gitignore{.smaller}
+
+- Fichier texte qui spécifie les fichiers et dossiers à ignorer
+- Les fichiers et dossiers spécifiés dans le .gitignore ne seront pas suivis par Git
+- Exemple de contenu d'un .gitignore
+  - `*.csv` - Ignore tous les fichiers .csv
+  - `data/` - Ignore le dossier data
+  - `.Rproj` - Ignore tous les fichiers .Rproj
+  - `.Renviron` - Ignore le fichier .Renviron
+
+## Les README.md{.smaller}
+
+- Fichier principal pour présenter et documenter un projet
+- Doit inclure une description claire du projet, comment l'installer et l'utiliser
+- Souvent écrit en Markdown (.md)
+- Contient des instructions pour contribuer et des informations sur les dépendances et les licences
+
+- Exemple de structure :
+
+  - Titre du projet
+  - Description
+  - Comment installer
+  - Comment utiliser
+  - Comment contribuer
+
+## Branches{.smaller}
+
+- Dans notre contexte, une branche est un chapitre, une section, un élément de votre projet
+
+![](img/branch.webp)
+
+## Contribuer? Pull requests (PR){.smaller}
+
+- Les pull requests permettent à d'autres utilisateurs de proposer des modifications à votre projet
+- Processus de collaboration :
+  - Un contributeur crée une branche avec ses changements
+  - Une PR est ouverte pour soumettre ces changements
+  - Le propriétaire du projet peut commenter, demander des modifications ou accepter la PR
+
+- Important pour :
+
+  - Suivi des modifications
+  - Discussion autour des changements
+  - Validation avant intégration
+
+[À vous de contribuer au livre d'outils](https://github.com/clessn/livre-outils)
+
+## GitHub pages
+
+- GitHub pages vous permet d'héberger un site web gratuitement
+- GitHub permet aussi de lier un nom de domaine à votre site
+- Idéal pour votre portfolio de chercheur
+
+
+[Gabarit de site web](https://github.com/clessn/gabarit_site_web)
+
+
+## Conclusion

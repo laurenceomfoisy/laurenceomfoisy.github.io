@@ -1,0 +1,48 @@
+vars: {
+    d2-config: {
+      theme-overrides: {
+        B1: "#FFFFFF"
+        N2: "#FFFFFF"
+      }
+    }
+  }
+  style: {
+    fill: "#111111"
+    stroke: "#FFFFFF"
+  }
+  x: {
+    shape: circle
+    style: {
+      stroke: "#FFFFFF"
+    }
+  }
+  y: {
+    shape: circle
+    style: {
+      stroke: "#FFFFFF"
+    }
+  }
+  z1: {
+    shape: circle
+    style: {
+      stroke: "#FFFFFF"
+    }
+  }
+  z2: {
+    shape: circle
+    style: {
+      stroke: "#FFFFFF"
+    }
+  }
+
+
+x: Éducation
+y: Idéologie politique
+z1: Revenu individuel
+Z2: Revenu des parents
+
+x -> z1
+z1 -> y
+z2 -> x
+z2 -> z1
+  
