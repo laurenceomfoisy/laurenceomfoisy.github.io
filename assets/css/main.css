@@ -2627,3 +2627,30 @@ a.customButton {
   margin-top: 3em;
   text-align: center;
 }
+
+/* Custom header buttons */
+
+.social-nav {
+  margin-left: 10px;
+}
+
+.social-nav a {
+  padding: 0 10px !important;
+  font-size: 1.2em;
+}
+
+.social-nav a:hover {
+  background: none !important;
+  color: #43b3e0 !important;
+}
+
+/* For mobile responsiveness */
+@media screen and (max-width: 736px) {
+  .social-nav {
+    margin-left: 5px;
+  }
+
+  .social-nav a {
+    padding: 0 8px !important;
+  }
+}
