@@ -2593,3 +2593,23 @@ body > article {
     margin-top: 0;
   }
 }
+
+/* Custom download button */
+.customButton {
+  border: 1px solid #000000;
+  border-radius: 10px;
+  padding: 10px;
+  margin: 10px;
+  background-color: #f9f9f9;
+  color: #000000;
+  font-weight: normal;
+  opacity: 1;
+  transition: 1s;
+}
+.customButton:hover {
+  cursor: pointer;
+  background-color: #f9f9f9;
+  opacity: 0.5;
+  transition: 1s;
+  color: #000000;
+}
