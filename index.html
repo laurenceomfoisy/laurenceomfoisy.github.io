@@ -7,6 +7,8 @@
       name="viewport"
       content="width=device-width, initial-scale=1, user-scalable=no"
     />
+    <link rel="icon" type="image/png" href="images/lomfoisy.png" />
+    <link rel="shortcut icon" type="image/png" href="images/lomfoisy.png" />
     <link rel="stylesheet" href="assets/css/main.css" />
   </head>
   <body class="is-preload">
@@ -175,49 +177,51 @@
       </div>
     </article>
 
-    <!-- CV -->
-    <article id="cv" class="wrapper style4">
+    <!-- CV Section -->
+    <article id="cv" class="wrapper style2">
       <div class="container">
         <header>
           <h2>Academic CV</h2>
           <p>Research Experience and Academic Background</p>
         </header>
-        <div class="row">
-          <div class="col-12">
-            <div
-              class="pdf-container"
-              style="
-                position: relative;
-                padding-bottom: 100%;
-                height: 0;
-                overflow: hidden;
-              "
+        <div class="cv-viewer">
+          <!-- PDF Viewer -->
+          <iframe
+            src="https://mozilla.github.io/pdf.js/web/viewer.html?file=https://raw.githubusercontent.com/LaurenceOMFoisy/acad_cv/main/main.pdf"
+            class="pdf-container"
+            title="CV Viewer"
+            aria-label="Academic CV Viewer"
+            style="width: 100%; height: 800px; border: none"
+          >
+          </iframe>
+          <!-- Download Button -->
+          <div
+            class="button-container"
+            style="text-align: center; margin-top: 2em"
+          >
+            <a
+              href="https://raw.githubusercontent.com/LaurenceOMFoisy/acad_cv/main/main.pdf"
+              download
+              class="button large"
+              aria-label="Download CV in PDF format"
             >
-              <iframe
-                src="https://raw.githubusercontent.com/LaurenceOMFoisy/acad_cv/main/main.pdf"
-                style="
-                  position: absolute;
-                  top: 0;
-                  left: 0;
-                  width: 100%;
-                  height: 100%;
-                  border: none;
-                "
-                title="Academic CV"
-              >
-              </iframe>
-            </div>
-            <div class="row" style="margin-top: 2em; margin-bottom: 2em">
-              <div class="col-12 text-center">
-                <a
-                  href="https://raw.githubusercontent.com/LaurenceOMFoisy/acad_cv/main/main.pdf"
-                  class="button large"
-                  download="Laurence-Olivier_M_Foisy_CV.pdf"
-                >
-                  <i class="fa fa-download"></i> Download CV
-                </a>
-              </div>
-            </div>
+              <i class="fa fa-download"></i> Download PDF Version
+            </a>
+          </div>
+          <!-- Accessibility Information -->
+          <div
+            class="accessibility-info"
+            style="
+              text-align: center;
+              margin-top: 1em;
+              font-size: 0.9em;
+              color: #888;
+            "
+          >
+            <p>
+              You can download the CV in PDF format to view it with your
+              preferred PDF reader.
+            </p>
           </div>
         </div>
       </div>
