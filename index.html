@@ -73,12 +73,12 @@
               <h2>Data Scientist</h2>
             </header>
             <p>
-              As a doctoral candidate in Political Science at Université Laval,
-              my research focuses on integrating artificial intelligence into
-              political science research methodologies. My expertise centers on
-              analyzing algorithmic bias in language models within political
-              science applications and developing innovative methods for
-              evaluating Large Language Model (LLM) outputs in political
+              Doctoral candidate in Political Science at Université Laval,
+              focusing on the integration of artificial intelligence into
+              political science research methodologies. Research expertise
+              centers on analyzing algorithmic bias in language models within
+              political science applications and developing innovative methods
+              for evaluating Large Language Model (LLM) outputs in political
               research contexts.
             </p>
           </div>
@@ -256,41 +256,38 @@
           <p>Research Experience and Academic Background</p>
         </header>
         <div class="cv-viewer">
-          <!-- PDF Viewer -->
-          <iframe
-            src="https://mozilla.github.io/pdf.js/web/viewer.html?file=https://raw.githubusercontent.com/Laurenceomfoisy/acad_cv/main/main.pdf"
-            class="pdf-container"
-            title="CV Viewer"
-            aria-label="Academic CV Viewer"
-            style="width: 100%; height: 800px; border: none"
-          >
-          </iframe>
+          <!-- Enhanced PDF Viewer -->
+          <div class="pdf-frame-container">
+            <object
+              data="https://raw.githubusercontent.com/Laurenceomfoisy/acad_cv/main/main.pdf"
+              type="application/pdf"
+              class="pdf-viewer"
+            >
+              <div class="pdf-fallback">
+                <p>It appears your browser doesn't support embedded PDFs.</p>
+                <p>Click below to view or download the CV.</p>
+              </div>
+            </object>
+          </div>
 
-          <!-- Download Button -->
-          <div style="margin-top: 3em; text-align: center">
+          <!-- Download and View Options -->
+          <div class="cv-actions">
             <a
               href="https://raw.githubusercontent.com/LaurenceOMFoisy/acad_cv/main/main.pdf"
               download
-              class="customButton"
+              class="action-button download-button"
             >
-              <i class="fa fa-download" style="margin-right: 8px"></i>
-              Download PDF Version
+              <i class="fa fa-download"></i>
+              Download PDF
             </a>
-          </div>
-          <!-- Accessibility Information -->
-          <div
-            class="accessibility-info"
-            style="
-              text-align: center;
-              margin-top: 1em;
-              font-size: 0.9em;
-              color: #888;
-            "
-          >
-            <p>
-              You can download the CV in PDF format to view it with your
-              preferred PDF reader.
-            </p>
+            <a
+              href="https://raw.githubusercontent.com/LaurenceOMFoisy/acad_cv/main/main.pdf"
+              target="_blank"
+              class="action-button view-button"
+            >
+              <i class="fa fa-external-link"></i>
+              Open in New Tab
+            </a>
           </div>
         </div>
       </div>
