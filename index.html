@@ -257,17 +257,16 @@
         </header>
         <div class="cv-viewer">
           <!-- PDF Viewer -->
-          <div class="pdf-frame-container">
-            <iframe
-              src="https://raw.githubusercontent.com/Laurenceomfoisy/acad_cv/main/main.pdf"
-              class="pdf-viewer"
-              title="CV Viewer"
-              aria-label="Academic CV Viewer"
-            >
-            </iframe>
-          </div>
+          <iframe
+            src="https://mozilla.github.io/pdf.js/web/viewer.html?file=https://raw.githubusercontent.com/Laurenceomfoisy/acad_cv/main/main.pdf#zoom=page-fit&pagemode=none&toolbar=0&navpanes=0"
+            class="pdf-container"
+            title="CV Viewer"
+            aria-label="Academic CV Viewer"
+            style="width: 100%; height: 800px; border: none"
+          >
+          </iframe>
 
-          <!-- Download Button (Preserving Original Styling) -->
+          <!-- Download Button -->
           <div style="margin-top: 3em; text-align: center">
             <a
               href="https://raw.githubusercontent.com/LaurenceOMFoisy/acad_cv/main/main.pdf"
@@ -278,7 +277,6 @@
               Download PDF Version
             </a>
           </div>
-
           <!-- Accessibility Information -->
           <div
             class="accessibility-info"
@@ -297,6 +295,21 @@
         </div>
       </div>
     </article>
+
+    <!-- Footer -->
+    <article id="contact" class="wrapper style4">
+      <div class="container medium">
+        <footer>
+          <ul id="copyright">
+            <li>&copy; Laurence-Olivier M. Foisy. All rights reserved.</li>
+            <li>
+              Design inspired by: <a href="http://html5up.net">HTML5 UP</a>
+            </li>
+          </ul>
+        </footer>
+      </div>
+    </article>
+
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/jquery.scrolly.min.js"></script>
