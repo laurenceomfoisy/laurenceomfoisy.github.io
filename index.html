@@ -256,57 +256,47 @@
           <p>Research Experience and Academic Background</p>
         </header>
         <div class="cv-viewer">
-          <!-- Enhanced PDF Viewer -->
+          <!-- PDF Viewer -->
           <div class="pdf-frame-container">
-            <object
-              data="https://raw.githubusercontent.com/Laurenceomfoisy/acad_cv/main/main.pdf"
-              type="application/pdf"
+            <iframe
+              src="https://raw.githubusercontent.com/Laurenceomfoisy/acad_cv/main/main.pdf"
               class="pdf-viewer"
+              title="CV Viewer"
+              aria-label="Academic CV Viewer"
             >
-              <div class="pdf-fallback">
-                <p>It appears your browser doesn't support embedded PDFs.</p>
-                <p>Click below to view or download the CV.</p>
-              </div>
-            </object>
+            </iframe>
           </div>
 
-          <!-- Download and View Options -->
-          <div class="cv-actions">
+          <!-- Download Button (Preserving Original Styling) -->
+          <div style="margin-top: 3em; text-align: center">
             <a
               href="https://raw.githubusercontent.com/LaurenceOMFoisy/acad_cv/main/main.pdf"
               download
-              class="action-button download-button"
+              class="customButton"
             >
-              <i class="fa fa-download"></i>
-              Download PDF
+              <i class="fa fa-download" style="margin-right: 8px"></i>
+              Download PDF Version
             </a>
-            <a
-              href="https://raw.githubusercontent.com/LaurenceOMFoisy/acad_cv/main/main.pdf"
-              target="_blank"
-              class="action-button view-button"
-            >
-              <i class="fa fa-external-link"></i>
-              Open in New Tab
-            </a>
+          </div>
+
+          <!-- Accessibility Information -->
+          <div
+            class="accessibility-info"
+            style="
+              text-align: center;
+              margin-top: 1em;
+              font-size: 0.9em;
+              color: #888;
+            "
+          >
+            <p>
+              You can download the CV in PDF format to view it with your
+              preferred PDF reader.
+            </p>
           </div>
         </div>
       </div>
     </article>
-
-    <!-- Footer -->
-    <article id="contact" class="wrapper style4">
-      <div class="container medium">
-        <footer>
-          <ul id="copyright">
-            <li>&copy; Laurence-Olivier M. Foisy. All rights reserved.</li>
-            <li>
-              Design inspired by: <a href="http://html5up.net">HTML5 UP</a>
-            </li>
-          </ul>
-        </footer>
-      </div>
-    </article>
-
     <!-- Scripts -->
     <script src="assets/js/jquery.min.js"></script>
     <script src="assets/js/jquery.scrolly.min.js"></script>
