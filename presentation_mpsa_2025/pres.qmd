@@ -59,7 +59,6 @@ format:
 ::: {.column width="50%"}
 **For Social Science Research:**
 
-* **Scale Up Analysis:** Handle larger datasets.
 * **Lower Barrier:** Less ML expertise needed.
 * **Capture Nuance:** Go beyond dictionary limits (potentially).
 * **Analyze Multilingually:** Work directly with non-English text.
@@ -115,10 +114,10 @@ format:
 
 **Data** 
 
-- French News Corpus
-- 200 annotated sentences
-- Google Translate
+- French News Corpus about FOSS
+- 200 human annotated sentences
 - Manual Annotation (-1 to 1)
+- Google Translation from French to English
 
 :::
 
@@ -128,8 +127,9 @@ format:
 
 - **11 LLMs** (Open/Closed)
 - **3 Linguistic Conditions**
+- The **mean of 3 runs** for each prompt set
 - **19,800** Prompts
-- Compared: Lexicoder Dictionaries
+- Compared: English and French Lexicoder Dictionaries
 - Metrics: Corr, MAE, F1 (3/7 cat)
 
 :::
@@ -213,6 +213,8 @@ Important instructions:
 Here is the text to analyze: [TEXT]
 ```
 
+### Three prompts for each language condition
+
 ## Finding 1 {.smaller auto-animate="true"}
 
 ### LLMs can analyze sentiment in French
@@ -220,8 +222,8 @@ Here is the text to analyze: [TEXT]
 **Key Points:** 
 
 - Top Closed Models (DeepSeek Chat, GPT-4o, Gemini, Claude): **r \> 0.65**
-- Best Open Models (Llama 70B, DeepSeek R1): Competitive
-- English Dictionary (LSD): Solid baseline (r ≈ 0.53)
+- Best Open Models (Llama 70B, DeepSeek R1): **Competitive**
+- English Dictionary (LSD): Solid baseline **r = 0.53**
 
 ##
 
@@ -244,7 +246,7 @@ Here is the text to analyze: [TEXT]
 * Differences between prompt/text language conditions are consistently small across all metrics.
 * No single condition consistently outperforms others:
     * EN→FR leads slightly in Correlation.
-    * EN→EN leads slightly in F1 scores and has the lowest avg. error (MAE).
+    * EN→EN leads slightly in F1 scores and has the lowest avg. error (MAE) but only on average.
 
 ## Finding 3
 
@@ -292,7 +294,6 @@ Here is the text to analyze: [TEXT]
 
 - **Use LLMs:** Top closed & larger open models work *without fine-tuning*.
 - **Prompt Flexibility:** French or English likely fine; direct analysis slightly better.
-- **Focus on Polarity:** Rely on Pos/Neut/Neg (3-cat); cautious w/ nuance (7-cat).
 - **Consider Trade-offs:**
   - **LLMs:** Nuance <i class="fas fa-arrow-up"></i> Transparency <i class="fas fa-arrow-down"></i>
   - **LSD:** Nuance <i class="fas fa-arrow-down"></i> Transparency <i class="fas fa-arrow-up"></i>
@@ -335,8 +336,6 @@ Here is the text to analyze: [TEXT]
   - Leading LLMs offer powerful, *accessible* analysis.
   - Open-source models viable (bigger = better).
   - Prompt language less critical here.
-  - Basic polarity 
-  - Fine nuance
   - **LSD remains strong & transparent** for polarity & macro-trends.
 
 **The Bottom Line:** Choose based on **nuance vs. transparency**. LLMs are valuable tools for non-English text.
@@ -353,3 +352,4 @@ Laurence-Olivier M. Foisy
 
 *Full paper/details available in [GitHub](https://github.com/clessn/mpsa_beyond_language)*
 
+![](img/mpsa_qr.png){.absolute top=380 left=800 width="350" height="300"}
