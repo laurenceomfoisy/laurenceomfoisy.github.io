@@ -1,0 +1,369 @@
+---
+title: "Clessnize"
+subtitle: "Faire des graphiques rapidement"
+author: CLESSN
+date: today
+lang: fr
+format:
+  clean-revealjs:
+    slide-number: true
+    logo: img/ul_logo.png
+    footer: "clessnize"
+    transition: slide
+    transition-speed: fast
+    code-fold: false
+    code-overflow: wrap
+    highlight-style: github
+    embed-resources: true
+    auto-stretch: true
+    include-after-body: footer_includes.html
+---
+
+## Installation {.smaller}
+
+```r
+# Installer devtools si vous ne l'avez pas
+install.packages("devtools")
+
+# Installer le package clessnverse depuis GitHub
+devtools::install_github("clessn/clessnverse")
+
+# Charger le package
+library(clessnverse)
+```
+
+::: {.callout-tip}
+Si vous rencontrez des problèmes, assurez-vous que votre version de R est à jour et que vous avez les dépendances nécessaires installées.
+:::
+
+## Fonctions principales
+
+Le package clessnize offre deux fonctions principales :
+
+1. `create_standardized_graph()` - Crée des visualisations de données standardisées
+2. `add_png()` / `add_multiple_pngs()` - Ajoute des logos ou des images à vos graphiques
+
+## create_standardized_graph() {.smaller}
+
+Crée des graphiques standardisés avec un style cohérent pour la visualisation des données politiques :
+
+```r
+create_standardized_graph(
+  graph_type = "percentage",  # ou "difference"
+  data = votre_dataframe,
+  x_variable = "dv_voteChoice",
+  fill_variable = "votre_variable",
+  weights_variable = "weight"  # Poids personnalisés optionnels
+)
+```
+
+## Types de graphiques {.smaller}
+
+Deux types de graphiques principaux sont disponibles :
+
+::: {.columns}
+::: {.column width="50%"}
+**Pourcentage**
+```r
+create_standardized_graph(
+  graph_type = "percentage",
+  # Autres paramètres...
+)
+```
+- Montre les pourcentages au sein de chaque groupe
+- Sous-titre par défaut : "Pourcentage au sein de chaque groupe"
+:::
+
+::: {.column width="50%"}
+**Différence**
+```r
+create_standardized_graph(
+  graph_type = "difference",
+  # Autres paramètres...
+)
+```
+- Montre la différence par rapport à la moyenne nationale
+- Sous-titre par défaut : "Écart par rapport à la moyenne canadienne (points de %)"
+:::
+:::
+
+## Paramètres clés : Données {.smaller}
+
+```r
+create_standardized_graph(
+  data = votre_dataframe,             # Vos données d'entrée
+  x_variable = "dv_voteChoice",       # Variable pour l'axe x (défaut : choix de vote)
+  fill_variable = "votre_variable",   # Variable pour les couleurs de remplissage
+  weights_variable = "weight",        # Colonne contenant les poids
+  
+  # Options de filtrage
+  filter_values = c("valeur1", "valeur2"),   # Valeurs à inclure de fill_variable
+  x_filter_values = c("PLC", "PCC")          # Valeurs à inclure de x_variable
+)
+```
+
+## Paramètres clés : Style {.smaller}
+
+```r
+create_standardized_graph(
+  # Options de style
+  language = "fr",                      # "fr" ou "en" pour la langue de sortie
+  colors = c("Groupe1" = "#FF0000"),    # Couleurs personnalisées pour les valeurs
+  fill_labels = c("valeur1" = "Label"), # Étiquettes d'affichage pour les valeurs
+  x_labels = c("PLC" = "Libéraux"),     # Étiquettes d'affichage pour les valeurs x
+  
+  # Options d'ordre
+  x_order = c("PLC", "PCC", "BQ"),      # Ordre des valeurs sur l'axe x
+  fill_order = c("Groupe1", "Groupe2")  # Ordre des valeurs dans la variable fill
+)
+```
+
+## Paramètres clés : Sortie {.smaller}
+
+```r
+create_standardized_graph(
+  # Éléments textuels
+  title = "Titre de mon graphique",
+  subtitle = "Sous-titre personnalisé",
+  y_title = "Titre personnalisé de l'axe Y",
+  
+  # Options de sortie
+  output_path = "output/mon_graphique.png",
+  add_logo = TRUE,
+  logos_list = list(   # Liste optionnelle de logos PNG
+    list(
+      path = "chemin/vers/logo.png",
+      x_position = 20,
+      y_position = 20,
+      scale = 0.5
+    )
+  )
+)
+```
+
+## Couleurs et mappages des partis {.smaller}
+
+Des couleurs et des mappages de partis intégrés sont disponibles :
+
+```r
+# Couleurs de parti par défaut
+party_colors <- c(
+  "PCC" = "#1A4782",  # Conservateur - Bleu
+  "PLC" = "#D71920",  # Libéral - Rouge
+  "BQ" = "#33B2CC",   # Bloc Québécois - Bleu clair
+  "NPD" = "#F58220",  # NPD - Orange
+  "PVC" = "#3D9B35"   # Parti Vert - Vert
+)
+```
+
+::: {.callout-note}
+Les abréviations des partis sont automatiquement mappées entre l'anglais et le français en fonction du paramètre `language`.
+:::
+
+## Exemple pratique : Café-Politique {.smaller}
+
+Définir des variables personnalisées pour votre graphique :
+
+```r
+# Définir des couleurs et des étiquettes personnalisées pour les cafés
+coffee_colors <- c(
+  "tim_hortons" = "#C8102E", 
+  "mcdonalds" = "#FFC72C", 
+  "starbucks" = "#006241"
+)
+
+coffee_labels <- c(
+  "tim_hortons" = "Tim Hortons", 
+  "mcdonalds" = "McDonald's", 
+  "starbucks" = "Starbucks"
+)
+
+# Définir un ordre personnalisé pour les cafés
+coffee_order <- c("tim_hortons", "mcdonalds", "starbucks")
+```
+
+## Exemple pratique : Organisation {.smaller}
+
+Organiser les partis politiques pour une présentation cohérente :
+
+```r
+# Créer des mappages de traduction d'étiquettes de parti
+party_labels_fr <- c(
+  "lpc" = "PLC", 
+  "cpc" = "PCC", 
+  "ndp" = "NPD", 
+  "bq" = "BQ", 
+  "gpc" = "PVC"
+)
+
+party_labels_en <- c(
+  "lpc" = "LPC", 
+  "cpc" = "CPC", 
+  "ndp" = "NDP", 
+  "bq" = "BQ", 
+  "gpc" = "GPC"
+)
+
+# Définir un ordre personnalisé pour les partis
+party_order_fr <- c("lpc", "cpc", "ndp", "bq", "gpc")
+party_order_en <- c("lpc", "cpc", "ndp", "bq", "gpc")
+```
+
+## Exemple pratique : Logos {.smaller}
+
+Ajouter des logos à votre graphique :
+
+```r
+# Créer une liste de logos PNG à ajouter
+fr_logos_list <- list(
+  list(
+    path = "logos/coffee/tim_hortons.png",
+    x_position = 2850,
+    y_position = 2410,
+    scale = 1.2
+  ),
+  list(
+    path = "logos/coffee/starbucks.png",
+    x_position = 2335,
+    y_position = 2410,
+    scale = 1.2
+  ),
+  list(
+    path = "logos/coffee/mcdonalds.png",
+    x_position = 1865,
+    y_position = 2410,
+    scale = 1.2
+  ),
+  list(
+    path = "logos/FR/logo_black_1600.png",
+    x_position = 100,
+    y_position = 2500,
+    scale = 0.4
+  )
+)
+```
+
+## Exemple complet : Graphique différence {.smaller}
+
+```r
+# Version française - différence par rapport à la moyenne nationale
+create_standardized_graph(
+  graph_type = "difference",
+  data = df,
+  x_variable = "dv_voteChoice",
+  fill_variable = "lifestyle_consCoffee",
+  filter_values = c("tim_hortons", "mcdonalds", "starbucks"),
+  language = "fr",
+  colors = coffee_colors,
+  fill_labels = coffee_labels,
+  x_labels = party_labels_fr,
+  x_order = party_order_fr,
+  fill_order = coffee_order,
+  title = "L'indice Café-Politique",
+  subtitle = "Écart de consommation par rapport à la moyenne canadienne (points de %)",
+  output_path = "graphs/cafe_barplot_fr_difference.png",
+  add_logo = TRUE,
+  logos_list = fr_logos_list
+)
+```
+
+## Exemple complet : Graphique pourcentage {.smaller}
+
+```r
+# Version française - pourcentages au sein de chaque parti
+create_standardized_graph(
+  graph_type = "percentage",
+  data = df,
+  x_variable = "dv_voteChoice",
+  fill_variable = "lifestyle_consCoffee",
+  filter_values = c("tim_hortons", "mcdonalds", "starbucks"),
+  language = "fr",
+  colors = coffee_colors,
+  fill_labels = coffee_labels,
+  x_labels = party_labels_fr,
+  x_order = party_order_fr,
+  fill_order = coffee_order,
+  title = "Préférences de café par parti politique",
+  subtitle = "Pourcentage de consommation au sein de chaque parti",
+  y_title = "Pourcentage",
+  output_path = "graphs/cafe_barplot_fr_percentage.png",
+  add_logo = TRUE,
+  logos_list = fr_logos_list
+)
+```
+
+## Versions multilingues {.smaller}
+
+Créez facilement des graphiques en français et en anglais :
+
+```r
+# Version anglaise avec les mêmes données
+create_standardized_graph(
+  graph_type = "difference",
+  data = df,
+  x_variable = "dv_voteChoice",
+  fill_variable = "lifestyle_consCoffee",
+  filter_values = c("tim_hortons", "mcdonalds", "starbucks"),
+  language = "en",  # Changez simplement la langue
+  colors = coffee_colors,
+  fill_labels = coffee_labels,
+  x_labels = party_labels_en,  # Utilisez les étiquettes en anglais
+  x_order = party_order_en,
+  fill_order = coffee_order,
+  title = "The Coffee-Politics Index",
+  subtitle = "Consumption difference from Canadian average (percentage points)",
+  output_path = "graphs/cafe_barplot_en_difference.png",
+  add_logo = TRUE,
+  logos_list = en_logos_list  # Utilisez les logos pour l'anglais
+)
+```
+
+## Ajout de logos {.smaller}
+
+```r
+# Ajouter un seul logo
+add_png(
+  base_png_path = "mon_graphique.png",
+  png_to_add_path = "logo.png", 
+  output_path = "graphique_avec_logo.png",
+  x_position = 20,     # Position depuis le bord droit
+  y_position = 20,     # Position depuis le bord supérieur
+  scale = 0.5          # Facteur d'échelle de taille
+)
+
+# Ajouter plusieurs logos
+add_multiple_pngs(
+  base_png_path = "mon_graphique.png",
+  output_path = "graphique_final.png",
+  png_list = list(
+    list(path = "logo1.png", x_position = 20, y_position = 20, scale = 0.5),
+    list(path = "logo2.png", x_position = 20, y_position = 150, scale = 0.3)
+  )
+)
+```
+
+## Conseils pratiques {.smaller}
+
+1. **Poids** : Assurez-vous que vos données ont une colonne de poids pour une représentation précise
+
+2. **Gestion des partis** : Pour les graphiques de choix de vote, les abréviations des partis sont automatiquement mappées
+
+3. **Gestion de la mémoire** : Le package inclut le nettoyage de la mémoire pour gérer les grandes images
+
+4. **Thème par défaut** : Utilise `theme_datagotchi_light()` pour un style cohérent
+
+5. **Légende** : Inclut automatiquement les informations de source et la taille de l'échantillon
+
+## Ressources
+
+- GitHub : [https://github.com/clessn/clessnverse](https://github.com/clessn/clessnverse)
+- Documentation : Consultez la documentation du package avec `?create_standardized_graph`
+- Exemples : Voir plus d'exemples dans les vignettes du package
+
+::: {.callout-tip}
+Pour les questions ou les problèmes, veuillez ouvrir une issue sur le dépôt GitHub.
+:::
+
+## Merci !
+
+![](https://via.placeholder.com/800x400.png?text=clessnverse::clessnize)
