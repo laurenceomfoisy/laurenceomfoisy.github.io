@@ -39,7 +39,7 @@ format:
 
 ## Why Use Open-Ended Questions? {background="none"}
 
-- **Reduce Bias:** Avoids the cueing effects bias common in closed-ended formats. [@iyengar96a]
+- **Reduce Bias:** Avoids the cueing bias common in closed-ended formats. [@iyengar96a]
 
 - **Capture Nuance:** Uncovers the full spectrum of opinion, including detailed, complex, and unexpected responses.
 
@@ -53,10 +53,10 @@ The literature raises valid concerns about transparency, reproducibility, and ac
 
 - LLMs present a potential solution, capable of understanding and categorizing text.
 - LLMs can replace expert human coders in many political science applications. [@benoit_etal25; @wu25; @mens_gallego25]
-- LLMs are **replicable**
-- LLMs are **scalable**
-- LLMs are **reliable**
-- LLMs are **multilingual**
+- Are LLMs **replicable**?
+- Are LLMs **scalable**?
+- Are LLMs **reliable**?
+- Are LLMs **multilingual**?
 
 ## Questions {background="none"}
 
@@ -82,8 +82,9 @@ The literature raises valid concerns about transparency, reproducibility, and ac
     - 5 Anti-Immigration Attitudes 
     - +1 Open-ended question about survey appreciation
 - **Characteristics:** 
-    - n = 1,685 for the Open-ended group. 1,237 complete responses
-    - n = 1,687 for the Closed-ended group. 1,580 complete responses
+    - Datagotchi respondents
+    - n = 1,685 for the Open-ended group
+    - n = 1,687 for the Closed-ended group
 
 :::
 
@@ -94,6 +95,16 @@ The literature raises valid concerns about transparency, reproducibility, and ac
 :::
 
 ::::
+
+::: {.notes}
+
+"Maximum Challenge" Test: We chose these topics because they are notoriously complex and difficult to measure. If our method works for these, it should work for simpler topics.
+
+Overcoming Response Bias: Both subjects are prone to social desirability bias with standard surveys. This allows us to test if open-ended questions can capture more genuine attitudes.
+
+High Political Relevance: These are major contemporary political issues, making our methodological test relevant to real-world political analysis.
+
+:::
 
 ## Awkward Open-Ended Questions {background="none"}
 
@@ -130,11 +141,11 @@ The literature raises valid concerns about transparency, reproducibility, and ac
     - Rate limit: 4000 RPM
 - Parameters: **Default parameters** [@salimian_etal25]
 
-- Total number of responses: **223,639**
+- **223,639 Prompts** total
 
 - Cost: 
   - Around $0.023 per 1,000 responses
-  - Total cost: Under **5 dollars**
+  - Total cost: **Under 5 dollars**
 
 - Time: About **55 minutes**
 
@@ -145,6 +156,36 @@ The literature raises valid concerns about transparency, reproducibility, and ac
 ##  {background-image="img/response_format_comparison_3x4_pres.png" background-size="cover" background-position="center"}
 
 ##  {background-image="img/fig_mean_med_sd_comparisons_pres.png" background-size="cover" background-position="center"}
+
+:::: {.notes}
+
+Mean Panel (Left)
+
+Points above line = higher in open-ended
+Environmental attitudes → more pro-environmental in open-ended
+Immigration attitudes → less restrictive in open-ended
+Suggests social desirability effects when writing freely
+
+Median Panel (Middle)
+
+Many variables now on diagonal = similar typical responses
+Some still differ (CarbonTax, Regulation)
+Shows effects aren't just outliers
+
+Standard Deviation Panel (Right)
+
+ALL variables above line = more variability in open-ended
+Open-ended captures more diverse/nuanced responses
+Confirms greater complexity in free-text
+
+Key Takeaways
+
+Systematic differences, not random
+Domain-specific patterns (env vs immigration)
+Open-ended → more socially desirable + more diverse responses
+Format choice affects how attitudes are expressed
+
+:::
 
 ##  {background-image="img/fig_factor_analysis_dumbell_pres.png" background-size="cover" background-position="center"}
 
