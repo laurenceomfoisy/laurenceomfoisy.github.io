@@ -170,9 +170,10 @@ The literature raises valid concerns about transparency, reproducibility, and ac
 - The results show that LLM-cleaned open-ended questions can measure the same latent constructs as traditional closed-ended questions.
 - Struggles with nuance
 
-# Thank You! {background="none"}
+# Merci! {background="none"}
 
 ##
 
 ![](img/factor_loadings_comparison.png)
 
+## Bibliography
