@@ -1,0 +1,129 @@
+<svg viewBox="0 0 1600 900" xmlns="http://www.w3.org/2000/svg">
+  <!-- Title -->
+  <text x="800" y="40" text-anchor="middle" font-size="32" font-weight="bold" fill="#333">
+    Survey Data Processing Pipeline
+  </text>
+  
+  <!-- Define arrow markers -->
+  <defs>
+    <marker id="arrowhead" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+      <polygon points="0 0, 12 6, 0 12" fill="#666"/>
+    </marker>
+    <marker id="arrowhead-blue" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+      <polygon points="0 0, 12 6, 0 12" fill="#1976d2"/>
+    </marker>
+    <marker id="arrowhead-green" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+      <polygon points="0 0, 12 6, 0 12" fill="#388e3c"/>
+    </marker>
+    <marker id="arrowhead-purple" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+      <polygon points="0 0, 12 6, 0 12" fill="#7b1fa2"/>
+    </marker>
+    <marker id="arrowhead-red" markerWidth="12" markerHeight="12" refX="12" refY="6" orient="auto">
+      <polygon points="0 0, 12 6, 0 12" fill="#d32f2f"/>
+    </marker>
+  </defs>
+  
+  <!-- Raw Data Sources (Top) -->
+  <g id="raw-data">
+    <!-- Open-ended raw data -->
+    <rect x="50" y="100" width="280" height="120" rx="15" fill="#fff3e0" stroke="#f57c00" stroke-width="4"/>
+    <text x="190" y="140" text-anchor="middle" font-size="22" font-weight="bold" fill="#f57c00">
+      Raw Open-Ended
+    </text>
+    <text x="190" y="170" text-anchor="middle" font-size="18" fill="#f57c00">
+      Survey Data
+    </text>
+    <text x="190" y="195" text-anchor="middle" font-size="16" fill="#e65100">
+      (1,685 responses)
+    </text>
+    
+    <!-- Closed-ended raw data -->
+    <rect x="1270" y="100" width="280" height="120" rx="15" fill="#e8f5e9" stroke="#388e3c" stroke-width="4"/>
+    <text x="1410" y="140" text-anchor="middle" font-size="22" font-weight="bold" fill="#388e3c">
+      Raw Closed-Ended
+    </text>
+    <text x="1410" y="170" text-anchor="middle" font-size="18" fill="#388e3c">
+      Survey Data
+    </text>
+    <text x="1410" y="195" text-anchor="middle" font-size="16" fill="#2e7d32">
+      (1,687 responses)
+    </text>
+  </g>
+  
+  <!-- LLM Processing (for open-ended only) -->
+  <g id="llm-processing">
+    <rect x="30" y="300" width="320" height="100" rx="15" fill="#e3f2fd" stroke="#1976d2" stroke-width="4"/>
+    <text x="190" y="340" text-anchor="middle" font-size="24" font-weight="bold" fill="#1976d2">
+      LLM Processing
+    </text>
+    <text x="190" y="370" text-anchor="middle" font-size="18" fill="#1565c0">
+      Convert to Structured Format
+    </text>
+  </g>
+  
+  <!-- Arrow from raw open-ended to LLM -->
+  <line x1="190" y1="220" x2="190" y2="300" stroke="#f57c00" stroke-width="4" marker-end="url(#arrowhead)"/>
+  
+  <!-- Structured open-ended data -->
+  <rect x="30" y="480" width="320" height="120" rx="15" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="4"/>
+  <text x="190" y="520" text-anchor="middle" font-size="22" font-weight="bold" fill="#7b1fa2">
+    Structured
+  </text>
+  <text x="190" y="550" text-anchor="middle" font-size="18" fill="#7b1fa2">
+    Open-Ended Data
+  </text>
+  <text x="190" y="575" text-anchor="middle" font-size="16" fill="#6a1b9a">
+    (Ready for cleaning)
+  </text>
+  
+  <!-- Arrow from LLM to structured data -->
+  <line x1="190" y1="400" x2="190" y2="480" stroke="#1976d2" stroke-width="4" marker-end="url(#arrowhead-blue)"/>
+  
+  <!-- R Cleaning Script (Center) -->
+  <rect x="640" y="350" width="320" height="100" rx="15" fill="#ffebee" stroke="#d32f2f" stroke-width="4"/>
+  <text x="800" y="390" text-anchor="middle" font-size="24" font-weight="bold" fill="#d32f2f">
+    R Cleaning Script
+  </text>
+  <text x="800" y="420" text-anchor="middle" font-size="18" fill="#c62828">
+    Standardize Both Datasets
+  </text>
+  
+  <!-- Arrows to R cleaning script -->
+  <line x1="350" y1="540" x2="640" y2="420" stroke="#7b1fa2" stroke-width="4" marker-end="url(#arrowhead-purple)"/>
+  <line x1="1270" y1="180" x2="960" y2="380" stroke="#388e3c" stroke-width="4" marker-end="url(#arrowhead-green)"/>
+  
+  <!-- Cleaned datasets -->
+  <rect x="450" y="550" width="280" height="100" rx="15" fill="#f3e5f5" stroke="#7b1fa2" stroke-width="4"/>
+  <text x="590" y="585" text-anchor="middle" font-size="18" font-weight="bold" fill="#7b1fa2">
+    Cleaned Open-Ended Data
+  </text>
+  <text x="590" y="615" text-anchor="middle" font-size="16" fill="#6a1b9a">
+    (Standardized Format)
+  </text>
+  
+  <rect x="870" y="550" width="280" height="100" rx="15" fill="#e8f5e9" stroke="#388e3c" stroke-width="4"/>
+  <text x="1010" y="585" text-anchor="middle" font-size="18" font-weight="bold" fill="#388e3c">
+    Cleaned Closed-Ended Data
+  </text>
+  <text x="1010" y="615" text-anchor="middle" font-size="16" fill="#2e7d32">
+    (Standardized Format)
+  </text>
+  
+  <!-- Arrows from R script to cleaned datasets -->
+  <line x1="720" y1="450" x2="610" y2="550" stroke="#d32f2f" stroke-width="4" marker-end="url(#arrowhead-red)"/>
+  <line x1="880" y1="450" x2="990" y2="550" stroke="#d32f2f" stroke-width="4" marker-end="url(#arrowhead-red)"/>
+  
+  <!-- Final Merged Dataset -->
+  <rect x="640" y="750" width="320" height="100" rx="15" fill="#e1f5fe" stroke="#0277bd" stroke-width="4"/>
+  <text x="800" y="790" text-anchor="middle" font-size="24" font-weight="bold" fill="#0277bd">
+    Final Merged Dataset
+  </text>
+  <text x="800" y="820" text-anchor="middle" font-size="18" fill="#01579b">
+    Ready for Analysis
+  </text>
+  
+  <!-- Arrows from cleaned datasets to final merged dataset -->
+  <line x1="610" y1="650" x2="720" y2="750" stroke="#7b1fa2" stroke-width="4" marker-end="url(#arrowhead-purple)"/>
+  <line x1="990" y1="650" x2="880" y2="750" stroke="#388e3c" stroke-width="4" marker-end="url(#arrowhead-green)"/>
+  
+</svg>

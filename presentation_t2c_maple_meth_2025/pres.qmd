@@ -12,11 +12,12 @@ author:
   - name: Yannick Dufresne
 date: today
 lang: en
+bibliography: bibliography.bib
 format:
   clean-revealjs:
     slide-number: true
     logo: img/ul_logo.png
-    footer: "From Checkbox to Textbox | [https://mfoisy.com](https://mfoisy.com)"
+    footer: ""
     transition: slide
     transition-speed: fast
     code-fold: false
@@ -27,21 +28,43 @@ format:
     include-after-body: footer_includes.html
 ---
 
-## The Challenge of Open-Ended Data
+## The Challenge of Open-Ended Data {background="none"}
 
-- Open-ended questions offer unparalleled nuance but are notoriously difficult to analyze at scale.
-- This has led to a trade-off: the **qualitative richness** of text vs. the **quantitative scalability** of closed-ended items.
+> It is possible to group stimuli in almost any conceivable manner and to classify and subclassify them indefinitely, it is strictly true that the number of attitudes which any given person possesses is almost infinite [@likert32a]
+
+- Open-ended questions offer more nuance but are notoriously difficult to analyze at scale.
+- Open-ended questions are often left unanalyzed
+- Is there a trade-off between the qualitative richness of open-ended text and the quantitative scalability of closed-ended items?
 - Can we resolve this long-standing methodological tension?
 
-## Using Large Language Models
+## Why Use Open-Ended Questions? {background="none"}
+
+- **Reduce Bias:** Avoids the cueing effects bias common in closed-ended formats. [@iyengar96a]
+
+- **Capture Nuance:** Uncovers the full spectrum of opinion, including detailed, complex, and unexpected responses.
+
+- **Detect Emerging Issues** before they become salient in public discourse.
+
+- **Create Durable Data:** Raw text can be re-analyzed with new methods and theories, increasing the long-term value of the survey. [@roberts_etal14a]
+
+## Using Large Language Models {background="none"}
+
+The literature raises valid concerns about transparency, reproducibility, and accuracy (the "black box" problem). However,
 
 - LLMs present a potential solution, capable of understanding and categorizing text.
-- However, the literature raises valid concerns about transparency, reproducibility, and accuracy (the "black box" problem).
-- Our work addresses this by testing if LLMs can be a *reliable* tool for survey research.
+- LLMs can replace expert human coders in many political science applications. [@benoit_etal25; @wu25; @mens_gallego25]
+- LLMs are **replicable**
+- LLMs are **scalable**
+- LLMs are **reliable**
+- LLMs are **multilingual**
 
-## Question
+## Questions {background="none"}
 
-- **Question:** Can LLMs measure the same latent constructs as traditional closed-ended questions?
+1. Can LLMs accurately and efficiently process open-ended responses for quantitative analysis?
+
+1. Can LLM-cleaned open-ended questions measure the same latent constructs as traditional closed-ended questions?
+
+1. Can LLM analysis of open-ended responses reveal insights that closed-ended questions fundamentally cannot capture?
 
 ## Survey Design {.smaller}
 
@@ -49,18 +72,18 @@ format:
 
 ::: {.column width="50%"}
 
-- **Design:** A survey experiment with two conditions:
-    - Group 1: Traditional closed-ended (Likert) questions
-    - Group 2: Identical questions but Open-ended
-- **Questions:** 
+- **Design:** Two treatment groups:
+    - Group 1: Traditional closed-ended questions
+    - Group 2: Identical but Open-ended
+- **20 Questions**:
     - 7 Socioeconomic
     - 1 Vote Intention
-    - 7 Environmental
-    - 5 Immigration Attitudes
-- **characteristics:** 
-    - 1,685 respondents in the Open-ended group with 1,237 complete responses
-    - 1,687 respondents in the Closed-ended group 1,580 complete responses
-
+    - 7 Environmental Support Attitudes 
+    - 5 Anti-Immigration Attitudes 
+    - +1 Open-ended question about survey appreciation
+- **Characteristics:** 
+    - n = 1,685 for the Open-ended group. 1,237 complete responses
+    - n = 1,687 for the Closed-ended group. 1,580 complete responses
 
 :::
 
@@ -68,77 +91,88 @@ format:
 
 ![](img/survey_design.png){.absolute top=50 right=-120 width=55%}
 
-
 :::
+
 ::::
 
+## Awkward Open-Ended Questions {background="none"}
 
-## Our Method: A Two-Stage LLM Approach
+> How much should the federal government spend on the environment?
 
-- We developed a novel, transparent, and scalable coding process.
-- **Stage 1 (Prompt Generation):** A sophisticated model (Gemini Pro) generates a custom, optimized prompt for each specific survey item.
-- **Stage 2 (Response Coding):** A fast, efficient model (Gemini Flash Lite) uses these prompts to code thousands of responses.
-- **Consensus Mechanism:** We use 10 parallel coding instances for each response to ensure high inter-coder reliability.
+> How much should the federal government spend on immigrants and minorities?
 
-## 
+> How many immigrants should the country admit?
+
+##  {background-image="img/cleaning_flow.png" background-size="cover" background-position="center"}
+
+## {background="none"}
 
 ![](img/presentation_prompting_diagram.svg)
 
-## Prompt {.smaller}
+## Prompt {.smaller background="none"}
 
 {{< include prompt.qmd >}}
 
-## Custom AI-Generated Prompt {.smaller}
+## Custom AI-Generated Prompt {.smaller background="none"}
 
-**Question:** The federal carbon tax should be maintained as an environmental measure
+**Question:** How much should the federal government spend on the environment?
 
 {{< include prompt_ai.qmd >}}
 
-##
+## LLM Characteristics {.smaller background="none"}
 
-![](img/fig_na_combined_pres.png)
+- Models:
+  - Custom AI prompts: **Gemini 2.5 Pro**
+    - Price : \$1.25 input, \$10.00 output per 1M tokens
+    - Rate limit: 150 RPM
+  - Main analysis: **Gemini 2.0 Flash Lite**
+    - Price : \$0.075 input, \$0.30 output per 1M tokens
+    - Rate limit: 4000 RPM
+- Parameters: **Default parameters** [@salimian_etal25]
 
-##
+- Total number of responses: **223,639**
 
-![](img/response_format_comparison_3x4_pres.png)
+- Cost: 
+  - Around $0.023 per 1,000 responses
+  - Total cost: Under **5 dollars**
 
-##
+- Time: About **55 minutes**
 
-![](img/fig_mean_med_sd_comparisons_pres.png)
+- Consensus: **92.7%**
 
-## 
+##  {background-image="img/fig_na_combined_pres.png" background-size="cover" background-position="center"}
 
-![](img/fig_factor_analysis_dumbell_pres.png)
+##  {background-image="img/response_format_comparison_3x4_pres.png" background-size="cover" background-position="center"}
 
-##
+##  {background-image="img/fig_mean_med_sd_comparisons_pres.png" background-size="cover" background-position="center"}
 
-![](img/fig_regression_compared_pres.png)
+##  {background-image="img/fig_factor_analysis_dumbell_pres.png" background-size="cover" background-position="center"}
 
-##
+##  {background-image="img/fig_regression_compared_pres.png" background-size="cover" background-position="center"}
 
-![](img/distribution_scales_boxplot_pres.png)
+##  {background-image="img/distribution_scales_boxplot_pres.png" background-size="cover" background-position="center"}
 
-##
+##  {background-image="img/treatment_regression_effects_pres.png" background-size="cover" background-position="center"}
 
-![](img/treatment_regression_effects_pres.png)
+##  {background-image="img/vote_strategic_by_party_pres.png" background-size="cover" background-position="center"}
 
-##
-![](img/vote_strategic_by_party_pres.png)
+##  {background-image="img/literacy_by_party_pres.png" background-size="cover" background-position="center"}
 
-##
+## Appreciation {background="none"}
 
-![](img/literacy_by_party_pres.png)
+**18% of respondents complained about the difficulty of answering numerical open-ended questions.**
 
-## Discussion & Implications
+![](img/sup_fig_appreciation_hist_pres.png)
 
-## Thank You!
+## Discussion & Implications {background="none"}
 
-Questions?
+- Open-ended questions can be effectively cleaned and analyzed using LLMs.
+- The results show that LLM-cleaned open-ended questions can measure the same latent constructs as traditional closed-ended questions.
+- Struggles with nuance
 
-# Suplementary Materials
+# Thank You! {background="none"}
 
 ##
 
 ![](img/factor_loadings_comparison.png)
-
 

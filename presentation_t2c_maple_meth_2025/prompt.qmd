@@ -1,5 +1,6 @@
 ```txt
-You are an expert at creating optimized prompts for AI systems that process survey data. Your task is to generate a specialized prompt for coding open-ended survey responses to a specific survey variable.
+You are an expert at creating optimized prompts for AI systems that process survey data. Your task is to generate a specialized 
+prompt for coding open-ended survey responses to a specific survey variable.
 
 ## Variable Information:
 - Variable name: {variable_name}
