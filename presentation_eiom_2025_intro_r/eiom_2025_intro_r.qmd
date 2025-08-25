@@ -87,21 +87,27 @@ format:
 ### Très utilisé en science sociale
 
 - Beaucoup de ressources
+  - Les LLM (comme ChatGPT) sont très performants pour R
+  - Google
+
 - Beaucoup de tutoriels orientés vers les sciences sociales
   - Datacamp
-  - Coursera
-  - Datanovia
+  - Swirl
+  - Codeacademy
 
 #### Bref... important d'utiliser les mêmes outils que les chercheurs dans votre domaine
 
 ## Installer R et RStudio{.smaller}
 
 - C'est quoi la différence entre R et RStudio?
+- R a été lancé en 1993 alors que RStudio a été lancé en 2011
 - R est le moteur, RStudio est l'interface
+- R est la calculatrice, RStudio est le bureau
+- R est le langage de programmation, RStudio est l'environnement de développement
 - RStudio facilite l'utilisation de R
 - RStudio est un IDE (Integrated Development Environment)
 
-<br><br>
+<br>
 
 ### À télécharger :
 
@@ -116,11 +122,20 @@ format:
 
 ## Concept important : Le chemin d'arborescence{.smaller}
 
-- À tout moment vous devez savoir où vous êtes dans votre ordinateur pour pouvoir importer des données, exporter des graphiques ou mettre des fichiers en relation
 - Votre R est toujours ouvert dans un dossier, et donc vous devez savoir où il est pour pouvoir importer des données
 - La fonction `getwd()` dans R permet de savoir où vous êtes
+- À tout moment vous devez savoir où vous êtes dans votre ordinateur pour pouvoir importer des données, exporter des graphiques ou mettre des fichiers en relation
 
 ![](img/chemin_arbo.png){.absolute top=400 left=75 width="80%"}
+
+<br>
+<br>
+<br>
+<br>
+<br>
+<br>
+
+#### ~/Dropbox/Conferences/FSS_2024/atelier_fss_2024_03_15/data/cleanCES2011_1.rds
 
 ## Concept important : Planifier avant de coder{.smaller} 
 
@@ -158,10 +173,10 @@ df <- read.csv("chemin/vers/data.csv")
 <br>
 
 - Dans cette ligne de code il y a plusieurs éléments importants:
-  - Le nom de l'objet : `df` dans ce cas-ci, c'est un dataframe
-  - L'opérateur d'assignation : `<-` 
-  - La fonction qui permet de lire le fichier : `read.csv()`
-  - Le chemin vers le fichier : `"chemin/vers/data.csv"`
+  1. Le nom de l'objet : `df` dans ce cas-ci, c'est un dataframe
+  2. L'opérateur d'assignation : `<-` 
+  3. La fonction qui permet de lire le fichier : `read.csv()`
+  4. Le chemin vers le fichier : `"chemin/vers/data.csv"`
 
 ## Chemins d'arborescence{.smaller}
 

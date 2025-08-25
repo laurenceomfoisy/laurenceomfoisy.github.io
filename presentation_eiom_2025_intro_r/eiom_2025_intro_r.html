@@ -6,11 +6,11 @@
 <script src="eiom_2025_intro_r_files/libs/quarto-html/tippy.umd.min.js"></script>
 <link href="eiom_2025_intro_r_files/libs/quarto-html/tippy.css" rel="stylesheet">
 <link href="eiom_2025_intro_r_files/libs/quarto-html/light-border.css" rel="stylesheet">
-<link href="eiom_2025_intro_r_files/libs/quarto-html/quarto-syntax-highlighting-234273d1456647dabc34a594ac50e507.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
+<link href="eiom_2025_intro_r_files/libs/quarto-html/quarto-syntax-highlighting-305284cd5cd0ab7753652d1bed4524c8.css" rel="stylesheet" id="quarto-text-highlighting-styles"><meta charset="utf-8">
   <meta name="generator" content="quarto-1.7.32">
 
   <meta name="author" content="Laurence-Olivier M. Foisy">
-  <meta name="dcterms.date" content="2025-08-22">
+  <meta name="dcterms.date" content="2025-08-24">
   <title>Introduction à R</title>
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -204,7 +204,7 @@ Laurence-Olivier M. Foisy
 </div>
 </div>
 
-  <p class="date">2025-08-22</p>
+  <p class="date">2025-08-24</p>
 </section>
 <section id="les-logiciels-danalyse-de-données" class="slide level2 smaller">
 <h2>Les logiciels d’analyse de données</h2>
@@ -272,12 +272,16 @@ Laurence-Olivier M. Foisy
 <p><br><br></p>
 <h3 id="très-utilisé-en-science-sociale">Très utilisé en science sociale</h3>
 <ul>
-<li>Beaucoup de ressources</li>
+<li>Beaucoup de ressources
+<ul>
+<li>Les LLM (comme ChatGPT) sont très performants pour R</li>
+<li>Google</li>
+</ul></li>
 <li>Beaucoup de tutoriels orientés vers les sciences sociales
 <ul>
 <li>Datacamp</li>
-<li>Coursera</li>
-<li>Datanovia</li>
+<li>Swirl</li>
+<li>Codeacademy</li>
 </ul></li>
 </ul>
 <h4 id="bref-important-dutiliser-les-mêmes-outils-que-les-chercheurs-dans-votre-domaine">Bref… important d’utiliser les mêmes outils que les chercheurs dans votre domaine</h4>
@@ -286,11 +290,14 @@ Laurence-Olivier M. Foisy
 <h2>Installer R et RStudio</h2>
 <ul>
 <li>C’est quoi la différence entre R et RStudio?</li>
+<li>R a été lancé en 1993 alors que RStudio a été lancé en 2011</li>
 <li>R est le moteur, RStudio est l’interface</li>
+<li>R est la calculatrice, RStudio est le bureau</li>
+<li>R est le langage de programmation, RStudio est l’environnement de développement</li>
 <li>RStudio facilite l’utilisation de R</li>
 <li>RStudio est un IDE (Integrated Development Environment)</li>
 </ul>
-<p><br><br></p>
+<p><br></p>
 <h3 id="à-télécharger">À télécharger :</h3>
 <ul>
 <li><a href="https://cran.r-project.org/">Installer R</a></li>
@@ -315,11 +322,13 @@ Laurence-Olivier M. Foisy
 <section id="concept-important-le-chemin-darborescence" class="slide level2 smaller">
 <h2>Concept important : Le chemin d’arborescence</h2>
 <ul>
-<li>À tout moment vous devez savoir où vous êtes dans votre ordinateur pour pouvoir importer des données, exporter des graphiques ou mettre des fichiers en relation</li>
 <li>Votre R est toujours ouvert dans un dossier, et donc vous devez savoir où il est pour pouvoir importer des données</li>
 <li>La fonction <code>getwd()</code> dans R permet de savoir où vous êtes</li>
+<li>À tout moment vous devez savoir où vous êtes dans votre ordinateur pour pouvoir importer des données, exporter des graphiques ou mettre des fichiers en relation</li>
 </ul>
 <p><img data-src="img/chemin_arbo.png" class="absolute" style="top: 400px; left: 75px; width: 80%; "></p>
+<p><br> <br> <br> <br> <br> <br></p>
+<h4 id="dropboxconferencesfss_2024atelier_fss_2024_03_15datacleances2011_1.rds">~/Dropbox/Conferences/FSS_2024/atelier_fss_2024_03_15/data/cleanCES2011_1.rds</h4>
 </section>
 <section id="concept-important-planifier-avant-de-coder" class="slide level2 smaller">
 <h2>Concept important : Planifier avant de coder</h2>
@@ -364,12 +373,12 @@ Laurence-Olivier M. Foisy
 <p><br></p>
 <ul>
 <li>Dans cette ligne de code il y a plusieurs éléments importants:
-<ul>
+<ol type="1">
 <li>Le nom de l’objet : <code>df</code> dans ce cas-ci, c’est un dataframe</li>
 <li>L’opérateur d’assignation : <code>&lt;-</code></li>
 <li>La fonction qui permet de lire le fichier : <code>read.csv()</code></li>
 <li>Le chemin vers le fichier : <code>"chemin/vers/data.csv"</code></li>
-</ul></li>
+</ol></li>
 </ul>
 </section>
 <section id="chemins-darborescence" class="slide level2 smaller">
