@@ -1,0 +1,296 @@
+---
+title: "Introduction à l'analyse de données avec R"
+author:
+  - name: Laurence-Olivier<br>M. Foisy
+    orcid: 0009-0004-7505-9477
+    email: mail@mfoisy.com
+    affiliations: Université Laval
+date: today
+lang: fr
+format:
+  revealjs:
+    theme: default
+    slide-number: true
+    logo: img/capp.jpg
+    footer: "Introduction à l'analyse de données avec R"
+    transition: slide
+    transition-speed: fast
+    code-fold: false
+    code-overflow: wrap
+    highlight-style: github
+    embed-resources: true
+    auto-stretch: true
+    include-after-body: footer_includes.html
+---
+
+## Importer des données{.smaller}
+
+- Les données sont souvent dans des fichiers Excel, CSV, ou autres
+  - On utilise des fonctions comme `read.csv()` pour lire les fichiers 
+
+<br>
+
+```r
+df <- read.csv("chemin/vers/data.csv")
+```
+<br>
+
+- Dans cette ligne de code il y a plusieurs éléments importants:
+  - Le nom de l'objet : `df` dans ce cas-ci, c'est un dataframe
+  - L'opérateur d'assignation : `<-` 
+  - La fonction qui permet de lire le fichier : `read.csv()`
+  - Le chemin vers le fichier : `"chemin/vers/data.csv"`
+
+## Chemins d'arborescence{.smaller}
+
+#### Important de comprendre comment spécifier le chemin vers un fichier
+
+Voici les deux façons de spécifier le chemin :
+
+- Absolu: `/Users/username/Documents/projet/data/data.csv`
+  - Utile seulement sur votre ordinateur, un autre utilisateur ne pourra pas utiliser le même chemin
+
+- Relatif: `data/data.csv`
+  - Utile pour partager le code avec d'autres utilisateurs
+  
+<br>
+
+#### Différence entre mac et windows
+
+- Mac: `/`
+- Windows: `\` (il faut s'assurer de changer les `\` pour des `/`)
+
+
+## Importer des données{.smaller}
+
+Autres fonctions pour importer des données dépendamment du format:
+
+- `df <- readxl::read_excel("chemin/vers/data.xlsx")`
+- `df <- readRDS("chemin/vers/data.rds")`
+
+![](img/df_in_env.png){.absolute top=300 left=150 width="70%"}
+
+# Codons!
+
+## Installons quelques packages utiles pour l'analyse de données
+
+```r
+# Installer les packages nécessaires
+install.packages("dplyr") # Manipulation de données
+install.packages("ggplot2") # Graphiques
+install.packages("ces") # Données de l'étude électorale canadienne
+```
+
+## Nous allons utiliser les données de l'étude électorale canadienne de 1965 {.smaller}
+
+```r
+# Charger les packages nécessaires
+library(dplyr) # Manipulation de données
+library(ggplot2) # Graphiques
+library(ces)
+
+# Importer les données swiss (jeu de données intégré)
+df <- get_ces("2021")
+
+# Explorer les données
+View(df)
+summary(df)
+names(df)
+head(df)
+ncol(df)
+nrow(df)
+
+```
+
+## Analyse rapide d'une variable
+
+```r
+# Voir les metadonnées de la variable 'cps21_votechoice'
+attributes(df$cps21_votechoice)
+
+# Voir le nombre de valeurs pour chaque élément d'une variable
+table(df$cps21_votechoice)
+
+# Histogramme de la variable 'cps21_votechoice'
+hist(df$cps21_votechoice)
+
+```
+
+- `$` permet d'accéder à une variable dans un dataframe.
+- On accède à la variable `cps21_votechoice` dans le dataframe `df` avec `df$cps21_votechoice`
+
+## Filter et sélectionner des variables
+
+```r
+# Sélectionner des colonnes 
+# (par exemple, cps21_votechoice, Education et Agriculture)
+
+df_selected <- df %>%
+  select(cps21_votechoice, cps21_education, cps21_yob)
+
+# Filtrer les lignes pour inclure uniquement les gens 
+# avec une année de naissance supérieure à la moyenne
+
+mean_yob <- mean(df_selected$cps21_yob, na.rm = TRUE)
+
+df_filtered <- df_selected %>%
+  filter(cps21_yob > mean_yob)
+```
+
+## Modifier des variables
+
+```r
+# Créer une nouvelle variable binaire "high_education" 
+attributes(df$cps21_education)
+
+df_mutated <- df_filtered %>%
+  mutate(high_education = ifelse(cps21_education >= 9, 1, 0))
+
+# Regrouper par "high_education" et calculer la moyenne de l'age
+
+df_summarized <- df_mutated %>%
+  group_by(high_education) %>%
+  summarize(moyenne_age = mean(cps21_yob, na.rm = TRUE))
+
+# Afficher le résultat final
+print(df_summarized)
+```
+
+## Préparation des données pour la visualisation{.smaller}
+
+```r
+# Nettoyage minimal pour le graphique
+df_graph <- df %>%
+  select(cps21_votechoice, cps21_education, cps21_yob) %>%
+  mutate(
+    age = 2021 - as.numeric(cps21_yob),
+    age_group = ifelse(is.na(age), NA_character_,
+                  ifelse(age < 30, "18–29",
+                    ifelse(age < 45, "30–44",
+                      ifelse(age < 65, "45–64", "65+")))),
+    educ_cat = case_when(
+      cps21_education %in% 1:6  ~ "Secondaire ou moins",
+      cps21_education %in% 7:8  ~ "Collège/CEGEP",
+      cps21_education %in% 9:11 ~ "Université+",
+      TRUE ~ NA_character_
+    ),
+    votechoice = case_when(
+      cps21_votechoice == 1 ~ "Libéral",
+      cps21_votechoice == 2 ~ "Conservateur",
+      cps21_votechoice == 3 ~ "NPD",
+      cps21_votechoice == 4 ~ "Bloc Québécois",
+      cps21_votechoice == 5 ~ "Vert",
+      cps21_votechoice == 6 ~ "Autre",
+      TRUE ~ "Indécis"
+    )
+  ) %>%
+  mutate(
+    age_group = factor(age_group, levels = c("18–29","30–44","45–64","65+")),
+    educ_cat  = factor(educ_cat,  levels = c("Secondaire ou moins","Collège/CEGEP","Université+")),
+    votechoice= factor(votechoice,levels = c("Libéral","Conservateur","NPD","Bloc Québécois","Vert","Autre","Indécis"))
+  )
+```
+
+## Visualisation avec ggplot2{auto-animate=true}
+
+### Initialiser un graphique
+
+```{.r code-line-numbers="1"}
+ggplot(df_graph, aes(x = votechoice, fill = age_group))
+```
+
+* `ggplot(df_graph, ...)` : on part du **dataframe nettoyé**.
+* `aes()` : on déclare les **mappages esthétiques**.
+
+  * `x = votechoice` → catégories sur l’axe des x.
+  * `fill = age_group` → couleurs par **groupe d’âge**.
+
+## Visualisation avec ggplot2{auto-animate=true}
+
+### Ajouter un geom\_() en barres
+
+```{.r code-line-numbers="2"}
+ggplot(df_graph, aes(x = votechoice, fill = age_group)) +
+  geom_bar(position = "dodge")
+```
+
+* `geom_bar()` crée des **barres** en comptant les cas par catégorie.
+* `position = "dodge"` place les barres **côte à côte** (comparaison directe des effectifs par âge).
+
+## Visualisation avec ggplot2{auto-animate=true}
+
+### Ajouter des facettes (troisième variable)
+
+```{.r code-line-numbers="3"}
+ggplot(df_graph, aes(x = votechoice, fill = age_group)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~ educ_cat)
+```
+
+* `facet_wrap(~ educ_cat)` crée un **panneau par niveau de scolarité**.
+
+## Visualisation avec ggplot2{auto-animate=true}
+
+### Ajouter des titres et des labels
+
+```{.r code-line-numbers="4,5,6,7,8,9"}
+ggplot(df_graph, aes(x = votechoice, fill = age_group)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~ educ_cat) +
+  labs(
+    title = "Âge et scolarité selon l'intention de vote",
+    x = "Intention de vote",
+    y = "Nombre de répondants",
+    fill = "Âge"
+  )
+```
+
+* `labs()` permet de **documenter** le graphique.
+
+  * `title` : message clair pour le public.
+  * `x`, `y` : axes explicites.
+  * `fill` : légende compréhensible (groupes d’âge).
+
+## Visualisation avec ggplot2{auto-animate=true}
+
+### Ajouter un thème
+
+```{.r code-line-numbers="10"}
+ggplot(df_graph, aes(x = votechoice, fill = age_group)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~ educ_cat) +
+  labs(
+    title = "Âge et scolarité selon l'intention de vote",
+    x = "Intention de vote",
+    y = "Nombre de répondants",
+    fill = "Âge"
+  ) +
+  theme_minimal()
+```
+
+* `theme_minimal()` : esthétique **sobre** et **légère**
+
+## Visualisation avec ggplot2{auto-animate=true}
+
+### Sauvegarder le graphique
+
+```{.r code-line-numbers="12"}
+ggplot(df_graph, aes(x = votechoice, fill = age_group)) +
+  geom_bar(position = "dodge") +
+  facet_wrap(~ educ_cat) +
+  labs(
+    title = "Âge et scolarité selon l'intention de vote",
+    x = "Intention de vote",
+    y = "Nombre de répondants",
+    fill = "Âge"
+  ) +
+  theme_minimal()
+
+ggsave("vote_age_education_dodge.png", width = 10, height = 6)
+```
+
+* `ggsave()` exporte en image (PNG par défaut).
+* Spécifier `width` et `height`
+
+
+# Bon codage!

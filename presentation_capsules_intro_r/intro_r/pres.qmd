@@ -1,0 +1,148 @@
+---
+title: "Introduction à R"
+subtitle: "Narration et présentation par :"
+author:
+  - name: Laurence-Olivier M. Foisy
+date: today
+lang: fr
+format:
+  revealjs:
+    theme: default
+    slide-number: true
+    logo: img/capp.jpg
+    footer: "Introduction à R"
+    transition: slide
+    transition-speed: fast
+    code-fold: false
+    code-overflow: wrap
+    highlight-style: github
+    embed-resources: true
+    auto-stretch: true
+    include-after-body: footer_includes.html
+---
+
+## Les logiciels d'analyse de données{.smaller}
+
+![](https://upload.wikimedia.org/wikipedia/commons/e/ea/SPSS_logo.svg){.absolute top=340 left=100 width="20%"}
+
+![](https://upload.wikimedia.org/wikipedia/commons/7/79/Stata_logo_med_blue.png){.absolute top=150 left=800 width="20%"}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Python-logo-notext.svg/800px-Python-logo-notext.svg.png){.absolute top=400 left=800 width="20%"}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1f/Julia_Programming_Language_Logo.svg/1024px-Julia_Programming_Language_Logo.svg.png){.absolute top=100 left=100 width="20%"}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/R_logo.svg/1024px-R_logo.svg.png){.absolute top=200 left=330 width="40%"}
+
+
+## Pourquoi R?{.smaller}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/R_logo.svg/1024px-R_logo.svg.png){.absolute top=0 left=800 width="20%"}
+
+<br><br>
+
+### Open source
+
+- Gratuit
+- Collaboratif
+- Communauté active
+  - Stackoverflow
+  - r-bloggers
+- Adapté aux besoins des utilisateurs
+
+## Pourquoi R?{.smaller}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/R_logo.svg/1024px-R_logo.svg.png){.absolute top=0 left=800 width="20%"}
+
+<br><br>
+
+### Packages
+
+- Offre une extension des fonctionnalités de base presque infinie
+- Peux répondre à des besoins très spécifiques
+- 21,744 packages sur CRAN (Comprehensive R Archive Network)
+  - Principal dépôt où sont hébergés les packages R
+- Beaucoup plus sur GitHub
+  - En plus de CRAN, de nombreux chercheurs publient leurs packages sur GitHub, une plateforme de partage de code
+
+## Pourquoi R?{.smaller}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/R_logo.svg/1024px-R_logo.svg.png){.absolute top=0 left=800 width="20%"}
+
+<br><br>
+
+### Reproductibilité
+
+- Rendre les analyses reproductibles
+- Permet de partager les analyses
+  - Les scripts R permettent de partager facilement le travail
+- Permet de retracer les erreurs
+- Partager le code
+  - Encourage la transparence et la collaboration dans la recherche
+
+## Pourquoi R?{.smaller}
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/R_logo.svg/1024px-R_logo.svg.png){.absolute top=0 left=800 width="20%"}
+
+<br><br>
+
+### Très utilisé en science sociale
+
+- Beaucoup de ressources
+- Beaucoup de tutoriels orientés vers les sciences sociales
+  - Datacamp
+  - Coursera
+  - Datanovia
+
+#### Bref... important d'utiliser les mêmes outils que les chercheurs dans votre domaine
+
+## Installer R et RStudio{.smaller}
+
+- C'est quoi la différence entre R et RStudio?
+- R est le moteur, RStudio est l'interface
+- RStudio facilite l'utilisation de R
+- RStudio est un IDE (Integrated Development Environment)
+
+<br><br>
+
+### À télécharger :
+
+- [Installer R](https://cran.r-project.org/)
+- [Installer RStudio](https://www.rstudio.com/products/rstudio/download/)
+
+## {background-image="img/rstudio.png"}
+## {background-image="img/rstudio_script.png"}
+## {background-image="img/rstudio_console.png"}
+## {background-image="img/rstudio_files.png"}
+## {background-image="img/rstudio_env.png"}
+
+## Concept important : Le chemin d'arborescence{.smaller}
+
+- À tout moment vous devez savoir où vous êtes dans votre ordinateur pour pouvoir importer des données, exporter des graphiques ou mettre des fichiers en relation
+- Votre R est toujours ouvert dans un dossier, et donc vous devez savoir où il est pour pouvoir importer des données
+- La fonction `getwd()` dans R permet de savoir où vous êtes
+
+![](img/chemin_arbo.png){.absolute top=400 left=75 width="80%"}
+
+## Concept important : Planifier avant de coder{.smaller} 
+
+#### La plus grosse erreur est de commencer à coder sans savoir ce que vous voulez faire
+
+<br>
+
+- Clarifer vos objectifs: Qu'est-ce que vous voulez faire?
+  - Nettoyer des données?
+  - Faire un graphique?
+
+Les possibilités sont infinies, donc il est important de savoir où vous voulez aller
+
+## Concept important : Décomposer le problème{.smaller}
+
+- Une fois que vous savez ce que vous voulez faire, il est important de décomposer le problème en petites étapes
+- Un script R pour une seule tâche
+  - Bien nommer vos scripts pour savoir ce qu'ils font
+  - Exemples: 
+    - `nettoyage_donnees.R`
+    - `graphique.R`
+- Chaque script doit être clair et facile à comprendre
+- Commenter votre code avec des `#`
+
