@@ -290,6 +290,8 @@ Chaire de leadership en enseignement des sciences sociales numériques (CLESSN)
 
 ![](img/chemin_arbo.png){.absolute top=400 left=75 width="80%"}
 
+*~/Dropbox/Conferences/FSS_2024/atelier_fss_2023_03_15/data/cleanCES2011_1.rds*
+
 
 ## Concept important : Planifier avant de coder{.smaller} 
 
