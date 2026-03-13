@@ -295,21 +295,22 @@ em,
 
 .reveal .title-slide .author,
 .reveal .slides .author {
-  font-size: 0.6em;
+  font-size: 0.5em;
   font-weight: 400;
   color: #9a9690;
   letter-spacing: 0.06em;
-  line-height: 1.8;
+  line-height: 1.4;
 }
 
 .reveal .title-slide .institute,
 .reveal .slides .institute {
-  font-size: 0.55em;
+  font-size: 0.45em;
   font-weight: 300;
   color: #b8b4ae;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  margin-top: 0.4em;
+  margin-top: 0.2em;
+  white-space: nowrap;
 }
 
 // ─── Footer ───────────────────────────────────────────────────────────────────
