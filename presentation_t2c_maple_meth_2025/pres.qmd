@@ -2,12 +2,12 @@
 title: "From Checkbox to Textbox"
 subtitle: "Capturing Nuanced Public Opinion with Large Language Models"
 author:
-  - name: Laurence-Olivier<br>M. Foisy
+  - name: Laurence-Olivier M. Foisy
     orcid: 0009-0004-7505-9477
     email: mail@mfoisy.com
     affiliations: Université Laval
   - name: Hubert Cadieux
-  - name: Étienne<br>Proulx
+  - name: Étienne Proulx
   - name: Camille Pelletier
   - name: Yannick Dufresne
 date: today

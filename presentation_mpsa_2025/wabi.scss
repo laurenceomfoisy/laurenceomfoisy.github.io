@@ -266,33 +266,78 @@ em,
 }
 
 // ─── Title slide ──────────────────────────────────────────────────────────────
-// Left-aligned; title thin and large; subtitle muted; author very small
+// Left-aligned; title thin; subtitle muted; authors compact
 .reveal .title-slide,
 .reveal .quarto-title-block {
   text-align: left;
-  padding: 2.2em 2.8em;
+  padding: 1.6em 2.6em;
 }
 
-.reveal .title-slide .title,
-.reveal .slides .title {
+.reveal .title-slide h1.title,
+.reveal .slides h1.title {
   font-weight: 200;
-  font-size: 1.8em;
-  letter-spacing: 0.05em;
-  line-height: 1.15;
+  font-size: 1.4em !important;
+  letter-spacing: 0.03em;
+  line-height: 1.1;
   color: #2e2e2e;
-  margin-bottom: 0.3em;
+  margin-bottom: 0.2em;
 }
 
-.reveal .title-slide .subtitle,
-.reveal .slides .subtitle {
+.reveal .title-slide p.subtitle,
+.reveal .slides p.subtitle {
   font-weight: 300;
-  font-size: 0.9em;
+  font-size: 0.7em !important;
   color: #9a9690;
-  letter-spacing: 0.04em;
-  margin-bottom: 1.4em;
+  letter-spacing: 0.03em;
+  margin-bottom: 0.6em;
   border: none;
 }
 
+// Quarto multi-author block: uniform single row, names only
+.reveal .quarto-title-authors {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 0.1em 1.4em !important;
+  font-size: 0.46em !important;
+  line-height: 1.3 !important;
+  color: #9a9690;
+  margin-top: 0.5em;
+  align-items: baseline !important;
+}
+
+.reveal .quarto-title-author {
+  display: inline !important;
+  min-width: 0 !important;
+  width: auto !important;
+}
+
+.reveal .quarto-title-author-name {
+  font-weight: 400;
+  color: #9a9690;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+// Hide email and affiliation on title slide — names only
+.reveal .quarto-title-author-email,
+.reveal .quarto-title-author-email a,
+.reveal .quarto-title-affiliation,
+.reveal .quarto-title-author-orcid {
+  display: none !important;
+}
+
+// Date on title slide — small, muted, whisper-weight
+.reveal .title-slide p.date,
+.reveal .slides p.date {
+  font-size: 0.42em !important;
+  font-weight: 300;
+  color: #b8b4ae;
+  letter-spacing: 0.06em;
+  margin-top: 0.5em;
+  margin-bottom: 0;
+}
+
+// Fallback for simple author/institute metadata
 .reveal .title-slide .author,
 .reveal .slides .author {
   font-size: 0.5em;
