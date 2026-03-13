@@ -5,18 +5,19 @@ author: CLESSN
 date: today
 lang: fr
 format:
-  clean-revealjs:
+  revealjs:
+    theme: [default, wabi.scss]
     slide-number: true
     logo: img/ul_logo.png
     footer: "clessnize"
-    transition: slide
-    transition-speed: fast
+    transition: fade
+    transition-speed: slow
+    progress: true
     code-fold: false
     code-overflow: wrap
     highlight-style: github
     embed-resources: true
     auto-stretch: true
-    include-after-body: footer_includes.html
 ---
 
 ## Installation {.smaller}

@@ -9,18 +9,18 @@ date: today
 lang: fr
 format:
   revealjs:
-    theme: default
+    theme: [default, wabi.scss]
     slide-number: true
     logo: img/capp.jpg
     footer: "Introduction à l'analyse de données avec R"
-    transition: slide
-    transition-speed: fast
+    transition: fade
+    transition-speed: slow
+    progress: true
     code-fold: false
     code-overflow: wrap
     highlight-style: github
     embed-resources: true
     auto-stretch: true
-    include-after-body: footer_includes.html
 ---
 
 ## Importer des données{.smaller}

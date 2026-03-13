@@ -4,10 +4,15 @@ subtitle: "Assessing GPT-4 Political Alignment Classification Capabilities"
 author: "<table style='margin-top: -290px; width: 100%; text-align: center;'><tr><td style='vertical-align: top; padding-right: 5px;'>Laurence-Olivier M. Foisy<br>Camille Pelletier<br>Hubert Cadieux</td><td style='vertical-align: top;'>Jérémie Drouin<br>Jozef Rivest<br>Yannick Dufresne</td></tr></table>"
 institute: "Université Laval"
 format:
-  revealjs: 
-    theme: night
+  revealjs:
+    theme: [default, wabi.scss]
     logo: images/ul_logo.png
     footer: "Ain't No Party Like a GPT Party"
+    slide-number: true
+    progress: true
+    transition: fade
+    transition-speed: slow
+    embed-resources: true
 ---
 
 ## Can we rely on GPT-4 to correctly classify political parties' ideologies? {.center}

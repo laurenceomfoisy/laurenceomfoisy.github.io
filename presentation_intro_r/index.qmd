@@ -4,13 +4,16 @@ author: Camille Pelletier<br>Laurence-Olivier M. Foisy
 institute: Université Laval
 format:
   revealjs:
-    mermaid: 
+    mermaid:
       theme: dark
-    theme: simple
+    theme: [default, wabi.scss]
     logo: img/logo_CLESSN.png
     footer: "Analyse de données avec R"
-    transition: slide
-    transition-speed: fast
+    slide-number: true
+    progress: true
+    transition: fade
+    transition-speed: slow
+    embed-resources: true
 ---
 
 ## Plan de l'atelier{.smaller}

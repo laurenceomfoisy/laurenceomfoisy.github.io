@@ -5,14 +5,16 @@ author: Laurence-Olivier M. Foisy<br>Hubert Cadieux<br>Étienne Proulx<br>Yannic
 institute: Université Laval
 format:
   revealjs:
-    mermaid: 
+    mermaid:
       theme: dark
-    theme: night
+    theme: [default, wabi.scss]
     logo: images/ul_logo.png
     footer: "Beyond Multiple Choices"
-    transition: slide
-    transition-speed: fast
-    
+    slide-number: true
+    progress: true
+    transition: fade
+    transition-speed: slow
+    embed-resources: true
 ---
 
 ## Can open-source language models be trusted to reliably clean and analyze open-ended survey questions?{.center}
