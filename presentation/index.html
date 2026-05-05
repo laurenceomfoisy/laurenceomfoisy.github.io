@@ -784,53 +784,24 @@
         color: var(--ink2);
         transform-origin: center;
       }
-      #s4.active .predictor-chip {
-        animation: predictor-pulse 18s ease-in-out infinite;
+      /* Group flash animations — 2 groups cycle every 6s: 0s lifestyle, 3s SES */
+      @keyframes chip-flash-lifestyle {
+        0%, 100%  { background:#fff; border-color:var(--rule); color:var(--ink2); transform:scale(1); }
+        4%        { background:#fef3c7; border-color:#b45309; color:#b45309; transform:scale(1.07); }
+        18%       { background:#fff; border-color:var(--rule); color:var(--ink2); transform:scale(1); }
       }
-      #s4.active .predictor-chip:nth-child(1) { animation-delay: 0s; }
-      #s4.active .predictor-chip:nth-child(2) { animation-delay: 0.75s; }
-      #s4.active .predictor-chip:nth-child(3) { animation-delay: 1.5s; }
-      #s4.active .predictor-chip:nth-child(4) { animation-delay: 2.25s; }
-      #s4.active .predictor-chip:nth-child(5) { animation-delay: 3s; }
-      #s4.active .predictor-chip:nth-child(6) { animation-delay: 3.75s; }
-      #s4.active .predictor-chip:nth-child(7) { animation-delay: 4.5s; }
-      #s4.active .predictor-chip:nth-child(8) { animation-delay: 5.25s; }
-      #s4.active .predictor-chip:nth-child(9) { animation-delay: 6s; }
-      #s4.active .predictor-chip:nth-child(10) { animation-delay: 6.75s; }
-      #s4.active .predictor-chip:nth-child(11) { animation-delay: 7.5s; }
-      #s4.active .predictor-chip:nth-child(12) { animation-delay: 8.25s; }
-      #s4.active .predictor-chip:nth-child(13) { animation-delay: 9s; }
-      #s4.active .predictor-chip:nth-child(14) { animation-delay: 9.75s; }
-      #s4.active .predictor-chip:nth-child(15) { animation-delay: 10.5s; }
-      #s4.active .predictor-chip:nth-child(16) { animation-delay: 11.25s; }
-      #s4.active .predictor-chip:nth-child(17) { animation-delay: 12s; }
-      #s4.active .predictor-chip:nth-child(18) { animation-delay: 12.75s; }
-      #s4.active .predictor-chip:nth-child(19) { animation-delay: 13.5s; }
-      #s4.active .predictor-chip:nth-child(20) { animation-delay: 14.25s; }
-      #s4.active .predictor-chip:nth-child(21) { animation-delay: 15s; }
-      #s4.active .predictor-chip:nth-child(22) { animation-delay: 15.75s; }
-      #s4.active .predictor-chip:nth-child(23) { animation-delay: 16.5s; }
-      #s4.active .predictor-chip:nth-child(24) { animation-delay: 17.25s; }
-      @keyframes predictor-pulse {
-        0%,
-        100% {
-          transform: scale(1);
-          background: #fff;
-          border-color: var(--rule);
-          color: var(--ink2);
-        }
-        2% {
-          transform: scale(1.12);
-          background: var(--violet-light);
-          border-color: rgba(91, 33, 182, 0.34);
-          color: var(--violet);
-        }
-        5% {
-          transform: scale(1);
-          background: #fff;
-          border-color: var(--rule);
-          color: var(--ink2);
-        }
+      @keyframes chip-flash-ses {
+        0%, 100%  { background:#fff; border-color:var(--rule); color:var(--ink2); transform:scale(1); }
+        4%        { background:#dcfce7; border-color:#166534; color:#166534; transform:scale(1.07); }
+        18%       { background:#fff; border-color:var(--rule); color:var(--ink2); transform:scale(1); }
+      }
+      #s4.active .chip-lifestyle {
+        animation: chip-flash-lifestyle 6s ease-in-out infinite;
+        animation-delay: 0s;
+      }
+      #s4.active .chip-ses {
+        animation: chip-flash-ses 6s ease-in-out infinite;
+        animation-delay: 3s;
       }
     </style>
   </head>
@@ -840,7 +811,7 @@
       <button class="arr-btn" id="btn-prev">&#8592;</button>
       <button class="arr-btn" id="btn-next">&#8594;</button>
     </div>
-    <div id="slidenum">1 / 20</div>
+    <div id="slidenum">1 / 21</div>
     <div id="nav"></div>
     <div id="deck">
 
@@ -982,10 +953,76 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 4 — SILICON SAMPLING (LITERATURE)
+       SLIDE 4 — SO WHAT?
+       ══════════════════════════════════════════════════════════════ -->
+      <div class="slide" id="s2b">
+        <div class="slide-number-bg">04</div>
+        <div class="slide-content w100">
+          <div class="slide-inner flex-col gap">
+            <div
+              class="e"
+              style="display: flex; align-items: center; gap: 10px"
+            >
+              <span class="act-label">The respondent</span
+              ><span class="tag tag-amber">So what?</span>
+            </div>
+            <div class="e">
+              <h2>Why would you want LLMs to predict vote intentions?</h2>
+              <div class="rule-short" style="background: var(--amber)"></div>
+            </div>
+            <div class="cols2 e" style="align-items: stretch">
+              <div
+                class="card-violet pad flex-col gap-sm"
+                style="border-top: 3px solid var(--violet)"
+              >
+                <h3>General-purpose inference</h3>
+                <p>
+                  If LLMs can predict vote, it could mean they can infer other
+                  hard-to-measure variables from the same respondent profile.
+                </p>
+              </div>
+              <div
+                class="card-amber pad flex-col gap-sm"
+                style="border-top: 3px solid var(--amber)"
+              >
+                <h3>Data imputation</h3>
+                <p>
+                  Missing values, skipped questions, and incomplete batteries
+                  become candidates for model-assisted imputation.
+                </p>
+              </div>
+            </div>
+            <div class="cols2 e" style="align-items: stretch">
+              <div
+                class="card-sky pad flex-col gap-sm"
+                style="border-top: 3px solid var(--sky)"
+              >
+                <h3>Survey repair</h3>
+                <p>
+                  Forgot to include a variable in your survey? A valid predictor
+                  could let you create an approximate version after the fact.
+                </p>
+              </div>
+              <div
+                class="card-green pad flex-col gap-sm"
+                style="border-top: 3px solid var(--green)"
+              >
+                <h3>Unstructured text</h3>
+                <p>
+                  Social media posts and other open-ended traces could become
+                  inputs for predicting vote intentions at scale.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       SLIDE 5 — SILICON SAMPLING (LITERATURE)
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide" id="s3">
-        <div class="slide-number-bg">04</div>
+        <div class="slide-number-bg">05</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap">
             <div
@@ -1006,24 +1043,24 @@
               >
                 <h3>Distributional success</h3>
                 <p>
-                  LLMs can reproduce population-level distributions of
-                  attitudes and vote shares with reasonable fidelity.
+                  LLMs can sometimes reproduce subgroup-level public-opinion
+                  distributions under demographic conditioning.
                 </p>
                 <p class="small" style="margin-top: 6px">
-                  Argyle et al. 2023
+                  Argyle et al. 2023 · Bisbee et al. 2024
                 </p>
               </div>
               <div
                 class="card-sky pad flex-col gap-sm"
                 style="border-top: 3px solid var(--sky)"
               >
-                <h3>Individual-level, multiparty, lifestyle features</h3>
+                <h3>Individual-level, multiparty, lifestyle gap</h3>
                 <p>
-                  Where the literature thins out — and where most real
-                  democracies actually live.
+                  Evidence thins for individual prediction in non-US multiparty
+                  settings; lifestyle features remain largely untested.
                 </p>
                 <p class="small" style="margin-top: 6px">
-                  Bisbee et al. 2024 · von der Heyde et al. 2024 · Ma et al. 2025
+                  von der Heyde et al. 2025 · Ma et al. 2025
                 </p>
               </div>
             </div>
@@ -1041,10 +1078,10 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 5 — SETUP
+       SLIDE 6 — SETUP
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide" id="s4">
-        <div class="slide-number-bg">05</div>
+        <div class="slide-number-bg">06</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap">
             <div
@@ -1071,32 +1108,32 @@
                   Evaluation subsample — <strong>n = 1,000</strong> held-out respondents.
                 </p>
                 <h3 style="margin-top: 10px">Predictors</h3>
-                <p><strong>24 SES + lifestyle features</strong> per respondent:</p>
+                <p><strong>24 <span style="color:#166534">SES</span> + <span style="color:#b45309">lifestyle</span> features</strong> per respondent:</p>
                 <div class="predictor-cloud" aria-label="24 profile predictors">
-                  <span class="predictor-chip">Immigrant status</span>
-                  <span class="predictor-chip">Transport mode</span>
-                  <span class="predictor-chip">Clothing shopping</span>
-                  <span class="predictor-chip">Exercise style</span>
-                  <span class="predictor-chip">Meat frequency</span>
-                  <span class="predictor-chip">Preferred alcohol</span>
-                  <span class="predictor-chip">Coffee source</span>
-                  <span class="predictor-chip">Language</span>
-                  <span class="predictor-chip">Smoking frequency</span>
-                  <span class="predictor-chip">Age</span>
-                  <span class="predictor-chip">Dwelling type</span>
-                  <span class="predictor-chip">White identity</span>
-                  <span class="predictor-chip">Heterosexual identity</span>
-                  <span class="predictor-chip">Gender</span>
-                  <span class="predictor-chip">Clothing style group</span>
-                  <span class="predictor-chip">Hunting frequency</span>
-                  <span class="predictor-chip">Fishing</span>
-                  <span class="predictor-chip">Museums or galleries</span>
-                  <span class="predictor-chip">Volunteering frequency</span>
-                  <span class="predictor-chip">Motorized outdoor activity</span>
-                  <span class="predictor-chip">Tattoos</span>
-                  <span class="predictor-chip">Education</span>
-                  <span class="predictor-chip">Income group</span>
-                  <span class="predictor-chip">Pet ownership</span>
+                  <span class="predictor-chip chip-lifestyle">Immigrant status</span>
+                  <span class="predictor-chip chip-lifestyle">Transport mode</span>
+                  <span class="predictor-chip chip-lifestyle">Clothing shopping</span>
+                  <span class="predictor-chip chip-lifestyle">Exercise style</span>
+                  <span class="predictor-chip chip-lifestyle">Meat frequency</span>
+                  <span class="predictor-chip chip-lifestyle">Preferred alcohol</span>
+                  <span class="predictor-chip chip-lifestyle">Coffee source</span>
+                  <span class="predictor-chip chip-lifestyle">Language</span>
+                  <span class="predictor-chip chip-lifestyle">Smoking frequency</span>
+                  <span class="predictor-chip chip-ses">Age</span>
+                  <span class="predictor-chip chip-ses">Dwelling type</span>
+                  <span class="predictor-chip chip-ses">White identity</span>
+                  <span class="predictor-chip chip-ses">Heterosexual identity</span>
+                  <span class="predictor-chip chip-ses">Gender</span>
+                  <span class="predictor-chip chip-lifestyle">Clothing style group</span>
+                  <span class="predictor-chip chip-lifestyle">Hunting frequency</span>
+                  <span class="predictor-chip chip-lifestyle">Fishing</span>
+                  <span class="predictor-chip chip-lifestyle">Museums or galleries</span>
+                  <span class="predictor-chip chip-lifestyle">Volunteering frequency</span>
+                  <span class="predictor-chip chip-lifestyle">Motorized outdoor activity</span>
+                  <span class="predictor-chip chip-lifestyle">Tattoos</span>
+                  <span class="predictor-chip chip-ses">Education</span>
+                  <span class="predictor-chip chip-ses">Income group</span>
+                  <span class="predictor-chip chip-lifestyle">Pet ownership</span>
                 </div>
               </div>
               <div
@@ -1113,6 +1150,63 @@
                 </div>
                 <h3 style="margin-top: 10px">Metric</h3>
                 <p>Accuracy with bootstrap 95% CI.</p>
+                <h3 style="margin-top: 10px">Sample distribution</h3>
+                <div style="font-size: 0.72rem; color: var(--ink2); margin-bottom: 3px">Full sample (n = 104,564)</div>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--lpc)">LPC</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:33.1%;background:var(--lpc)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">33.1%</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--cpc)">CPC</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:22.6%;background:var(--cpc)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">22.6%</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--bq)">BQ</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:19.7%;background:var(--bq)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">19.7%</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--ndp)">NDP</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:15.6%;background:var(--ndp)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">15.6%</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--gpc)">GPC</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:2.0%;background:var(--gpc)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">2.0%</span>
+                  </div>
+                </div>
+                <div style="font-size: 0.72rem; color: var(--ink2); margin-top:8px; margin-bottom: 3px">Held-out sample (n = 1,000)</div>
+                <div style="display:flex;flex-direction:column;gap:3px">
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--lpc)">LPC</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:38.3%;background:var(--lpc)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">38.3%</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--cpc)">CPC</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:22.7%;background:var(--cpc)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">22.7%</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--bq)">BQ</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:20.7%;background:var(--bq)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">20.7%</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--ndp)">NDP</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:16.4%;background:var(--ndp)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">16.4%</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px">
+                    <span style="width:26px;font-size:0.68rem;font-weight:700;color:var(--gpc)">GPC</span>
+                    <div class="pbar-wrap" style="flex:1"><div class="pbar" style="--w:1.9%;background:var(--gpc)"></div></div>
+                    <span style="width:30px;font-size:0.68rem;text-align:right;color:var(--ink2)">1.9%</span>
+                  </div>
+                </div>
               </div>
             </div>
             <div
@@ -1129,10 +1223,10 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 6 — BLOCK 1: FRONTIER LLM COMPARISON
+       SLIDE 7 — BLOCK 1: FRONTIER LLM COMPARISON
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s5">
-        <div class="slide-number-bg">06</div>
+        <div class="slide-number-bg">07</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div
@@ -1167,7 +1261,7 @@
        SLIDE 8 — BLOCK 2: MULTINOMIAL 55.9%
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s7">
-        <div class="slide-number-bg">07</div>
+        <div class="slide-number-bg">08</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div
@@ -1201,7 +1295,7 @@
        SLIDE 9 — BLOCK 4: PROMPT VARIANTS OVERVIEW
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide" id="s8b">
-        <div class="slide-number-bg">08</div>
+        <div class="slide-number-bg">09</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap">
             <div class="e" style="display: flex; align-items: center; gap: 10px">
@@ -1384,7 +1478,7 @@
        SLIDE 10 — BLOCK 4: BETTER PROMPTS?
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s8">
-        <div class="slide-number-bg">09</div>
+        <div class="slide-number-bg">10</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div
@@ -1415,10 +1509,10 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 10 — BLOCK 5: PERSONA PROMPTS?
+       SLIDE 11 — BLOCK 5: PERSONA PROMPTS?
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s9">
-        <div class="slide-number-bg">10</div>
+        <div class="slide-number-bg">11</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div
@@ -1448,10 +1542,10 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 11 — BLOCK 7: OPEN-ENDED SELF-DESCRIPTION?
+       SLIDE 12 — BLOCK 7: OPEN-ENDED SELF-DESCRIPTION?
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s10">
-        <div class="slide-number-bg">11</div>
+        <div class="slide-number-bg">12</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div
@@ -1482,10 +1576,10 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 12 — BLOCK 6: FINE-TUNING & HYBRID
+       SLIDE 13 — BLOCK 6: FINE-TUNING & HYBRID
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s11">
-        <div class="slide-number-bg">12</div>
+        <div class="slide-number-bg">13</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div
@@ -1523,7 +1617,7 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 13 — PIVOT: CEILING BELOW FLOOR
+       SLIDE 14 — PIVOT: CEILING BELOW FLOOR
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide" id="s12">
         <div class="slide-content w100">
@@ -1547,10 +1641,10 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 14 — BLOCK 8: WHAT IS THE MODEL ACTUALLY PREDICTING?
+       SLIDE 15 — BLOCK 8: WHAT IS THE MODEL ACTUALLY PREDICTING?
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s13">
-        <div class="slide-number-bg">14</div>
+        <div class="slide-number-bg">15</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div class="e" style="display: flex; align-items: center; gap: 10px">
@@ -2069,10 +2163,10 @@
       </script>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 15 — BLOCK 8: RELATED-CUE EXCLUSION
+       SLIDE 16 — BLOCK 8: RELATED-CUE EXCLUSION
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s13rce">
-        <div class="slide-number-bg">15</div>
+        <div class="slide-number-bg">16</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div class="e" style="display: flex; align-items: center; gap: 10px">
@@ -2395,10 +2489,10 @@
       </script>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 16 — BLOCK 10: WRONG BY ONE NEIGHBOR
+       SLIDE 17 — BLOCK 10: WRONG BY ONE NEIGHBOR
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s14">
-        <div class="slide-number-bg">16</div>
+        <div class="slide-number-bg">17</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div
@@ -2432,10 +2526,10 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 17 — BLOCK 9: SAME ERRORS?
+       SLIDE 18 — BLOCK 9: SAME ERRORS?
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s15">
-        <div class="slide-number-bg">17</div>
+        <div class="slide-number-bg">18</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div
@@ -2466,10 +2560,10 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 18 — BLOCK 11: US DATA
+       SLIDE 19 — BLOCK 11: US DATA
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide fig-slide" id="s16">
-        <div class="slide-number-bg">18</div>
+        <div class="slide-number-bg">19</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap" style="align-items: center">
             <div
@@ -2502,7 +2596,7 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 19 — THREE-LINE CONCLUSION
+       SLIDE 20 — THREE-LINE CONCLUSION
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide" id="s17">
         <div class="slide-content w100">
@@ -2529,7 +2623,7 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 20 — THANK YOU
+       SLIDE 21 — THANK YOU
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide" id="s18">
         <div
@@ -2636,8 +2730,7 @@
             class="e mono"
             style="font-size: 0.68rem; color: var(--ink3)"
           >
-            Datagotchi Canada · n=1,000 · GPT-4o zero-shot · paper draft &amp;
-            replication code: URL placeholder
+            Datagotchi Canada · n=1,000 · GPT-4o zero-shot
           </div>
         </div>
       </div>
