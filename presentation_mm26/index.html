@@ -743,6 +743,47 @@
       #s1.active .respondent-profile .respondent-bullet:nth-child(7) {
         animation-delay: 10.2s;
       }
+      /* ── Baseline prompt karaoke scale animation ── */
+      @keyframes karaoke-scale {
+        0%   { transform: scale(1); }
+        25%  { transform: scale(1.22); }
+        100% { transform: scale(1); }
+      }
+      .prompt-word {
+        display: inline-block;
+      }
+      .prompt-word.kara {
+        animation: karaoke-scale 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      }
+      .prompt-block {
+        font-family: "SFMono-Regular", "Consolas", "Liberation Mono", monospace;
+        font-size: clamp(0.72rem, 1.35vw, 1.05rem);
+        line-height: 1.75;
+        color: #1a1a1a;
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+      .prompt-label {
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 3px 10px;
+        border-radius: 4px;
+        display: inline-block;
+        margin-bottom: 6px;
+      }
+      .prompt-label.system { background: #fde8ee; color: #9f1239; }
+      .prompt-label.user   { background: #e0f2fe; color: #0c4a6e; }
+      #s-baseline-prompt .prompt-panel {
+        background: #f8f8f8;
+        border: 1px solid #e5e5e5;
+        border-radius: 10px;
+        padding: 18px 22px;
+        flex: 1;
+      }
+      /* ─────────────────────────────────────────────────────────────── */
+
       @keyframes respondent-pop {
         0%,
         100% {
@@ -833,7 +874,7 @@
       <button class="arr-btn" id="btn-prev">&#8592;</button>
       <button class="arr-btn" id="btn-next">&#8594;</button>
     </div>
-    <div id="slidenum">1 / 21</div>
+    <div id="slidenum">1 / 26</div>
     <div id="nav"></div>
     <div id="deck">
       <!-- ═══════════════════════════════════════════════════════════════
@@ -996,75 +1037,10 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 4 - SO WHAT?
+       SLIDE 4 - SILICON SAMPLING (LITERATURE)
        ══════════════════════════════════════════════════════════════ -->
       <div class="slide" id="s2b">
         <div class="slide-number-bg">04</div>
-        <div class="slide-content w100">
-          <div class="slide-inner flex-col gap">
-            <div
-              class="e"
-              style="display: flex; align-items: center; gap: 10px"
-            >
-              <span class="tag tag-amber">So what?</span>
-            </div>
-            <div class="e">
-              <h2>Why would you want LLMs to predict vote intentions?</h2>
-              <div class="rule-short" style="background: var(--amber)"></div>
-            </div>
-            <div class="cols2 e" style="align-items: stretch">
-              <div
-                class="card-violet pad flex-col gap-sm"
-                style="border-top: 3px solid var(--violet)"
-              >
-                <h3>General-purpose inference</h3>
-                <p>
-                  If LLMs can predict vote, it could mean they can infer other
-                  hard-to-measure variables from the same respondent profile.
-                </p>
-              </div>
-              <div
-                class="card-amber pad flex-col gap-sm"
-                style="border-top: 3px solid var(--amber)"
-              >
-                <h3>Data imputation</h3>
-                <p>
-                  Missing values, skipped questions, and incomplete batteries
-                  become candidates for model-assisted imputation.
-                </p>
-              </div>
-            </div>
-            <div class="cols2 e" style="align-items: stretch">
-              <div
-                class="card-sky pad flex-col gap-sm"
-                style="border-top: 3px solid var(--sky)"
-              >
-                <h3>Survey repair</h3>
-                <p>
-                  Forgot to include a variable in your survey? A valid predictor
-                  could let you create an approximate version after the fact.
-                </p>
-              </div>
-              <div
-                class="card-green pad flex-col gap-sm"
-                style="border-top: 3px solid var(--green)"
-              >
-                <h3>Unstructured text</h3>
-                <p>
-                  Social media posts and other open-ended traces could become
-                  inputs for predicting vote intentions at scale.
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 5 - SILICON SAMPLING (LITERATURE)
-       ══════════════════════════════════════════════════════════════ -->
-      <div class="slide" id="s3">
-        <div class="slide-number-bg">05</div>
         <div class="slide-content w100">
           <div class="slide-inner flex-col gap">
             <div
@@ -1134,6 +1110,71 @@
                   </tr>
                 </tbody>
               </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       SLIDE 5 - SO WHAT?
+       ══════════════════════════════════════════════════════════════ -->
+      <div class="slide" id="s3">
+        <div class="slide-number-bg">05</div>
+        <div class="slide-content w100">
+          <div class="slide-inner flex-col gap">
+            <div
+              class="e"
+              style="display: flex; align-items: center; gap: 10px"
+            >
+              <span class="tag tag-amber">So what?</span>
+            </div>
+            <div class="e">
+              <h2>Why would you want LLMs to predict vote intentions?</h2>
+              <div class="rule-short" style="background: var(--amber)"></div>
+            </div>
+            <div class="cols2 e" style="align-items: stretch">
+              <div
+                class="card-violet pad flex-col gap-sm"
+                style="border-top: 3px solid var(--violet)"
+              >
+                <h3>General-purpose inference</h3>
+                <p>
+                  If LLMs can predict vote, it could mean they can infer other
+                  hard-to-measure variables from the same respondent profile.
+                </p>
+              </div>
+              <div
+                class="card-amber pad flex-col gap-sm"
+                style="border-top: 3px solid var(--amber)"
+              >
+                <h3>Data imputation</h3>
+                <p>
+                  Missing values, skipped questions, and incomplete batteries
+                  become candidates for model-assisted imputation.
+                </p>
+              </div>
+            </div>
+            <div class="cols2 e" style="align-items: stretch">
+              <div
+                class="card-sky pad flex-col gap-sm"
+                style="border-top: 3px solid var(--sky)"
+              >
+                <h3>Survey repair</h3>
+                <p>
+                  Forgot to include a variable in your survey? A valid predictor
+                  could let you create an approximate version after the fact.
+                </p>
+              </div>
+              <div
+                class="card-green pad flex-col gap-sm"
+                style="border-top: 3px solid var(--green)"
+              >
+                <h3>Unstructured text</h3>
+                <p>
+                  Social media posts and other open-ended traces could become
+                  inputs for predicting vote intentions at scale.
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -1642,6 +1683,46 @@
             <h1 style="font-size: clamp(2rem, 5vw, 3.8rem); font-weight: 800; line-height: 1.15">
               What if we tweak the prompts?
             </h1>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       SLIDE — BASELINE PROMPT (word-reveal animation)
+       ══════════════════════════════════════════════════════════════ -->
+      <div class="slide" id="s-baseline-prompt">
+        <div class="slide-inner flex-col gap" style="max-width: 980px; width: 100%">
+          <div class="e" style="display:flex; align-items:center; gap:10px">
+            <span class="tag tag-rose">Prompt engineering</span>
+          </div>
+          <div class="e">
+            <h2>What did we actually ask the model?</h2>
+            <div class="rule-short" style="background: var(--rose)"></div>
+            <p style="color:#555; font-size:0.9rem; margin-top:6px">
+              The neutral baseline prompt: profile facts only, five-party JSON prediction
+            </p>
+          </div>
+
+          <!-- Two panels: system + user -->
+          <div class="e" style="display:flex; gap:18px; align-items:flex-start; width:100%">
+
+            <!-- System panel -->
+            <div class="prompt-panel" style="flex:1.1">
+              <span class="prompt-label system">System</span>
+              <div class="prompt-block" id="bp-system"
+                data-text="You are predicting a Canadian respondent's likely federal vote from profile facts only. Use only the listed facts. Do not assume geography, riding, app predictions, tactical attitudes, prior vote, or any information not shown.&#10;"></div>
+            </div>
+
+            <!-- User panel -->
+            <div class="prompt-panel" style="flex:1.9">
+              <span class="prompt-label user">User</span>
+              <div class="prompt-block" id="bp-user"
+                data-text="Respondent profile facts:&#10;- Age: 26&#10;- Is a woman: Yes&#10;- Is heterosexual: No&#10;- Is an immigrant: Yes&#10;- Language: english&#10;- Income group: middle income&#10;- [...]&#10;&#10;Valid prediction labels:&#10;lpc = Liberal Party of Canada&#10;cpc = Conservative Party of Canada&#10;ndp = New Democratic Party&#10;bq = Bloc Quebecois&#10;gpc = Green Party of Canada&#10;&#10;Return strict JSON only using this schema:&#10;{&quot;prediction&quot;: &quot;&lt;one of: lpc, cpc, ndp, bq, gpc&gt;&quot;}"></div>
+            </div>
+          </div>
+
+          <div class="e small" style="color:#888; font-size:0.75rem; margin-top:4px">
+            Temperature = 0 &nbsp;·&nbsp; n = 1,000 &nbsp;·&nbsp; template hash <code style="font-size:0.72rem">d51c6745</code>
           </div>
         </div>
       </div>
@@ -4940,9 +5021,48 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 22 - THREE-LINE CONCLUSION
+       SLIDE 22 - OPENAI TEMPORAL ACCURACY
        ══════════════════════════════════════════════════════════════ -->
-      <div class="slide" id="s17">
+      <div class="slide fig-slide" id="s17">
+        <div class="slide-number-bg">22</div>
+        <div class="slide-content w100">
+          <div class="slide-inner flex-col gap" style="align-items: center">
+            <div
+              class="e"
+              style="display: flex; align-items: center; gap: 10px"
+            >
+              <span class="tag tag-violet">OpenAI over time</span>
+            </div>
+            <div class="e" style="text-align: center">
+              <h2>Is accuracy on the rise?</h2>
+              <div class="rule-short" style="margin: 10px auto"></div>
+            </div>
+            <div
+              class="e"
+              style="width: 100%; display: flex; justify-content: center"
+            >
+              <div class="fig-frame" style="height: 52vh">
+                <img
+                  src="figures/block1_fig3_temporal.png"
+                  alt="OpenAI temporal accuracy trend from GPT-3.5 Turbo to GPT-5"
+                />
+              </div>
+            </div>
+            <div class="e small" style="text-align: center; max-width: 1000px">
+              Same 1,000 respondents and same neutral baseline prompt.
+              <strong>GPT-3.5 Turbo sits at the majority baseline (37.9%).</strong>
+              GPT-4-class models move into the mid-40s; GPT-4o/GPT-5.5 peak near
+              47%.
+              <em>Newer is better than 2022, but not monotonically better.</em>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ═══════════════════════════════════════════════════════════════
+       SLIDE 23 - THREE-LINE CONCLUSION
+       ══════════════════════════════════════════════════════════════ -->
+      <div class="slide" id="s18">
         <div class="slide-content w100">
           <div
             class="slide-inner flex-col gap-lg"
@@ -4986,9 +5106,9 @@
       </div>
 
       <!-- ═══════════════════════════════════════════════════════════════
-       SLIDE 23 - THANK YOU
+       SLIDE 24 - THANK YOU
        ══════════════════════════════════════════════════════════════ -->
-      <div class="slide" id="s18">
+      <div class="slide" id="s19">
         <div
           class="slide-inner flex-col gap-lg"
           style="align-items: flex-start; max-width: 900px"
@@ -5329,11 +5449,59 @@
       let cur = 0;
       document.getElementById("slidenum").textContent = "1 / " + total;
       document.getElementById("topbar").style.width = (1 / total) * 100 + "%";
+      /* ── Baseline prompt word-reveal ── */
+      /* ── Baseline prompt karaoke highlight ── */
+      function triggerPromptReveal(slideEl) {
+        if (!slideEl || slideEl.id !== "s-baseline-prompt") return;
+        // Render all text immediately (visible), then schedule highlights
+        ["bp-system", "bp-user"].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (!el) return;
+          var raw = el.dataset.text || "";
+          var tokens = raw.split(/(\n)/);
+          var html = "";
+          tokens.forEach(function(tok) {
+            if (tok === "\n") {
+              html += "\n";
+            } else {
+              tok.split(/\s+/).filter(Boolean).forEach(function(w) {
+                html += '<span class="prompt-word">'
+                      + w.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+                      + '</span> ';
+              });
+            }
+          });
+          el.innerHTML = html;
+        });
+
+        // Now sweep the karaoke highlight across ALL words in reading order
+        var allWords = slideEl.querySelectorAll(".prompt-word");
+        var STEP_MS = 110; // ms between each word highlight
+        var START_MS = 400; // brief pause before sweep begins
+        allWords.forEach(function(span, i) {
+          setTimeout(function() {
+            span.classList.remove("kara");
+            // Force reflow so re-adding the class re-triggers animation
+            void span.offsetWidth;
+            span.classList.add("kara");
+          }, START_MS + i * STEP_MS);
+        });
+      }
+      /* Reset so re-entering the slide replays the sweep */
+      function resetPromptReveal(slideEl) {
+        if (!slideEl || slideEl.id !== "s-baseline-prompt") return;
+        ["bp-system", "bp-user"].forEach(function(id) {
+          var el = document.getElementById(id);
+          if (el) { el.innerHTML = ""; }
+        });
+      }
+
       function goTo(n) {
         if (n < 0 || n >= total) return;
         const prev = cur;
         slides[prev].classList.remove("active");
         slides[prev].classList.add("out");
+        resetPromptReveal(slides[prev]);
         setTimeout(() => slides[prev].classList.remove("out"), 500);
         cur = n;
         slides[cur].classList.add("active");
@@ -5345,6 +5513,7 @@
           .querySelectorAll(".dot")
           .forEach((d, i) => d.classList.toggle("on", i === cur));
         triggerCounters();
+        triggerPromptReveal(slides[cur]);
       }
       const nav = document.getElementById("nav");
       slides.forEach((_, i) => {
