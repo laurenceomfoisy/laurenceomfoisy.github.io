@@ -1611,7 +1611,7 @@
               <span class="tag tag-violet">LLM comparison</span>
             </div>
             <div class="e" style="text-align: center">
-              <h2>Can frontier LLMs predict vote choice?</h2>
+              <h2>Can LLMs predict vote choice?</h2>
               <div class="rule-short" style="margin: 10px auto"></div>
             </div>
             <div
@@ -1621,12 +1621,12 @@
               <div class="fig-frame">
                 <img
                   src="figures/block1_fig1_accuracy.png"
-                  alt="Block 1 - accuracy across frontier LLMs"
+                  alt="Block 1 - accuracy across LLMs"
                 />
               </div>
             </div>
             <div class="e small" style="text-align: center; max-width: 880px">
-              All four frontier LLMs cluster within a few accuracy points. We
+              All four LLMs cluster within a few accuracy points. We
               picked GPT-4o for the rest of the analysis: cost-efficient, no
               meaningful performance loss.
             </div>
@@ -1741,7 +1741,7 @@
               <span class="tag tag-rose">Prompt engineering</span>
             </div>
             <div class="e">
-              <h2>Six prompt engineering strategies</h2>
+              <h2>Five prompt strategies + the hybrid approach</h2>
               <div class="rule-short" style="background: var(--rose)"></div>
             </div>
 
@@ -1755,148 +1755,67 @@
                 align-items: stretch;
               "
             >
-              <!-- P0: BASELINE -->
+              <!-- ST2: HYBRID — AUGMENTED PROMPT WITH MULTINOMIAL PRIORS -->
               <div
                 class="card pad"
-                style="display: flex; flex-direction: column; gap: 8px"
+                style="display: flex; flex-direction: column; gap: 8px; border: 1px solid rgba(15,118,110,0.3); background: #f0fdf9"
               >
-                <span class="label">Baseline</span>
+                <span class="label" style="color: #0f766e">Hybrid: augmented prompt</span>
                 <svg
-                  viewBox="0 0 200 90"
+                  viewBox="0 0 200 100"
                   xmlns="http://www.w3.org/2000/svg"
                   style="width: 100%; height: auto"
                 >
-                  <rect
-                    x="4"
-                    y="20"
-                    width="52"
-                    height="50"
-                    rx="4"
-                    fill="#f5f4f0"
-                    stroke="#d4d0c8"
-                    stroke-width="1.2"
-                  />
-                  <text
-                    x="30"
-                    y="37"
-                    text-anchor="middle"
-                    font-size="7"
-                    fill="#6b6860"
-                    font-family="Source Sans 3,sans-serif"
-                  >
-                    respondent
-                  </text>
-                  <text
-                    x="30"
-                    y="47"
-                    text-anchor="middle"
-                    font-size="7"
-                    fill="#6b6860"
-                    font-family="Source Sans 3,sans-serif"
-                  >
-                    profile
-                  </text>
-                  <line
-                    x1="14"
-                    y1="56"
-                    x2="46"
-                    y2="56"
-                    stroke="#d4d0c8"
-                    stroke-width="1"
-                  />
-                  <line
-                    x1="14"
-                    y1="61"
-                    x2="40"
-                    y2="61"
-                    stroke="#d4d0c8"
-                    stroke-width="1"
-                  />
-                  <line
-                    x1="14"
-                    y1="66"
-                    x2="43"
-                    y2="66"
-                    stroke="#d4d0c8"
-                    stroke-width="1"
-                  />
-                  <line
-                    x1="57"
-                    y1="45"
-                    x2="76"
-                    y2="45"
-                    stroke="#b0aca0"
-                    stroke-width="1.5"
-                  />
-                  <polygon points="76,41 84,45 76,49" fill="#b0aca0" />
-                  <rect
-                    x="84"
-                    y="28"
-                    width="42"
-                    height="34"
-                    rx="4"
-                    fill="#1a1714"
-                  />
-                  <text
-                    x="105"
-                    y="46"
-                    text-anchor="middle"
-                    font-size="7.5"
-                    fill="#f5f4f0"
-                    font-weight="600"
-                    font-family="Source Sans 3,sans-serif"
-                  >
-                    GPT-4o
-                  </text>
-                  <line
-                    x1="127"
-                    y1="45"
-                    x2="146"
-                    y2="45"
-                    stroke="#b0aca0"
-                    stroke-width="1.5"
-                  />
-                  <polygon points="146,41 154,45 146,49" fill="#b0aca0" />
-                  <rect
-                    x="154"
-                    y="33"
-                    width="40"
-                    height="24"
-                    rx="4"
-                    fill="#ede9f8"
-                    stroke="rgba(91,33,182,0.25)"
-                    stroke-width="1"
-                  />
-                  <text
-                    x="174"
-                    y="44"
-                    text-anchor="middle"
-                    font-size="6.5"
-                    fill="#5b21b6"
-                    font-family="JetBrains Mono,monospace"
-                  >
-                    LPC
-                  </text>
-                  <text
-                    x="174"
-                    y="53"
-                    text-anchor="middle"
-                    font-size="6"
-                    fill="#5b21b6"
-                    font-family="JetBrains Mono,monospace"
-                  >
-                    CPC ...
-                  </text>
-                  <text
-                    x="100"
-                    y="82"
-                    text-anchor="middle"
-                    font-size="6.2"
-                    fill="#9a9690"
-                    font-family="Source Sans 3,sans-serif"
-                  >
-                    No extra instructions
-                  </text>
+                  <!-- respondent profile box -->
+                  <rect x="2" y="8" width="48" height="36" rx="4" fill="#f5f4f0" stroke="#d4d0c8" stroke-width="1.2"/>
+                  <text x="26" y="22" text-anchor="middle" font-size="6.5" fill="#6b6860" font-family="Source Sans 3,sans-serif">respondent</text>
+                  <text x="26" y="31" text-anchor="middle" font-size="6.5" fill="#6b6860" font-family="Source Sans 3,sans-serif">profile</text>
+                  <line x1="10" y1="36" x2="40" y2="36" stroke="#d4d0c8" stroke-width="1"/>
+                  <line x1="10" y1="40" x2="35" y2="40" stroke="#d4d0c8" stroke-width="1"/>
+
+                  <!-- arrow: profile → GPT-4o -->
+                  <line x1="51" y1="26" x2="70" y2="26" stroke="#b0aca0" stroke-width="1.5"/>
+                  <polygon points="70,22 78,26 70,30" fill="#b0aca0"/>
+
+                  <!-- multinomial model box -->
+                  <rect x="2" y="60" width="48" height="34" rx="4" fill="#f0fdf9" stroke="rgba(15,118,110,0.5)" stroke-width="1.2"/>
+                  <text x="26" y="71" text-anchor="middle" font-size="5.8" fill="#0f766e" font-weight="600" font-family="Source Sans 3,sans-serif">multinomial</text>
+                  <!-- mini probability bars -->
+                  <!-- LPC -->
+                  <rect x="8"  y="75" width="14" height="4" rx="1" fill="#e2e8f0"/>
+                  <rect x="8"  y="75" width="9"  height="4" rx="1" fill="#0f766e" opacity="0.7"/>
+                  <text x="24" y="79" font-size="4.5" fill="#0f766e" font-family="JetBrains Mono,monospace">LPC</text>
+                  <!-- CPC -->
+                  <rect x="8"  y="81" width="14" height="4" rx="1" fill="#e2e8f0"/>
+                  <rect x="8"  y="81" width="7"  height="4" rx="1" fill="#0f766e" opacity="0.5"/>
+                  <text x="24" y="85" font-size="4.5" fill="#0f766e" font-family="JetBrains Mono,monospace">CPC</text>
+                  <!-- NDP -->
+                  <rect x="8"  y="87" width="14" height="4" rx="1" fill="#e2e8f0"/>
+                  <rect x="8"  y="87" width="5"  height="4" rx="1" fill="#0f766e" opacity="0.4"/>
+                  <text x="24" y="91" font-size="4.5" fill="#0f766e" font-family="JetBrains Mono,monospace">NDP…</text>
+
+                  <!-- arrow: multinomial → GPT-4o (comes up from below) -->
+                  <line x1="26" y1="60" x2="26" y2="52" stroke="#0f766e" stroke-width="1.2" stroke-dasharray="2,2"/>
+                  <line x1="26" y1="52" x2="78" y2="52" stroke="#0f766e" stroke-width="1.2" stroke-dasharray="2,2"/>
+                  <polygon points="78,48 86,52 78,56" fill="#0f766e"/>
+
+                  <!-- GPT-4o box -->
+                  <rect x="78" y="16" width="42" height="44" rx="4" fill="#1a1714"/>
+                  <text x="99" y="36" text-anchor="middle" font-size="7.5" fill="#f5f4f0" font-weight="600" font-family="Source Sans 3,sans-serif">GPT-4o</text>
+                  <text x="99" y="47" text-anchor="middle" font-size="5" fill="#6ee7b7" font-family="Source Sans 3,sans-serif">+ priors</text>
+                  <text x="99" y="55" text-anchor="middle" font-size="5" fill="#6ee7b7" font-family="Source Sans 3,sans-serif">injected</text>
+
+                  <!-- arrow: GPT-4o → output -->
+                  <line x1="121" y1="38" x2="140" y2="38" stroke="#b0aca0" stroke-width="1.5"/>
+                  <polygon points="140,34 148,38 140,42" fill="#b0aca0"/>
+
+                  <!-- output box -->
+                  <rect x="148" y="26" width="48" height="24" rx="4" fill="#ede9f8" stroke="rgba(91,33,182,0.25)" stroke-width="1"/>
+                  <text x="172" y="37" text-anchor="middle" font-size="6.5" fill="#5b21b6" font-family="JetBrains Mono,monospace">LPC</text>
+                  <text x="172" y="46" text-anchor="middle" font-size="6" fill="#5b21b6" font-family="JetBrains Mono,monospace">CPC …</text>
+
+                  <!-- caption -->
+                  <text x="99" y="96" text-anchor="middle" font-size="6" fill="#0f766e" font-family="Source Sans 3,sans-serif">Model priors fed into the prompt</text>
                 </svg>
               </div>
 
@@ -2999,22 +2918,7 @@
                 />
               </div>
             </div>
-            <div
-              class="e card-amber pad-sm"
-              style="
-                border-radius: var(--radius);
-                max-width: 1000px;
-                border-left: 3px solid var(--amber);
-              "
-            >
-              <p>
-                Fine-tuning moves the needle a bit.
-                <strong>The augmented prompt hybrid hits 53.5%</strong>
-                - but it is not pure LLM: it feeds multinomial priors into the
-                GPT-4o prompt. To recover the conventional-model gap you have to
-                give the LLM the conventional-model output.
-              </p>
-            </div>
+
           </div>
         </div>
       </div>
@@ -5376,6 +5280,11 @@
       // ── Chatbox logic ────────────────────────────────────────────────────────
       const CHAT_API_URL = "https://maplemethdeploy.vercel.app/api/chat";
 
+      // Stable session ID for this page load — groups all turns from one visitor
+      const SESSION_ID = (crypto.randomUUID
+        ? crypto.randomUUID()
+        : Date.now().toString(36) + Math.random().toString(36).slice(2));
+
       // Configure marked: safe, no GFM tables (keep it simple for chat)
       marked.setOptions({ breaks: true, gfm: true });
 
@@ -5416,7 +5325,7 @@
           const res = await fetch(CHAT_API_URL, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ messages: history }),
+            body: JSON.stringify({ messages: history, session_id: SESSION_ID }),
           });
           const data = await res.json();
           if (!res.ok) throw new Error(data.error || res.statusText);
