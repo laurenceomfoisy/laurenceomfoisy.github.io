@@ -5035,18 +5035,8 @@
              </p>
            </div>
            <div class="e rule" style="margin: 0"></div>
-           <div class="e" style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
-             <!-- QR code -->
-             <div style="display: flex; flex-direction: column; align-items: center; gap: 6px">
-               <img
-                 src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Fmfoisy.com%2Fpresentation_mm26&size=110x110&margin=4&color=1a1a1a&bgcolor=ffffff&format=svg"
-                 alt="QR code — mfoisy.com/presentation_mm26"
-                 width="110" height="110"
-                 style="border-radius: 6px; display: block;"
-               />
-               <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.62rem; color: var(--ink3); letter-spacing: 0.03em">mfoisy.com/presentation_mm26</span>
-             </div>
-             <div class="author-card">
+            <div class="e" style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start">
+              <div class="author-card">
                <div class="author-name">Laurence-Olivier M. Foisy</div>
               <div
                 style="
@@ -5127,18 +5117,65 @@
       <!-- ═══════════════════════════════════════════════════════════════
        SLIDE 24 - ASK THE RESEARCH ASSISTANT
        ══════════════════════════════════════════════════════════════ -->
-       <div class="slide" id="s-chat">
-         <style>
-           /* ── Chat slide styles ───────────────────────────────────────── */
-           #chat-wrap {
-             height: 100%;
-             max-width: 780px;
-             margin: 0 auto;
-             padding: 28px 24px 20px;
-             display: flex;
-             flex-direction: column;
-             gap: 14px;
-           }
+        <div class="slide" id="s-chat">
+          <style>
+            /* ── Chat slide styles ───────────────────────────────────────── */
+            #chat-outer {
+              height: 100%;
+              display: flex;
+              flex-direction: row;
+              align-items: stretch;
+              gap: 0;
+            }
+            /* Left: chatbox column */
+            #chat-wrap {
+              flex: 1 1 0;
+              min-width: 0;
+              padding: 28px 24px 20px;
+              display: flex;
+              flex-direction: column;
+              gap: 14px;
+            }
+            /* Right: QR column */
+            #chat-qr-col {
+              flex: 0 0 220px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              gap: 18px;
+              padding: 28px 28px 28px 12px;
+              border-left: 1px solid #e8e8e8;
+            }
+            #chat-qr-label {
+              font-size: 0.72rem;
+              font-weight: 600;
+              letter-spacing: .06em;
+              text-transform: uppercase;
+              color: #888;
+              text-align: center;
+            }
+            #chat-qr-canvas {
+              border-radius: 10px;
+              box-shadow: 0 2px 12px rgba(0,0,0,.10);
+              display: block;
+              width: 160px;
+              height: 160px;
+            }
+            #chat-qr-url {
+              font-size: 0.7rem;
+              color: #5b21b6;
+              font-weight: 600;
+              text-align: center;
+              word-break: break-all;
+              line-height: 1.4;
+            }
+            #chat-qr-hint {
+              font-size: 0.68rem;
+              color: #aaa;
+              text-align: center;
+              line-height: 1.4;
+            }
            #chat-history {
              flex: 1;
              overflow-y: auto;
@@ -5245,37 +5282,55 @@
            }
          </style>
 
-         <div class="slide-content w100" style="height: 100%">
-           <div id="chat-wrap">
-             <div class="e">
-               <span class="tag tag-violet">Q &amp; A</span>
-               <h2 style="margin-top: 8px; font-size: clamp(1.3rem, 2.6vw, 2rem)">Ask about the research</h2>
-             </div>
+          <div class="slide-content w100" style="height: 100%">
+            <div id="chat-outer">
 
-             <!-- Chat history -->
-             <div id="chat-history">
-               <div class="chat-bubble assistant">
-                 Hello! I can answer questions about the MapleMeth 2026 study &mdash; accuracy numbers, methodology, which model won, why, and what the signal is useful for. What would you like to know?
-               </div>
-             </div>
+              <!-- ── Left: chatbox ──────────────────────────────────────── -->
+              <div id="chat-wrap">
+                <div class="e">
+                  <span class="tag tag-violet">Q &amp; A</span>
+                  <h2 style="margin-top: 8px; font-size: clamp(1.3rem, 2.6vw, 2rem)">Ask about the research</h2>
+                </div>
 
-             <!-- Input row -->
-             <div id="chat-input-row">
-               <textarea
-                 id="chat-input"
-                 rows="2"
-                 placeholder="Type a question about the research..."
-               ></textarea>
-               <button id="chat-send">Send</button>
-             </div>
-             <div id="chat-error"></div>
-           </div>
-         </div>
+                <!-- Chat history -->
+                <div id="chat-history">
+                  <div class="chat-bubble assistant">
+                    Hello! I can answer questions about the MapleMeth 2026 study &mdash; accuracy numbers, methodology, which model won, why, and what the signal is useful for. What would you like to know?
+                  </div>
+                </div>
+
+                <!-- Input row -->
+                <div id="chat-input-row">
+                  <textarea
+                    id="chat-input"
+                    rows="2"
+                    placeholder="Type a question about the research..."
+                  ></textarea>
+                  <button id="chat-send">Send</button>
+                </div>
+                <div id="chat-error"></div>
+              </div>
+
+              <!-- ── Right: QR code ─────────────────────────────────────── -->
+              <div id="chat-qr-col">
+                <img
+                  id="chat-qr-canvas"
+                  src="https://api.qrserver.com/v1/create-qr-code/?data=https%3A%2F%2Flaurenceomfoisy.github.io%2Fmaplemeth_2026&size=160x160&margin=4&color=5b21b6&bgcolor=ffffff&format=svg"
+                  alt="QR code"
+                  width="160" height="160"
+                />
+                <div id="chat-qr-url">laurenceomfoisy.github.io<br>/maplemeth_2026</div>
+                <div id="chat-qr-hint">Scan to open the<br>full presentation</div>
+              </div>
+
+            </div><!-- #chat-outer -->
+          </div>
        </div>
 
     </div>
     <!-- #deck -->
     <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+    <script>
     <script>
       // ── Chatbox logic ────────────────────────────────────────────────────────
       const CHAT_API_URL = "https://maplemethdeploy.vercel.app/api/chat";
