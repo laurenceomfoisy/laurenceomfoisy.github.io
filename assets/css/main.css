@@ -164,7 +164,6 @@ textarea {
 
 html {
   box-sizing: border-box;
-  zoom: 1.1;
 }
 
 *,
@@ -2253,6 +2252,7 @@ body > article {
 #top {
   padding: 10em 0 10em 0;
   text-align: left;
+  zoom: 1.1;
   min-height: calc(100vh / 1.1);
   display: flex;
   align-items: center;
