@@ -164,6 +164,7 @@ textarea {
 
 html {
   box-sizing: border-box;
+  zoom: 1.1;
 }
 
 *,
@@ -197,7 +198,7 @@ select {
   line-height: 1.85em;
   color: #888;
   font-weight: 300;
-  font-size: 13pt;
+  font-size: 14.3pt;
 }
 
 a {
