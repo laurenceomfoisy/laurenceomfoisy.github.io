@@ -23,6 +23,13 @@
         overflow: hidden;
         box-shadow: 0 24px 80px rgba(0,0,0,0.6);
         margin-bottom: 0.6em;
+        cursor: pointer;
+      }
+      .pres-embed-overlay {
+        position: absolute;
+        inset: 0;
+        z-index: 10;
+        display: block;
       }
       .pres-embed-wrapper iframe {
         position: absolute;
@@ -211,6 +218,7 @@
         <p style="font-size: 0.85em; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.5); margin-bottom: 0.75em;">Dernière présentation</p>
         <div class="pres-embed-wrapper">
           <iframe src="presentation_mm26/index.html" title="Présentation vedette" allowfullscreen></iframe>
+          <a href="presentation_mm26/index.html" target="_blank" class="pres-embed-overlay" aria-label="Ouvrir la présentation"></a>
         </div>
         <a href="presentation_mm26/index.html" target="_blank" class="pres-fullscreen-link">Ouvrir en plein écran ↗</a>
 
