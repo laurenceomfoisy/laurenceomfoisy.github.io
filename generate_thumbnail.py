@@ -89,8 +89,18 @@ def generate_thumbnail(html_path, output_path, width=1920, height=1080):
             # Additional wait to ensure fonts and images are loaded
             page.wait_for_timeout(1000)
 
-            # Screenshot the full viewport (1920×1080 = 16:9, matches card ratio)
-            page.screenshot(path=str(output_path))
+            # Clip to the actual rendered slide bounds (excludes letterbox bars)
+            bounds = page.evaluate("""() => {
+                const sz = Reveal.getComputedSlideSize();
+                const sc = Reveal.getScale();
+                return {
+                    x: (window.innerWidth  - sz.width  * sc) / 2,
+                    y: (window.innerHeight - sz.height * sc) / 2,
+                    width:  sz.width  * sc,
+                    height: sz.height * sc
+                };
+            }""")
+            page.screenshot(path=str(output_path), clip=bounds)
 
             print(f"✓ Thumbnail generated successfully: {output_path}")
 
@@ -131,8 +141,17 @@ def batch_generate(repo_root=None):
                 page.goto(url, wait_until="networkidle")
                 page.wait_for_selector(".reveal .slides", timeout=10000)
                 page.wait_for_timeout(1000)
-                slide_element = page.locator(".reveal .slides")
-                page.screenshot(path=str(output_path))
+                bounds = page.evaluate("""() => {
+                    const sz = Reveal.getComputedSlideSize();
+                    const sc = Reveal.getScale();
+                    return {
+                        x: (window.innerWidth  - sz.width  * sc) / 2,
+                        y: (window.innerHeight - sz.height * sc) / 2,
+                        width:  sz.width  * sc,
+                        height: sz.height * sc
+                    };
+                }""")
+                page.screenshot(path=str(output_path), clip=bounds)
                 print(f"  ✓ {output_path.name}")
             except Exception as e:
                 print(f"  ✗ Error: {e}", file=sys.stderr)
