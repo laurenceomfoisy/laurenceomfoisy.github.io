@@ -2253,6 +2253,9 @@ body > article {
 #top {
   padding: 10em 0 10em 0;
   text-align: left;
+  min-height: calc(100vh / 1.1);
+  display: flex;
+  align-items: center;
 }
 
 #top .image {
