@@ -11,6 +11,7 @@ format:
     footer: "Git et GitHub"
     transition: slide
     transition-speed: fast
+    embed-resources: true
 ---
 
 ## À voir aujourd'hui
