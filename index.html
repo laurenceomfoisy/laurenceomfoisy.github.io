@@ -159,53 +159,26 @@
       }
       .pres-fullscreen-link:hover { color: rgba(255,255,255,0.85); }
 
-      /* Scroll-snap strip */
-      .pres-strip-wrapper {
-        position: relative;
-      }
-      .pres-strip-edge {
-        position: absolute;
-        top: 0;
-        width: 80px;
-        height: 100%;
-        z-index: 1;
-        cursor: ew-resize;
-      }
-      .pres-strip-edge-left {
-        left: 0;
-        background: linear-gradient(to right, #f4f4f4 20%, transparent);
-      }
-      .pres-strip-edge-right {
-        right: 0;
-        background: linear-gradient(to left, #f4f4f4 20%, transparent);
-      }
-      .pres-strip {
-        display: flex;
+      .pres-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
         gap: 1.2em;
-        overflow-x: scroll;
-        scroll-snap-type: x mandatory;
-        scroll-behavior: smooth;
-        padding: 1em 0 1.4em;
-        -ms-overflow-style: none;
-        scrollbar-width: none;
+        margin-top: 0.75em;
       }
-      .pres-strip::-webkit-scrollbar { display: none; }
-      .pres-strip-card {
-        flex: 0 0 280px;
-        height: 158px;
-        scroll-snap-align: center;
+      .pres-grid-card {
         border-radius: 5px;
         overflow: hidden;
         text-decoration: none;
         display: block;
         box-shadow: 0 4px 18px rgba(0,0,0,0.18);
         transition: transform 0.2s ease, box-shadow 0.2s ease;
+        aspect-ratio: 16 / 9;
       }
-      .pres-strip-card:hover {
+      .pres-grid-card:hover {
         transform: translateY(-3px);
         box-shadow: 0 10px 30px rgba(0,0,0,0.25);
       }
-      .pres-strip-card img {
+      .pres-grid-card img {
         width: 100%; height: 100%;
         object-fit: cover;
         display: block;
@@ -228,56 +201,22 @@
         </div>
         <a href="presentation_mm26/index.html" target="_blank" class="pres-fullscreen-link">Open fullscreen ↗</a>
 
-        <!-- Scroll-snap strip -->
-        <div class="pres-strip-wrapper">
-          <div class="pres-strip-edge pres-strip-edge-left" id="presEdgeLeft"></div>
-          <div class="pres-strip-edge pres-strip-edge-right" id="presEdgeRight"></div>
-          <div class="pres-strip" id="presStrip">
-            <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_mpsa_2025/pres.html" target="_blank"><img src="images/pres_mpsa_2025.png" alt="MPSA 2025" /></a>
-            <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_t2c_maple_meth_2025/pres.html" target="_blank"><img src="images/pres_t2c.png" alt="T2C" /></a>
-            <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_fonctions/pres.html" target="_blank"><img src="images/pres_clessnize.png" alt="Clessnize" /></a>
-            <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_spsa2024/index.html" target="_blank"><img src="images/pres_gpt_party.png" alt="GPT Party" /></a>
-            <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_github/git_github.html" target="_blank"><img src="images/pres_git.png" alt="Git & GitHub" /></a>
-            <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_goa/index.html" target="_blank"><img src="images/pres_goa.png" alt="GOA" /></a>
-            <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_eiom_2025_intro_r/eiom_2025_intro_r.html" target="_blank"><img src="images/pres_intro_r.png" alt="Intro R" /></a>
-            <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_ollama/index.html" target="_blank"><img src="images/pres_beyond.png" alt="Beyond Language" /></a>
-            <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_retro/index.html" target="_blank"><img src="images/pres_retro.png" alt="Retro" /></a>
-          </div>
+        <!-- Grid -->
+        <p style="font-size: 0.85em; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(0,0,0,0.5); margin-bottom: 0.5em;">Additional presentations</p>
+        <div class="pres-grid">
+          <a class="pres-grid-card" href="https://www.mfoisy.com/presentation_mpsa_2025/pres.html" target="_blank"><img src="images/pres_mpsa_2025.png" alt="MPSA 2025" /></a>
+          <a class="pres-grid-card" href="https://www.mfoisy.com/presentation_t2c_maple_meth_2025/pres.html" target="_blank"><img src="images/pres_t2c.png" alt="T2C" /></a>
+          <a class="pres-grid-card" href="https://www.mfoisy.com/presentation_fonctions/pres.html" target="_blank"><img src="images/pres_clessnize.png" alt="Clessnize" /></a>
+          <a class="pres-grid-card" href="https://www.mfoisy.com/presentation_spsa2024/index.html" target="_blank"><img src="images/pres_gpt_party.png" alt="GPT Party" /></a>
+          <a class="pres-grid-card" href="https://www.mfoisy.com/presentation_github/git_github.html" target="_blank"><img src="images/pres_git.png" alt="Git & GitHub" /></a>
+          <a class="pres-grid-card" href="https://www.mfoisy.com/presentation_goa/index.html" target="_blank"><img src="images/pres_goa.png" alt="GOA" /></a>
+          <a class="pres-grid-card" href="https://www.mfoisy.com/presentation_eiom_2025_intro_r/eiom_2025_intro_r.html" target="_blank"><img src="images/pres_intro_r.png" alt="Intro R" /></a>
+          <a class="pres-grid-card" href="https://www.mfoisy.com/presentation_ollama/index.html" target="_blank"><img src="images/pres_beyond.png" alt="Beyond Language" /></a>
+          <a class="pres-grid-card" href="https://www.mfoisy.com/presentation_retro/index.html" target="_blank"><img src="images/pres_retro.png" alt="Retro" /></a>
         </div>
       </div>
     </article>
 
-    <script>
-    (function () {
-      var strip = document.getElementById('presStrip');
-      var edgeLeft = document.getElementById('presEdgeLeft');
-      var edgeRight = document.getElementById('presEdgeRight');
-      var cardWidth = 280 + 19;
-      var scrollInterval = null;
-      var scrollSpeed = 3;
-
-      function startScroll(dir) {
-        if (scrollInterval) return;
-        scrollInterval = setInterval(function () {
-          strip.scrollLeft += dir * scrollSpeed;
-        }, 16);
-      }
-      function stopScroll() {
-        clearInterval(scrollInterval);
-        scrollInterval = null;
-      }
-
-      edgeLeft.addEventListener('mouseenter', function () { startScroll(-1); });
-      edgeLeft.addEventListener('mouseleave', stopScroll);
-      edgeRight.addEventListener('mouseenter', function () { startScroll(1); });
-      edgeRight.addEventListener('mouseleave', stopScroll);
-
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'ArrowLeft') strip.scrollBy({ left: -cardWidth, behavior: 'smooth' });
-        if (e.key === 'ArrowRight') strip.scrollBy({ left: cardWidth, behavior: 'smooth' });
-      });
-    })();
-    </script>
 
     <!-- CV Section -->
     <article id="cv" class="wrapper style2">
