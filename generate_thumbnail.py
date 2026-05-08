@@ -129,7 +129,7 @@ def batch_generate(repo_root=None):
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
-            page = browser.new_page(viewport={"width": 1920, "height": 1080})
+            page = browser.new_page(viewport={"width": 1280, "height": 720})
             try:
                 page.goto(url, wait_until="networkidle")
                 page.wait_for_selector(".reveal .slides", timeout=10000)
