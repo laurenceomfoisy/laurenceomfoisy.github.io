@@ -6,7 +6,7 @@ date: today
 lang: fr
 format:
   revealjs:
-    theme: [default, wabi.scss]
+    theme: default
     slide-number: true
     logo: img/capp.jpg
     footer: "Introduction à R"
