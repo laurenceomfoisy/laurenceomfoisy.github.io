@@ -127,22 +127,12 @@ def batch_generate(repo_root=None):
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
-            page = browser.new_page(viewport={"width": 1400, "height": 900})
+            page = browser.new_page(viewport={"width": 1920, "height": 1080})
             try:
                 page.goto(url, wait_until="networkidle")
                 page.wait_for_selector(".reveal .slides", timeout=10000)
                 page.wait_for_timeout(1000)
-                bounds = page.evaluate("""() => {
-                    const sz = Reveal.getComputedSlideSize();
-                    const sc = Reveal.getScale();
-                    return {
-                        x: (window.innerWidth  - sz.width  * sc) / 2,
-                        y: (window.innerHeight - sz.height * sc) / 2,
-                        width:  sz.width  * sc,
-                        height: sz.height * sc
-                    };
-                }""")
-                page.screenshot(path=str(output_path), clip=bounds)
+                page.screenshot(path=str(output_path))
                 print(f"  ✓ {output_path.name}")
             except Exception as e:
                 print(f"  ✗ Error: {e}", file=sys.stderr)
