@@ -89,18 +89,9 @@ def generate_thumbnail(html_path, output_path, width=1920, height=1080):
             # Additional wait to ensure fonts and images are loaded
             page.wait_for_timeout(1000)
 
-            # Clip to the actual rendered slide bounds (excludes letterbox bars)
-            bounds = page.evaluate("""() => {
-                const sz = Reveal.getComputedSlideSize();
-                const sc = Reveal.getScale();
-                return {
-                    x: (window.innerWidth  - sz.width  * sc) / 2,
-                    y: (window.innerHeight - sz.height * sc) / 2,
-                    width:  sz.width  * sc,
-                    height: sz.height * sc
-                };
-            }""")
-            page.screenshot(path=str(output_path), clip=bounds)
+            # Full viewport at 1920×1080 — reveal.js margin creates natural
+            # breathing room around the slide, matching the fullscreen browser view
+            page.screenshot(path=str(output_path))
 
             print(f"✓ Thumbnail generated successfully: {output_path}")
 
@@ -136,7 +127,7 @@ def batch_generate(repo_root=None):
 
         with sync_playwright() as p:
             browser = p.chromium.launch(headless=True)
-            page = browser.new_page(viewport={"width": 1920, "height": 1080})
+            page = browser.new_page(viewport={"width": 1400, "height": 900})
             try:
                 page.goto(url, wait_until="networkidle")
                 page.wait_for_selector(".reveal .slides", timeout=10000)
