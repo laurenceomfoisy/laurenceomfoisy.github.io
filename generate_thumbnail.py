@@ -11,7 +11,6 @@ import sys
 import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
-from PIL import Image
 
 
 # ── Batch configuration ──────────────────────────────────────────────────────
@@ -43,19 +42,6 @@ PRESENTATIONS = [
         "images/pres_capsules_analyses_r.png",
     ),
 ]
-
-
-SITE_BG = (244, 244, 244)  # #f4f4f4 — matches site background
-PAD_RATIO = 0.04            # 4% padding on each side
-
-
-def add_padding(path):
-    img = Image.open(path)
-    w, h = img.size
-    pad = max(16, int(min(w, h) * PAD_RATIO))
-    canvas = Image.new("RGB", (w + 2 * pad, h + 2 * pad), SITE_BG)
-    canvas.paste(img, (pad, pad))
-    canvas.save(path)
 
 
 def generate_thumbnail(html_path, output_path, width=1920, height=1080):
@@ -103,12 +89,8 @@ def generate_thumbnail(html_path, output_path, width=1920, height=1080):
             # Additional wait to ensure fonts and images are loaded
             page.wait_for_timeout(1000)
 
-            # Get the reveal.js slide container
-            slide_element = page.locator(".reveal .slides")
-
-            # Take screenshot of the first slide
-            slide_element.screenshot(path=str(output_path))
-            add_padding(str(output_path))
+            # Screenshot the full viewport (1920×1080 = 16:9, matches card ratio)
+            page.screenshot(path=str(output_path))
 
             print(f"✓ Thumbnail generated successfully: {output_path}")
 
@@ -150,8 +132,7 @@ def batch_generate(repo_root=None):
                 page.wait_for_selector(".reveal .slides", timeout=10000)
                 page.wait_for_timeout(1000)
                 slide_element = page.locator(".reveal .slides")
-                slide_element.screenshot(path=str(output_path))
-                add_padding(str(output_path))
+                page.screenshot(path=str(output_path))
                 print(f"  ✓ {output_path.name}")
             except Exception as e:
                 print(f"  ✗ Error: {e}", file=sys.stderr)
