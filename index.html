@@ -163,23 +163,21 @@
       .pres-strip-wrapper {
         position: relative;
       }
-      .pres-strip-wrapper::before,
-      .pres-strip-wrapper::after {
-        content: '';
+      .pres-strip-edge {
         position: absolute;
         top: 0;
-        width: 60px;
+        width: 80px;
         height: 100%;
-        pointer-events: none;
         z-index: 1;
+        cursor: ew-resize;
       }
-      .pres-strip-wrapper::before {
+      .pres-strip-edge-left {
         left: 0;
-        background: linear-gradient(to right, #f4f4f4, transparent);
+        background: linear-gradient(to right, #f4f4f4 20%, transparent);
       }
-      .pres-strip-wrapper::after {
+      .pres-strip-edge-right {
         right: 0;
-        background: linear-gradient(to left, #f4f4f4, transparent);
+        background: linear-gradient(to left, #f4f4f4 20%, transparent);
       }
       .pres-strip {
         display: flex;
@@ -232,6 +230,8 @@
 
         <!-- Scroll-snap strip -->
         <div class="pres-strip-wrapper">
+          <div class="pres-strip-edge pres-strip-edge-left" id="presEdgeLeft"></div>
+          <div class="pres-strip-edge pres-strip-edge-right" id="presEdgeRight"></div>
           <div class="pres-strip" id="presStrip">
             <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_mpsa_2025/pres.html" target="_blank"><img src="images/pres_mpsa_2025.png" alt="MPSA 2025" /></a>
             <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_t2c_maple_meth_2025/pres.html" target="_blank"><img src="images/pres_t2c.png" alt="T2C" /></a>
@@ -250,7 +250,28 @@
     <script>
     (function () {
       var strip = document.getElementById('presStrip');
+      var edgeLeft = document.getElementById('presEdgeLeft');
+      var edgeRight = document.getElementById('presEdgeRight');
       var cardWidth = 280 + 19;
+      var scrollInterval = null;
+      var scrollSpeed = 3;
+
+      function startScroll(dir) {
+        if (scrollInterval) return;
+        scrollInterval = setInterval(function () {
+          strip.scrollLeft += dir * scrollSpeed;
+        }, 16);
+      }
+      function stopScroll() {
+        clearInterval(scrollInterval);
+        scrollInterval = null;
+      }
+
+      edgeLeft.addEventListener('mouseenter', function () { startScroll(-1); });
+      edgeLeft.addEventListener('mouseleave', stopScroll);
+      edgeRight.addEventListener('mouseenter', function () { startScroll(1); });
+      edgeRight.addEventListener('mouseleave', stopScroll);
+
       document.addEventListener('keydown', function (e) {
         if (e.key === 'ArrowLeft') strip.scrollBy({ left: -cardWidth, behavior: 'smooth' });
         if (e.key === 'ArrowRight') strip.scrollBy({ left: cardWidth, behavior: 'smooth' });
