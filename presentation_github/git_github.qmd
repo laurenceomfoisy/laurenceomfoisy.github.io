@@ -4,16 +4,13 @@ author: Laurence-Olivier M. Foisy<br>Adrien Cloutier
 institute: Université Laval
 format:
   revealjs:
-    mermaid:
+    mermaid: 
       theme: dark
-    theme: [default, wabi.scss]
+    theme: night
     logo: img/logo.png
     footer: "Git et GitHub"
-    slide-number: true
-    progress: true
-    transition: fade
-    transition-speed: slow
-    embed-resources: true
+    transition: slide
+    transition-speed: fast
 ---
 
 ## À voir aujourd'hui

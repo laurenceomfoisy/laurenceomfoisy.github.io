@@ -3,15 +3,10 @@ title: "Le référencement"
 author: "Laurence-Olivier M. Foisy & Camille Pelletier"
 institute: "Université Laval"
 format:
-  revealjs:
-    theme: [default, wabi.scss]
+  revealjs: 
+    theme: night
     logo: images/clessn.png
     footer: "Le référencement"
-    slide-number: true
-    progress: true
-    transition: fade
-    transition-speed: slow
-    embed-resources: true
 ---
 
 ##

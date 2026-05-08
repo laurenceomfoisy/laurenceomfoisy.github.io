@@ -2,31 +2,30 @@
 title: "From Checkbox to Textbox"
 subtitle: "Capturing Nuanced Public Opinion with Large Language Models"
 author:
-  - name: Laurence-Olivier M. Foisy
+  - name: Laurence-Olivier<br>M. Foisy
     orcid: 0009-0004-7505-9477
     email: mail@mfoisy.com
     affiliations: Université Laval
   - name: Hubert Cadieux
-  - name: Étienne Proulx
+  - name: Étienne<br>Proulx
   - name: Camille Pelletier
   - name: Yannick Dufresne
 date: today
 lang: en
 bibliography: bibliography.bib
 format:
-  revealjs:
-    theme: [default, wabi.scss]
+  clean-revealjs:
     slide-number: true
     logo: img/ul_logo.png
     footer: ""
-    transition: fade
-    transition-speed: slow
-    progress: true
+    transition: slide
+    transition-speed: fast
     code-fold: false
     code-overflow: wrap
     highlight-style: github
     embed-resources: true
     auto-stretch: true
+    include-after-body: footer_includes.html
 ---
 
 ## The Challenge of Open-Ended Data {background="none"}

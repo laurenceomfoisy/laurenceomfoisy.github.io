@@ -4,15 +4,10 @@ subtitle: "Une preuve de concept en analyse de données de sondages"
 author: "Laurence-Olivier M. Foisy"
 institute: "Université Laval"
 format:
-  revealjs:
-    theme: [default, wabi.scss]
+  revealjs: 
+    theme: default
     logo: images/ul_logo.png
     footer: "Automatisation de la science"
-    slide-number: true
-    progress: true
-    transition: fade
-    transition-speed: slow
-    embed-resources: true
 ---
 ## Automatisation de la science
 ### Deux questions:

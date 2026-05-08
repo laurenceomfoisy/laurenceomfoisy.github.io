@@ -7,18 +7,18 @@ date: today
 lang: fr
 format:
   revealjs:
-    theme: [default, wabi.scss]
+    theme: default
     slide-number: true
     logo: img/capp.jpg
     footer: "Introduction à R"
-    transition: fade
-    transition-speed: slow
-    progress: true
+    transition: slide
+    transition-speed: fast
     code-fold: false
     code-overflow: wrap
     highlight-style: github
     embed-resources: true
     auto-stretch: true
+    include-after-body: footer_includes.html
 ---
 
 ## Les logiciels d'analyse de données{.smaller}

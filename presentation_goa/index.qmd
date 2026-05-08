@@ -4,17 +4,12 @@ subtitle: "Méthodologie quantitative POL-2000"
 author: "Laurence-Olivier M. Foisy & Adrien Cloutier"
 institute: "Université Laval"
 format:
-  revealjs:
-    mermaid:
+  revealjs: 
+    mermaid: 
       theme: dark
-    theme: [default, wabi.scss]
+    theme: night
     logo: images/ul_logo.png
     footer: "Les Graphes Orientés Acycliques (GOA) | POL-2000"
-    slide-number: true
-    progress: true
-    transition: fade
-    transition-speed: slow
-    embed-resources: true
 ---
 
 ## Aujourd'hui{.smaller}

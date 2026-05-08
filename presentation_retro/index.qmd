@@ -5,16 +5,13 @@ institute: Université Laval
 bibliography: references.bib
 format:
   revealjs:
-    mermaid:
+    mermaid: 
       theme: dark
-    theme: [default, wabi.scss]
+    theme: simple
     logo: https://upload.wikimedia.org/wikipedia/fr/b/bf/Universit%C3%A9_Laval_logo_et_texte.svg
     footer: "Examen Rétrospectif"
-    slide-number: true
-    progress: true
-    transition: fade
-    transition-speed: slow
-    embed-resources: true
+    transition: slide
+    transition-speed: fast
 ---
 
 # Question 1 
