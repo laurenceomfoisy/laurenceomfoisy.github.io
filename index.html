@@ -163,6 +163,24 @@
       .pres-strip-wrapper {
         position: relative;
       }
+      .pres-strip-wrapper::before,
+      .pres-strip-wrapper::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        width: 60px;
+        height: 100%;
+        pointer-events: none;
+        z-index: 1;
+      }
+      .pres-strip-wrapper::before {
+        left: 0;
+        background: linear-gradient(to right, #f4f4f4, transparent);
+      }
+      .pres-strip-wrapper::after {
+        right: 0;
+        background: linear-gradient(to left, #f4f4f4, transparent);
+      }
       .pres-strip {
         display: flex;
         gap: 1.2em;
@@ -194,24 +212,6 @@
         object-fit: cover;
         display: block;
       }
-      .pres-strip-nav {
-        display: flex;
-        justify-content: center;
-        gap: 1.8em;
-        margin-top: 0.4em;
-      }
-      .pres-strip-btn {
-        background: none;
-        border: none;
-        color: #aaa;
-        font-size: 2em;
-        cursor: pointer;
-        padding: 0;
-        line-height: 1;
-        transition: color 0.2s;
-        user-select: none;
-      }
-      .pres-strip-btn:hover { color: #3e3e3e; }
     </style>
 
     <!-- Portfolio -->
@@ -244,25 +244,14 @@
             <a class="pres-strip-card" href="https://www.mfoisy.com/presentation_retro/index.html" target="_blank"><img src="images/pres_retro.png" alt="Retro" /></a>
           </div>
         </div>
-        <div class="pres-strip-nav">
-          <button class="pres-strip-btn" id="presStripPrev">&#8249;</button>
-          <button class="pres-strip-btn" id="presStripNext">&#8250;</button>
-        </div>
       </div>
     </article>
 
     <script>
     (function () {
       var strip = document.getElementById('presStrip');
-      var cardWidth = 280 + 19; // card width + gap
-      document.getElementById('presStripPrev').addEventListener('click', function () {
-        strip.scrollBy({ left: -cardWidth, behavior: 'smooth' });
-      });
-      document.getElementById('presStripNext').addEventListener('click', function () {
-        strip.scrollBy({ left: cardWidth, behavior: 'smooth' });
-      });
+      var cardWidth = 280 + 19;
       document.addEventListener('keydown', function (e) {
-        if (document.activeElement && document.activeElement.closest('#presStrip')) return;
         if (e.key === 'ArrowLeft') strip.scrollBy({ left: -cardWidth, behavior: 'smooth' });
         if (e.key === 'ArrowRight') strip.scrollBy({ left: cardWidth, behavior: 'smooth' });
       });
