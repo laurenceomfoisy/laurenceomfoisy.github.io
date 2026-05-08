@@ -5,6 +5,7 @@ author: Laurence-Olivier M. Foisy<br>Hubert Cadieux<br>Étienne Proulx<br>Yannic
 institute: Université Laval
 format:
   revealjs:
+    embed-resources: true
     mermaid: 
       theme: dark
     theme: night

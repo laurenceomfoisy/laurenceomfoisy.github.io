@@ -5,6 +5,7 @@ institute: Université Laval
 bibliography: references.bib
 format:
   revealjs:
+    embed-resources: true
     mermaid: 
       theme: dark
     theme: simple

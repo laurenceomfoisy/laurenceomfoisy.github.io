@@ -4,6 +4,7 @@ author: "Laurence-Olivier M. Foisy & Camille Pelletier"
 institute: "Université Laval"
 format:
   revealjs: 
+    embed-resources: true
     theme: night
     logo: images/clessn.png
     footer: "Le référencement"

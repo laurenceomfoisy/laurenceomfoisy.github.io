@@ -4,6 +4,7 @@ author: Camille Pelletier<br>Laurence-Olivier M. Foisy
 institute: Université Laval
 format:
   revealjs:
+    embed-resources: true
     mermaid: 
       theme: dark
     theme: simple

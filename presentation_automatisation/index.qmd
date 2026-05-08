@@ -5,6 +5,7 @@ author: "Laurence-Olivier M. Foisy"
 institute: "Université Laval"
 format:
   revealjs: 
+    embed-resources: true
     theme: default
     logo: images/ul_logo.png
     footer: "Automatisation de la science"

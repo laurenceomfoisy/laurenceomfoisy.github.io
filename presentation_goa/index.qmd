@@ -5,6 +5,7 @@ author: "Laurence-Olivier M. Foisy & Adrien Cloutier"
 institute: "Université Laval"
 format:
   revealjs: 
+    embed-resources: true
     mermaid: 
       theme: dark
     theme: night

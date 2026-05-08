@@ -5,6 +5,7 @@ author: "<table style='margin-top: -290px; width: 100%; text-align: center;'><tr
 institute: "Université Laval"
 format:
   revealjs: 
+    embed-resources: true
     theme: night
     logo: images/ul_logo.png
     footer: "Ain't No Party Like a GPT Party"
