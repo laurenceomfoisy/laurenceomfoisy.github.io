@@ -27,7 +27,9 @@ PRESENTATIONS = [
         "images/pres_intro_r.png",
     ),
     ("presentation_ollama/index.html", "images/pres_beyond.png"),
-    ("presentation_retro/index.html", "images/pres_retro.png"),
+    # CPSA 2026 deck is a Next.js app, not a reveal.js file:// deck. Generate its
+    # thumbnail from the running deck instead of batch mode:
+    #   python generate_thumbnail.py http://localhost:3000 images/pres_cpsa_2026.png
     ("presentation_mpsa_2025/pres.html", "images/pres_mpsa_2025.png"),
     # Non-grid presentations (thumbnails generated for future use)
     ("presentation_automatisation/index.html", "images/pres_automatisation.png"),
@@ -46,30 +48,33 @@ PRESENTATIONS = [
 
 def generate_thumbnail(html_path, output_path, width=1920, height=1080):
     """
-    Generate a thumbnail from the first slide of a reveal.js presentation.
+    Generate a thumbnail from the first slide of a presentation.
+
+    Accepts either a local HTML file path (reveal.js decks) or an http(s) URL
+    (e.g. a running Next.js deck at http://localhost:3000). For reveal decks it
+    waits for the slides container; for anything else it falls back to a short
+    settle delay after network idle.
 
     Args:
-        html_path: Path to the HTML file
+        html_path: Path to the HTML file, or an http(s) URL
         output_path: Path where to save the thumbnail PNG
         width: Screenshot width in pixels (default: 1920)
         height: Screenshot height in pixels (default: 1080)
     """
-    # Convert to absolute paths
-    html_path = Path(html_path).resolve()
     output_path = Path(output_path).resolve()
-
-    # Ensure output directory exists
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # Check if input file exists
-    if not html_path.exists():
-        print(f"Error: HTML file not found: {html_path}", file=sys.stderr)
-        sys.exit(1)
+    is_url = str(html_path).startswith(("http://", "https://"))
+    if is_url:
+        url = str(html_path)
+    else:
+        html_path = Path(html_path).resolve()
+        if not html_path.exists():
+            print(f"Error: HTML file not found: {html_path}", file=sys.stderr)
+            sys.exit(1)
+        url = f"file://{html_path}"
 
-    # Use file:// URL for local files
-    url = f"file://{html_path}"
-
-    print(f"Generating thumbnail from: {html_path}")
+    print(f"Generating thumbnail from: {url}")
     print(f"Output will be saved to: {output_path}")
 
     with sync_playwright() as p:
@@ -83,8 +88,11 @@ def generate_thumbnail(html_path, output_path, width=1920, height=1080):
             # Navigate to the presentation
             page.goto(url, wait_until="networkidle")
 
-            # Wait for reveal.js to initialize
-            page.wait_for_selector(".reveal .slides", timeout=10000)
+            # Wait for reveal.js to initialize; fall back for non-reveal decks
+            try:
+                page.wait_for_selector(".reveal .slides", timeout=4000)
+            except Exception:
+                page.wait_for_timeout(1500)
 
             # Additional wait to ensure fonts and images are loaded
             page.wait_for_timeout(1000)
