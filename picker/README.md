@@ -29,7 +29,21 @@ Start the local development server:
 ```bash
 npm run dev
 ```
-This command spins up a web server at [http://localhost:3000](http://localhost:3000) where you can view and interact with the stock screener.
+This command spins up a web server at [http://localhost:3000](http://localhost:3000) where you can walk through the guided wizard.
+
+---
+
+## 🧭 How to Use It
+
+SoundHype is a five-step guided wizard, not a set of tabs — each step builds on the last, and your choices carry forward automatically:
+
+1. **The idea** — what the tool does, how the Quality/Hype scores work, and a data-honesty box showing how fresh `portfolio_data.json` is.
+2. **The universe** — every scored stock as a searchable, sortable card list; tap a card for the full detail sheet (all metrics, plain-English verdicts).
+3. **Your floor** — five quality filters (cash flow, debt, current ratio, growth, market cap) you can loosen or tighten, each with a live "removes N of 392" count so you see the tradeoff.
+4. **Build** — set an investment amount, tune the four scoring weights (quality, momentum, growth, value), and watch the ranked allocation table update with sector caps and a "why it's here" line per pick.
+5. **Homework & track** — one study checklist per holding (gates the CSV export until you've done it), plus a simple tracker for what you actually bought.
+
+Every metric shown anywhere in the wizard is backed by an explanatory entry in `copy-deck.js` — `tests/deck-completeness.test.mjs` fails the build if a rendered metric key has no matching explanation.
 
 ---
 

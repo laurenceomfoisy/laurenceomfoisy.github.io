@@ -2,7 +2,7 @@
   "name": "soundhype-screener",
   "version": "1.0.0",
   "description": "Investment screener combining fundamental soundness with market hype",
-  "main": "app.js",
+  "main": "wizard.js",
   "scripts": {
     "dev": "./venv/bin/python3 app.py",
     "test": "node --test tests/*.test.mjs"
