@@ -695,10 +695,278 @@ function openStockSheet(ticker) {
     closeBtn.focus();
 }
 
+// Step 3 — "Set your floor": the five quality-floor rules as explained
+// cards with live kill counts. Each rule maps to exactly one field on
+// WizardState.floor (same shape as PortfolioBuilder.DEFAULT_FLOOR).
+// Disabling a rule sets that field to its disabled sentinel (see
+// migrateLegacyState's comment on why these are finite, not +/-Infinity)
+// rather than tracking a separate on/off flag — "enabled" is always
+// derivable from WizardState.floor alone, so nothing can drift out of sync
+// across a reload. Copy adapted from the old three-tab UI's `title=`
+// tooltips (old index.html:295-315), same voice as Steps 1-2.
+const FLOOR_RULES = [
+    {
+        id: 'fcf',
+        field: 'hypergrowthRevenueGrowth',
+        disabledValue: -Number.MAX_VALUE,
+        title: 'Positive free cash flow',
+        protects: 'Keeps out companies that depend on investors’ goodwill to survive because they burn more cash than they bring in — unless they’re a hypergrowth company burning cash on purpose to grow.',
+        warning: 'You are now allowing companies that burn cash and aren’t growing fast enough to justify it.',
+        min: 0, max: 1, step: 0.01,
+        thresholdLabel: (v) => `Hypergrowth exception: companies growing revenue faster than ${Math.round(v * 100)}%/yr are allowed to burn cash`,
+    },
+    {
+        id: 'current',
+        field: 'minCurrentRatio',
+        disabledValue: -Number.MAX_VALUE,
+        title: 'Current ratio ≥ 1',
+        protects: 'Keeps out companies that may not be able to pay the bills coming due this year with what they can turn into cash this year.',
+        warning: 'You are now allowing companies that may not be able to pay this year’s bills with this year’s assets.',
+        min: 0.2, max: 3, step: 0.1,
+        thresholdLabel: (v) => `Minimum current ratio: ${v.toFixed(1)}`,
+    },
+    {
+        id: 'debt',
+        field: 'maxDebtToEquity',
+        disabledValue: Number.MAX_VALUE,
+        title: 'Debt-to-equity ≤ 2.0×',
+        protects: 'Keeps out companies so loaded with debt that a bad year could wipe out shareholders before it even touches the lenders.',
+        warning: 'You are now allowing companies that owe more — sometimes far more — than shareholders actually own.',
+        min: 50, max: 500, step: 10,
+        thresholdLabel: (v) => `Maximum debt-to-equity: ${(v / 100).toFixed(1)}×`,
+    },
+    {
+        id: 'rev',
+        field: 'minRevenueGrowth',
+        disabledValue: -Number.MAX_VALUE,
+        title: 'Revenue growing (YoY > 0)',
+        protects: 'Keeps out companies whose sales are shrinking — a growth portfolio holding a shrinking business defeats the purpose.',
+        warning: 'You are now allowing companies whose sales are shrinking, not growing — the opposite of what a growth portfolio is supposed to hold.',
+        min: -0.1, max: 0.2, step: 0.01,
+        thresholdLabel: (v) => `Minimum revenue growth: ${v >= 0 ? '+' : ''}${Math.round(v * 100)}%/yr`,
+    },
+    {
+        id: 'mcap',
+        field: 'minMarketCap',
+        disabledValue: 0,
+        title: 'Market cap ≥ $2B',
+        protects: 'Keeps out companies small enough to be lottery-ticket territory — more volatile, thinner trading, less scrutinized than a novice should take on.',
+        warning: 'You are now allowing small, thinly-traded companies — lottery-ticket territory for a novice.',
+        min: 0, max: 10e9, step: 0.5e9,
+        thresholdLabel: (v) => `Minimum market cap: $${(v / 1e9).toFixed(1)}B`,
+    },
+];
+
+function floorAllDisabledConfig() {
+    const cfg = {};
+    FLOOR_RULES.forEach((r) => { cfg[r.field] = r.disabledValue; });
+    return cfg;
+}
+
+function floorRuleEnabled(rule) {
+    return WizardState.floor[rule.field] !== rule.disabledValue;
+}
+
+// Per-visit cache of "last value the user actually set" for each rule, so
+// switching a rule off and back on restores where it was instead of
+// snapping to the shipped default. Reset whenever the step is (re)entered —
+// mirrors the universeQuery/universeSector reset pattern in Step 2. Not
+// part of WizardState: the persisted floor shape must match
+// PortfolioBuilder.DEFAULT_FLOOR exactly, so "what to show while off" is a
+// pure UI concern, not saved state.
+let floorLastValues = {};
+
+// The value a rule's threshold control (and its own kill count) should use
+// right now: the live WizardState value if the rule is on, otherwise the
+// last value the user chose this visit, otherwise the shipped default.
+function floorEffectiveValue(rule) {
+    if (floorRuleEnabled(rule)) return WizardState.floor[rule.field];
+    if (rule.id in floorLastValues) return floorLastValues[rule.id];
+    return PortfolioBuilder.DEFAULT_FLOOR[rule.field];
+}
+
+// "This rule alone removes N of {universe.length}" — universe run through
+// applyQualityFloor with every OTHER rule at its disabled sentinel and this
+// one at its current/last threshold. Computed against the full universe
+// (appData.stocks), not the current survivor set, so kill counts never
+// compound with each other.
+function floorRuleKillCount(rule, universe) {
+    const cfg = floorAllDisabledConfig();
+    cfg[rule.field] = floorEffectiveValue(rule);
+    const survivors = PortfolioBuilder.applyQualityFloor(universe, cfg);
+    return universe.length - survivors.length;
+}
+
+function floorSurvivorCount(universe) {
+    return PortfolioBuilder.applyQualityFloor(universe, WizardState.floor).length;
+}
+
+// Builds one full-width rule card. `notifyChange` is called after every
+// commit (toggle flip or slider drag) so the caller can refresh every
+// card's kill count plus the survivor bar — kill counts are cheap (392
+// stocks x 5 rules) so a full recompute on every change is simpler than
+// tracking which cards actually need updating, and stays correct even
+// though only the changed rule's own count could, in principle, change.
+function buildFloorCard(rule, universe, notifyChange) {
+    const card = el('article', 'floor-card');
+
+    const head = el('div', 'floor-card-head');
+    head.appendChild(el('h3', 'floor-card-title', rule.title));
+
+    const toggleLabel = el('label', 'floor-toggle');
+    const toggleInput = document.createElement('input');
+    toggleInput.type = 'checkbox';
+    toggleInput.className = 'floor-toggle-input';
+    toggleInput.setAttribute('aria-label', `Turn the "${rule.title}" rule on or off`);
+    toggleLabel.appendChild(toggleInput);
+    toggleLabel.appendChild(el('span', 'floor-toggle-track', '<span class="floor-toggle-thumb"></span>'));
+    head.appendChild(toggleLabel);
+    card.appendChild(head);
+
+    card.appendChild(el('p', 'floor-card-protects', rule.protects));
+
+    const thresholdRow = el('div', 'floor-threshold-row');
+    const thresholdLabel = el('label', 'floor-threshold-label', '');
+    thresholdLabel.setAttribute('for', `floorThresh-${rule.id}`);
+    const rangeInput = document.createElement('input');
+    rangeInput.type = 'range';
+    rangeInput.id = `floorThresh-${rule.id}`;
+    rangeInput.min = String(rule.min);
+    rangeInput.max = String(rule.max);
+    rangeInput.step = String(rule.step);
+    thresholdRow.appendChild(thresholdLabel);
+    thresholdRow.appendChild(rangeInput);
+    card.appendChild(thresholdRow);
+
+    const killLine = el('p', 'floor-kill', '');
+    card.appendChild(killLine);
+
+    const warningLine = el('p', 'floor-warning tone-caution hidden', rule.warning);
+    card.appendChild(warningLine);
+
+    function commit(enabled, value) {
+        if (enabled) {
+            WizardState.floor[rule.field] = value;
+            floorLastValues[rule.id] = value;
+        } else {
+            floorLastValues[rule.id] = WizardState.floor[rule.field];
+            WizardState.floor[rule.field] = rule.disabledValue;
+        }
+        saveState();
+        notifyChange();
+    }
+
+    toggleInput.addEventListener('change', () => {
+        if (toggleInput.checked) {
+            const restore = rule.id in floorLastValues ? floorLastValues[rule.id] : PortfolioBuilder.DEFAULT_FLOOR[rule.field];
+            commit(true, restore);
+        } else {
+            commit(false);
+        }
+    });
+
+    rangeInput.addEventListener('input', () => {
+        commit(true, Number(rangeInput.value));
+    });
+
+    function refresh() {
+        const enabled = floorRuleEnabled(rule);
+        const value = floorEffectiveValue(rule);
+        toggleInput.checked = enabled;
+        rangeInput.value = String(value);
+        rangeInput.disabled = !enabled;
+        thresholdLabel.textContent = rule.thresholdLabel(value);
+        const kill = floorRuleKillCount(rule, universe);
+        killLine.innerHTML = `This rule alone removes <strong>${kill}</strong> of ${universe.length}.`;
+        card.classList.toggle('floor-card-off', !enabled);
+        warningLine.classList.toggle('hidden', enabled);
+    }
+
+    return { node: card, refresh };
+}
+
+// Sticky survivor bar: total survivors under every currently-enabled rule
+// combined, plus the "Rank the survivors" CTA into Step 4.
+function buildFloorBar(universe) {
+    const bar = el('div', 'floor-bar');
+    const inner = el('div', 'floor-bar-inner');
+    const textWrap = el('div', 'floor-bar-text');
+    const countLine = el('div', 'floor-bar-count', '');
+    const messageLine = el('p', 'floor-bar-message hidden', '');
+    textWrap.appendChild(countLine);
+    textWrap.appendChild(messageLine);
+    inner.appendChild(textWrap);
+
+    const cta = el('button', 'step-cta floor-bar-cta', 'Rank the survivors →');
+    cta.type = 'button';
+    cta.addEventListener('click', () => showStep(4));
+    inner.appendChild(cta);
+
+    bar.appendChild(inner);
+
+    function refresh() {
+        const survivors = floorSurvivorCount(universe);
+        countLine.innerHTML = `<strong>${survivors}</strong> of ${universe.length} survive your floor`;
+        bar.classList.remove('tone-caution-bg', 'tone-bad-bg');
+        messageLine.classList.add('hidden');
+        messageLine.textContent = '';
+        const minCount = (WizardState.guardrails && WizardState.guardrails.count) || 18;
+        if (survivors < minCount) {
+            bar.classList.add('tone-bad-bg');
+            messageLine.textContent = `That is fewer survivors than your portfolio needs (at least ${minCount}) — loosen a rule before moving on.`;
+            messageLine.classList.remove('hidden');
+        } else if (survivors < 40) {
+            bar.classList.add('tone-caution-bg');
+            messageLine.textContent = 'Your floor is tighter than your portfolio — loosen something or accept fewer picks.';
+            messageLine.classList.remove('hidden');
+        }
+    }
+
+    return { node: bar, refresh };
+}
+
+function renderFloorStep(root) {
+    const universe = appData.stocks || [];
+    floorLastValues = {};
+
+    if (universe.length === 0) {
+        root.innerHTML = `
+            <h1>Set your floor</h1>
+            <p class="tone-na">Still loading the universe — hang tight.</p>
+        `;
+        return;
+    }
+
+    root.innerHTML = `
+        <h1>Set your floor</h1>
+        <p>Before we rank anything, we throw out the junk. Each rule below removes companies with a specific disease. You can turn any of them off — but you'll be told what you're letting in.</p>
+        <div class="floor-cards" id="floorCards"></div>
+        <div class="floor-spacer"></div>
+    `;
+
+    const cardsRoot = root.querySelector('#floorCards');
+    const cardEls = {};
+
+    function refreshAll() {
+        FLOOR_RULES.forEach((rule) => cardEls[rule.id].refresh());
+        bar.refresh();
+    }
+
+    FLOOR_RULES.forEach((rule) => {
+        cardEls[rule.id] = buildFloorCard(rule, universe, refreshAll);
+        cardsRoot.appendChild(cardEls[rule.id].node);
+    });
+
+    const bar = buildFloorBar(universe);
+    root.appendChild(bar.node);
+
+    refreshAll();
+}
+
 const STEPS = {
     1: { title: STEP_TITLES[0], render: renderIdeaStep },
     2: { title: STEP_TITLES[1], render: renderUniverseStep },
-    3: stubStep(STEP_TITLES[2]),
+    3: { title: STEP_TITLES[2], render: renderFloorStep },
     4: stubStep(STEP_TITLES[3]),
     5: stubStep(STEP_TITLES[4]),
 };

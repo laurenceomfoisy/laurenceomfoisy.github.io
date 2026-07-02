@@ -867,3 +867,204 @@ body.sheet-open {
 .sheet-group:last-child {
     margin-bottom: 0;
 }
+
+/* --- Step 3: Set your floor (Task 6) --- */
+.floor-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.floor-card {
+    border: 1px solid var(--border-color);
+    border-radius: 1rem;
+    padding: 1.35rem 1.5rem 1.5rem;
+    background: var(--bg-card);
+    transition: border-color 0.2s ease;
+}
+
+.floor-card-off {
+    border-color: rgba(251, 191, 36, 0.45);
+}
+
+.floor-card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 0.6rem;
+}
+
+.floor-card-title {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.floor-card-protects {
+    font-size: 0.92rem;
+    max-width: none;
+    margin-bottom: 1.1rem;
+}
+
+/* Toggle switch */
+.floor-toggle {
+    position: relative;
+    display: inline-flex;
+    flex: none;
+    cursor: pointer;
+}
+
+.floor-toggle-input {
+    position: absolute;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
+}
+
+.floor-toggle-track {
+    display: block;
+    width: 2.6rem;
+    height: 1.5rem;
+    border-radius: 50px;
+    background: rgba(148, 163, 184, 0.2);
+    border: 1px solid var(--border-color);
+    position: relative;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.floor-toggle-thumb {
+    position: absolute;
+    top: 0.14rem;
+    left: 0.14rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    border-radius: 50%;
+    background: var(--text-secondary);
+    transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.floor-toggle-input:checked + .floor-toggle-track {
+    background: rgba(52, 211, 153, 0.35);
+    border-color: rgba(52, 211, 153, 0.5);
+}
+
+.floor-toggle-input:checked + .floor-toggle-track .floor-toggle-thumb {
+    transform: translateX(1.1rem);
+    background: var(--tone-good);
+}
+
+.floor-toggle-input:focus-visible + .floor-toggle-track {
+    outline: 2px solid #818cf8;
+    outline-offset: 2px;
+}
+
+.floor-threshold-row {
+    margin-bottom: 0.9rem;
+}
+
+.floor-threshold-label {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.floor-threshold-row input[type="range"] {
+    width: 100%;
+    accent-color: #818cf8;
+    height: 1.1rem;
+    cursor: pointer;
+}
+
+.floor-threshold-row input[type="range"]:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.floor-kill {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    max-width: none;
+    margin-bottom: 0;
+}
+
+.floor-kill strong {
+    color: var(--text-primary);
+    font-family: var(--font-head);
+}
+
+.floor-warning {
+    font-size: 0.88rem;
+    max-width: none;
+    margin: 0.75rem 0 0;
+    padding-top: 0.75rem;
+    border-top: 1px dashed rgba(251, 191, 36, 0.35);
+    font-weight: 600;
+}
+
+/* Sticky survivor bar */
+.floor-spacer {
+    height: 6.5rem;
+}
+
+.floor-bar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    background: rgba(10, 13, 22, 0.94);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--border-color);
+    padding: 1rem 1.5rem;
+    transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.floor-bar.tone-caution-bg {
+    border-top-color: rgba(251, 191, 36, 0.4);
+    background: rgba(41, 30, 6, 0.92);
+}
+
+.floor-bar.tone-bad-bg {
+    border-top-color: rgba(248, 113, 113, 0.4);
+    background: rgba(43, 12, 12, 0.92);
+}
+
+.floor-bar-inner {
+    max-width: 52rem;
+    margin-inline: auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.5rem;
+}
+
+.floor-bar-text {
+    flex: 1 1 16rem;
+}
+
+.floor-bar-count {
+    font-size: 1.05rem;
+}
+
+.floor-bar-count strong {
+    font-family: var(--font-head);
+    font-size: 1.2rem;
+}
+
+.floor-bar-message {
+    font-size: 0.85rem;
+    color: var(--tone-caution);
+    max-width: none;
+    margin: 0.2rem 0 0;
+}
+
+.floor-bar.tone-bad-bg .floor-bar-message {
+    color: var(--tone-bad);
+}
+
+.floor-bar-cta {
+    flex: none;
+}
