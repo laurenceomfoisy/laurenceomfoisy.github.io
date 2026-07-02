@@ -31,6 +31,19 @@
         return tpl.replace(/\{(\w+)\}/g, (m, name) => (name in vars ? vars[name] : m));
     }
 
+    // HTML-entity-escapes a string. Duplicated from wizard.js's esc() (this
+    // module has no DOM and can't depend on wizard.js) — used wherever a
+    // stock-sourced string (e.g. ticker) is spliced into a verdict string
+    // that eventually reaches innerHTML via renderVerdictLine.
+    function escapeHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    }
+
     // Maps `key` + a stock's value through CopyDeck's ranges to a verdict.
     function interpret(key, stock, universe) {
         const entry = CopyDeck.metrics[key];
@@ -40,10 +53,23 @@
         if (value === null) {
             const template = (entry && entry.missing) || CopyDeck.GENERIC_MISSING;
             return {
-                verdict: fillTemplate(template, { ticker }),
+                verdict: fillTemplate(template, { ticker: escapeHtml(ticker) }),
                 tone: 'na',
                 value: null,
                 display: '—',
+            };
+        }
+
+        // Value exists but CopyDeck has no entry for this key (e.g. a typo'd
+        // or newly-added metric key not yet in the deck). Fail soft rather
+        // than throwing on entry.ranges below — callers just get a blank,
+        // neutral verdict instead of a crash.
+        if (!entry) {
+            return {
+                verdict: '',
+                tone: 'na',
+                value,
+                display: String(value),
             };
         }
 

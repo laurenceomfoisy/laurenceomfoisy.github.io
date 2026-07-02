@@ -113,6 +113,18 @@ h1, h2, h3, h4 {
     border-color: rgba(251, 191, 36, 0.35);
 }
 
+@media (max-width: 640px) {
+    .site-header {
+        flex-wrap: wrap;
+    }
+
+    .data-chip {
+        white-space: normal;
+        font-size: 0.7rem;
+        padding: 0.3rem 0.65rem;
+    }
+}
+
 /* --- Progress rail --- */
 #progressRail {
     max-width: 52rem;
