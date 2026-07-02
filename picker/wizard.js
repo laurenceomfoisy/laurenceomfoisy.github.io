@@ -103,6 +103,21 @@ function el(tag, cls, html) {
     return node;
 }
 
+// HTML-entity-escapes a string for safe interpolation into innerHTML/template
+// literals. Backend-sourced stock fields (ticker, name, sector, ceo, summary)
+// come from Yahoo Finance scrapes (portfolio_data.json, /api/add-ticker) and
+// must never be trusted verbatim in markup. Not for use on values passed to
+// setAttribute (which doesn't parse HTML — escaping there would corrupt the
+// value, e.g. "AT&T" -> "AT&amp;T" in an aria-label).
+function esc(s) {
+    return String(s == null ? '' : s)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 // Appends each node to `container` preceded by a whitespace-only newline
 // text node. Purely cosmetic for humans/tools reading serialized HTML
 // (headless-Chromium DOM dumps, view-source) — repeated block elements
@@ -375,9 +390,9 @@ function buildStockCard(stock, universe) {
     card.setAttribute('aria-label', `Open detail sheet for ${stock.ticker}`);
 
     const top = el('div', 'stock-card-top');
-    top.appendChild(el('span', 'stock-card-ticker', stock.ticker));
-    top.appendChild(el('span', 'stock-card-name', stock.name || stock.ticker));
-    top.appendChild(el('span', 'sector-chip', stock.sector || 'Unknown sector'));
+    top.appendChild(el('span', 'stock-card-ticker', esc(stock.ticker)));
+    top.appendChild(el('span', 'stock-card-name', esc(stock.name || stock.ticker)));
+    top.appendChild(el('span', 'sector-chip', esc(stock.sector || 'Unknown sector')));
     card.appendChild(top);
 
     const priceRow = el('div', 'stock-card-price-row');
@@ -500,7 +515,7 @@ function renderUniverseStep(root) {
             <input type="search" class="universe-search" id="universeSearch" placeholder="Search by name or ticker" value="${universeQuery.replace(/"/g, '&quot;')}">
             <select class="universe-select" id="universeSectorSelect">
                 <option value="">All sectors</option>
-                ${sectors.map((s) => `<option value="${s}"${s === universeSector ? ' selected' : ''}>${s}</option>`).join('')}
+                ${sectors.map((s) => `<option value="${esc(s)}"${s === universeSector ? ' selected' : ''}>${esc(s)}</option>`).join('')}
             </select>
             <select class="universe-select" id="universeSortSelect">
                 ${UNIVERSE_SORT_OPTIONS.map((o) => `<option value="${o.value}"${o.value === universeSort ? ' selected' : ''}>${o.label}</option>`).join('')}
@@ -568,7 +583,19 @@ function renderUniverseStep(root) {
 // Full-screen detail sheet for one stock. Top-level so Tasks 6/7 can call
 // it directly from their own tables/lists.
 function openStockSheet(ticker) {
-    document.querySelectorAll('.sheet-overlay').forEach((n) => n.remove());
+    // Focus lives on whatever triggered this (a card, or another sheet's
+    // control) — remember it before touching the DOM so closeSheet() can
+    // hand it back later.
+    const previouslyFocused = document.activeElement;
+
+    // A sheet may already be open (e.g. a second card activated via
+    // keyboard before the first sheet's Escape listener fires). Route
+    // through the existing sheet's own closeSheet() — stored on the overlay
+    // by the code below — rather than a bare .remove(), so its document-level
+    // Escape listener is torn down too instead of leaking.
+    document.querySelectorAll('.sheet-overlay').forEach((n) => {
+        if (n._close) n._close(); else n.remove();
+    });
 
     const universe = appData.stocks || [];
     const stock = universe.find((s) => s.ticker === ticker);
@@ -576,15 +603,47 @@ function openStockSheet(ticker) {
 
     const overlay = el('div', 'sheet-overlay');
     const sheet = el('div', 'sheet');
+    sheet.setAttribute('role', 'dialog');
+    sheet.setAttribute('aria-modal', 'true');
     overlay.appendChild(sheet);
+
+    function focusableEls() {
+        return Array.from(sheet.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        ));
+    }
 
     function closeSheet() {
         overlay.remove();
         document.body.classList.remove('sheet-open');
         document.removeEventListener('keydown', onKeydown);
+        if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+            previouslyFocused.focus();
+        }
     }
+    overlay._close = closeSheet;
+
     function onKeydown(e) {
-        if (e.key === 'Escape') closeSheet();
+        if (e.key === 'Escape') {
+            closeSheet();
+            return;
+        }
+        if (e.key === 'Tab') {
+            // Simple focus trap: wrap Tab/Shift+Tab between the first and
+            // last focusable elements so background cards (still tabbable
+            // in the DOM) never receive focus while the sheet is open.
+            const focusables = focusableEls();
+            if (focusables.length === 0) return;
+            const first = focusables[0];
+            const last = focusables[focusables.length - 1];
+            if (e.shiftKey && document.activeElement === first) {
+                e.preventDefault();
+                last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+                e.preventDefault();
+                first.focus();
+            }
+        }
     }
 
     const closeBtn = el('button', 'sheet-close', 'Close ✕');
@@ -594,18 +653,18 @@ function openStockSheet(ticker) {
     sheet.appendChild(closeBtn);
 
     const header = el('div', 'sheet-header');
-    header.appendChild(el('div', 'sheet-ticker', stock.ticker));
-    header.appendChild(el('h1', 'sheet-name', stock.name || stock.ticker));
+    header.appendChild(el('div', 'sheet-ticker', esc(stock.ticker)));
+    header.appendChild(el('h1', 'sheet-name', esc(stock.name || stock.ticker)));
     const metaRow = el('div', 'sheet-meta-row');
-    metaRow.appendChild(el('span', 'sector-chip', stock.sector || 'Unknown sector'));
+    metaRow.appendChild(el('span', 'sector-chip', esc(stock.sector || 'Unknown sector')));
     metaRow.appendChild(el('span', 'sheet-price', formatUsdPrice(stock.price)));
     header.appendChild(metaRow);
     header.appendChild(renderMetricLine('market_cap', stock, universe));
     sheet.appendChild(header);
 
     const summaryBlock = el('div', 'sheet-summary');
-    if (stock.summary) summaryBlock.appendChild(el('p', '', firstSentences(stock.summary, 2)));
-    summaryBlock.appendChild(el('p', 'sheet-ceo', `CEO: ${stock.ceo || 'Not listed'}`));
+    if (stock.summary) summaryBlock.appendChild(el('p', '', esc(firstSentences(stock.summary, 2))));
+    summaryBlock.appendChild(el('p', 'sheet-ceo', `CEO: ${esc(stock.ceo || 'Not listed')}`));
     sheet.appendChild(summaryBlock);
 
     const scoreStrip = el('div', 'score-strip');
@@ -633,6 +692,7 @@ function openStockSheet(ticker) {
 
     document.body.appendChild(overlay);
     document.body.classList.add('sheet-open');
+    closeBtn.focus();
 }
 
 const STEPS = {
