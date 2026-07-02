@@ -263,16 +263,7 @@ function renderSparkline(prices, isPositive) {
     </svg>`;
 }
 
-// --- Steps (Tasks 4-7 replace these render bodies) ------------------------
-
-function stubStep(title) {
-    return {
-        title,
-        render(root) {
-            root.innerHTML = `<h1>${title}</h1><p>Coming in a later task.</p>`;
-        },
-    };
-}
+// --- Steps -----------------------------------------------------------------
 
 // Step 1 — "The idea": narrative + data honesty. Pure copy and layout, no
 // state to read or write beyond the CTA's showStep(2). Tolerates rendering
@@ -963,12 +954,786 @@ function renderFloorStep(root) {
     refreshAll();
 }
 
+// Step 4/5 — "Build" and "Homework & track": both steps rank against the
+// SAME survivor set (WizardState.floor) and build the SAME weighted
+// allocation (WizardState.weights + guardrails), so this pipeline is
+// factored out here rather than duplicated — Step 5's study sheets always
+// describe exactly what Step 4's table shows, even if a user jumps straight
+// to #step-5 without visiting Step 4 first.
+function computeAllocation(universe) {
+    const survivors = PortfolioBuilder.applyQualityFloor(universe, WizardState.floor);
+    const ranked = PortfolioBuilder.computeGrowthScores(survivors, WizardState.weights);
+    const picked = PortfolioBuilder.selectPortfolio(ranked, {
+        n: WizardState.guardrails.count,
+        sectorCapPct: WizardState.guardrails.sectorCapPct,
+    });
+    const weighted = PortfolioBuilder.computeWeights(picked, {
+        minPct: WizardState.guardrails.minPosPct,
+        maxPct: WizardState.guardrails.maxPosPct,
+    });
+    return { survivors, ranked, picked, weighted };
+}
+
+// Re-walks the exact greedy pass PortfolioBuilder.selectPortfolio uses (rank
+// order, sector cap, dedup by company) but records which candidates were
+// rejected purely for hitting their sector's cap. selectPortfolio itself
+// only returns the picks, not the reasons, and the core module is out of
+// scope for this task — so this mirrors its branches exactly (same order,
+// same conditions) rather than guessing from the output.
+function computeSectorCapSkips(ranked, guardrails) {
+    const n = guardrails.count;
+    const sectorCapPct = guardrails.sectorCapPct;
+    const maxPerSector = Math.max(1, Math.floor(n * sectorCapPct / 100));
+    const perSector = {};
+    const seenCompanies = new Set();
+    const skips = [];
+    let pickedCount = 0;
+    for (const s of ranked) {
+        if (pickedCount >= n) break;
+        const company = s.name || s.ticker;
+        const sector = s.sector || 'Unknown';
+        if (seenCompanies.has(company)) continue; // dual share class, not a cap skip
+        if ((perSector[sector] || 0) >= maxPerSector) {
+            skips.push({ ticker: s.ticker, sector, capPct: sectorCapPct });
+            continue;
+        }
+        perSector[sector] = (perSector[sector] || 0) + 1;
+        seenCompanies.add(company);
+        pickedCount++;
+    }
+    return skips;
+}
+
+// The four inputs to a growth score, each as its raw contribution
+// (weight_i * percentile_i) — mirrors PortfolioBuilder.computeGrowthScores'
+// own math exactly (same series, same percentile fn) so the drivers shown
+// always add up to the score displayed. Used by the "why it's here" line.
+function growthDrivers(stock, survivors, weights) {
+    const w = Object.assign({}, PortfolioBuilder.DEFAULT_WEIGHTS, weights || {});
+    const revSeries = survivors.map((s) => s.revenue_growth);
+    const earnSeries = survivors.map((s) => s.earnings_growth);
+    const momOf = (s) => (s.momentum_6m + s.momentum_1y) / 2;
+    const momSeries = survivors.map(momOf);
+    const pct = (series, v) => PortfolioBuilder.computePercentile(series, v);
+
+    const drivers = [
+        { key: 'revenue_growth', label: 'revenue growth', weight: w.revenue_growth, pctile: pct(revSeries, stock.revenue_growth) },
+        { key: 'earnings_growth', label: 'earnings growth', weight: w.earnings_growth, pctile: pct(earnSeries, stock.earnings_growth) },
+        { key: 'momentum', label: 'momentum', weight: w.momentum, pctile: pct(momSeries, momOf(stock)) },
+        { key: 'quality', label: 'quality', weight: w.quality, pctile: (stock.scores && isFinite(stock.scores.quality)) ? stock.scores.quality : 0 },
+    ];
+    drivers.forEach((d) => { d.contribution = d.weight * d.pctile; });
+    drivers.sort((a, b) => b.contribution - a.contribution);
+    return drivers;
+}
+
+// Top-2 drivers by contribution, e.g. "Here mostly for momentum (94th pct)
+// and revenue growth (88th)."
+function whyItsHereLine(stock, survivors, weights) {
+    const drivers = growthDrivers(stock, survivors, weights);
+    const top = drivers.slice(0, 2);
+    if (top.every((d) => d.contribution <= 0)) return 'Squeaked in — no single metric here stands out.';
+    const parts = top.map((d, i) => `${d.label} (${Math.round(d.pctile)}th${i === 0 ? ' pct' : ''})`);
+    return `Here mostly for ${parts.join(' and ')}.`;
+}
+
+function formatCad(v) {
+    if (v === null || v === undefined || !isFinite(v)) return 'N/A';
+    return new Intl.NumberFormat('en-CA', { style: 'currency', currency: 'CAD', maximumFractionDigits: 0 }).format(v);
+}
+
+// Ported from old app.js's STUDY_CHECKLIST_ITEMS, rephrased to match the
+// task brief's five items (one-sentence explanation, why it's in the
+// portfolio, TipRanks cross-check, a sell trigger, accepting a 40% drawdown).
+const STUDY_CHECKLIST_ITEMS = [
+    'I can explain in one sentence what this company does and who pays it money.',
+    "I can explain why it's in this portfolio — which score(s) earned it a spot.",
+    'I checked the analyst consensus (e.g. TipRanks) and looked into any disagreement with this score.',
+    "I've named one specific thing that would make me sell it.",
+    'I accept this position could drop 40%+ in a bad year, and I would not panic-sell.',
+];
+
+// WizardState.homework[ticker] is a 5-item boolean array matching
+// STUDY_CHECKLIST_ITEMS by index. Missing/malformed entries default to all
+// unchecked rather than throwing, so a corrupted or legacy value never
+// blocks the sheet from rendering.
+function homeworkArr(ticker) {
+    const arr = WizardState.homework[ticker];
+    if (Array.isArray(arr) && arr.length === STUDY_CHECKLIST_ITEMS.length) return arr;
+    return STUDY_CHECKLIST_ITEMS.map(() => false);
+}
+
+function sheetComplete(ticker) {
+    return homeworkArr(ticker).every(Boolean);
+}
+
+// Weight-slider copy adapted from old index.html:330-342 tooltips.
+const WEIGHT_SLIDER_DEFS = [
+    { key: 'revenue_growth', label: 'Revenue growth', meaning: 'How fast sales grew over the last year — the most direct evidence a business is expanding.' },
+    { key: 'earnings_growth', label: 'Earnings growth', meaning: 'How fast profits grew. Noisier than revenue (one-off events distort it), hence the lower default weight.' },
+    { key: 'momentum', label: 'Momentum (6m + 1y)', meaning: 'Price performance over the last 6 months and year — recent winners tend to keep winning a little, for a while. This is the disciplined version of "buy what\'s booming."' },
+    { key: 'quality', label: 'Quality (tiebreaker)', meaning: 'The screener’s fundamental quality score — profitability, cash flow, safety. Favors real businesses over pure stories.' },
+];
+
+// Guardrail copy adapted from old index.html:352-364 tooltips.
+const GUARDRAIL_DEFS = [
+    { key: 'count', label: 'Portfolio size', meaning: 'How many stocks to hold. Fewer means each pick matters more; beyond ~25 you are rebuilding an index fund.', min: 10, max: 25, step: 1, suffix: '' },
+    { key: 'sectorCapPct', label: 'Max per sector', meaning: 'Largest share of holdings from a single sector. Stops an accidental all-in bet on one theme.', min: 10, max: 100, step: 5, suffix: '%' },
+    { key: 'maxPosPct', label: 'Max position', meaning: 'Largest single position. Caps how much one blow-up can hurt you.', min: 5, max: 15, step: 1, suffix: '%' },
+    { key: 'minPosPct', label: 'Min position', meaning: 'Smallest position worth holding. Below this a stock cannot move the needle either way.', min: 1, max: 5, step: 1, suffix: '%' },
+];
+
+// Builds one allocation-table row: rank, clickable stock (-> openStockSheet)
+// with its "why it's here" line, sector, weight %, and (only when an amount
+// is set) the CAD amount. `survivors` is the same set computeGrowthScores
+// ranked against, so the percentiles inside whyItsHereLine line up with the
+// score actually shown.
+function buildAllocationRow(stock, rank, survivors, hasAmount) {
+    const tr = document.createElement('tr');
+    tr.className = 'allocation-row';
+
+    const rankTd = document.createElement('td');
+    rankTd.className = 'allocation-rank';
+    rankTd.textContent = String(rank);
+    tr.appendChild(rankTd);
+
+    const stockTd = document.createElement('td');
+    const wrap = el('div', 'allocation-stock');
+    wrap.tabIndex = 0;
+    wrap.setAttribute('role', 'button');
+    wrap.setAttribute('aria-label', `Open detail sheet for ${stock.ticker}`);
+    wrap.appendChild(el('span', 'allocation-ticker', esc(stock.ticker)));
+    wrap.appendChild(el('span', 'allocation-name', esc(stock.name || stock.ticker)));
+    wrap.appendChild(el('p', 'allocation-why', esc(whyItsHereLine(stock, survivors, WizardState.weights))));
+    wrap.addEventListener('click', () => openStockSheet(stock.ticker));
+    wrap.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            openStockSheet(stock.ticker);
+        }
+    });
+    stockTd.appendChild(wrap);
+    tr.appendChild(stockTd);
+
+    const sectorTd = document.createElement('td');
+    sectorTd.appendChild(el('span', 'sector-chip', esc(stock.sector || 'Unknown sector')));
+    tr.appendChild(sectorTd);
+
+    const weightTd = document.createElement('td');
+    weightTd.className = 'val-bold';
+    weightTd.textContent = `${stock.weightPct.toFixed(2)}%`;
+    tr.appendChild(weightTd);
+
+    if (hasAmount) {
+        const amountTd = document.createElement('td');
+        amountTd.className = 'val-bold';
+        amountTd.textContent = formatCad(WizardState.amount * stock.weightPct / 100);
+        tr.appendChild(amountTd);
+    }
+
+    return tr;
+}
+
+// Step 4 — "Build": amount, weight sliders (auto-balancing), a live top-10
+// preview, guardrails, and the resulting allocation table + FX line. Every
+// dynamic piece funnels through refreshAll() so a single slider drag stays
+// consistent across the preview, the table, the shortfall warning, the
+// sector-cap footnote, and the FX line in one pass.
+function renderBuildStep(root) {
+    const universe = appData.stocks || [];
+
+    if (universe.length === 0) {
+        root.innerHTML = `
+            <h1>Build</h1>
+            <p class="tone-na">Still loading the universe — hang tight.</p>
+        `;
+        return;
+    }
+
+    root.innerHTML = `
+        <h1>Build</h1>
+        <p>This is where your floor and your priorities turn into an actual list of tickers and weights. Move a slider, watch the table below change — that is the whole point of doing this yourself instead of copying someone's stock tips.</p>
+
+        <section class="build-amount">
+            <label class="build-amount-label" for="buildAmountInput">How much are you investing?</label>
+            <div class="build-amount-row">
+                <span class="build-amount-prefix">$</span>
+                <input type="number" id="buildAmountInput" class="build-amount-input" min="0" step="100" inputmode="decimal" placeholder="e.g. 10000">
+                <span class="build-amount-suffix">CAD</span>
+            </div>
+            <p class="build-amount-hint">Leave this blank to browse weights only — dollar amounts show up below only once you fill this in. Nothing here is a default; it's only ever what you actually type.</p>
+        </section>
+
+        <section class="build-weights">
+            <h2>Growth scoring</h2>
+            <p>Survivors are ranked by percentile on each metric below, then blended by these weights. Drag one and the other three rebalance automatically so they always add to 100%.</p>
+            <div class="weight-sliders" id="weightSliders"></div>
+        </section>
+
+        <section class="build-preview">
+            <h2>Top 10 right now</h2>
+            <ol class="preview-list" id="previewList"></ol>
+            <p class="preview-note">Watch what your sliders do here.</p>
+        </section>
+
+        <section class="build-guardrails">
+            <h2>Guardrails</h2>
+            <p>Caps that stop the math from handing you 18 AI stocks.</p>
+            <div class="guardrail-grid" id="guardrailGrid"></div>
+        </section>
+
+        <section class="build-allocation">
+            <h2>Your allocation</h2>
+            <p class="allocation-shortfall hidden" id="allocShortfall"></p>
+            <div class="allocation-empty hidden" id="allocEmpty"></div>
+            <div class="allocation-table-wrap" id="allocationWrap">
+                <table class="allocation-table" id="allocationTable">
+                    <thead id="allocationThead"></thead>
+                    <tbody id="allocationBody"></tbody>
+                </table>
+            </div>
+            <p class="allocation-skips" id="allocationSkips"></p>
+            <p class="allocation-fx hidden" id="allocationFx"></p>
+        </section>
+
+        <button type="button" class="step-cta" id="buildCta">Do the homework →</button>
+    `;
+
+    // --- Amount ---
+    const amountInput = root.querySelector('#buildAmountInput');
+    amountInput.value = (typeof WizardState.amount === 'number') ? String(WizardState.amount) : '';
+    amountInput.addEventListener('input', () => {
+        const raw = amountInput.value.trim();
+        if (raw === '') {
+            WizardState.amount = null;
+        } else {
+            const n = Number(raw);
+            WizardState.amount = (isFinite(n) && n > 0) ? n : null;
+        }
+        saveState();
+        refreshAll();
+    });
+
+    // --- Weight sliders ---
+    const slidersRoot = root.querySelector('#weightSliders');
+    const sliderEls = {};
+    WEIGHT_SLIDER_DEFS.forEach((def) => {
+        const item = el('div', 'weight-slider-item');
+        const head = el('div', 'weight-slider-head');
+        head.appendChild(el('span', 'weight-slider-label', esc(def.label)));
+        const valEl = el('span', 'weight-slider-value', '');
+        head.appendChild(valEl);
+        item.appendChild(head);
+        item.appendChild(el('p', 'weight-slider-meaning', esc(def.meaning)));
+        const range = document.createElement('input');
+        range.type = 'range';
+        range.min = '0';
+        range.max = '100';
+        range.step = '1';
+        range.className = 'weight-slider-range';
+        range.setAttribute('aria-label', `${def.label} weight`);
+        item.appendChild(range);
+        const warn = el('p', 'weight-slider-warning tone-caution hidden', '');
+        item.appendChild(warn);
+        slidersRoot.appendChild(item);
+        sliderEls[def.key] = { valEl, range, warn };
+
+        range.addEventListener('input', () => {
+            const newValue = Number(range.value);
+            const w = WizardState.weights;
+            const diff = newValue - w[def.key];
+            const otherKeys = WEIGHT_SLIDER_DEFS.map((d) => d.key).filter((k) => k !== def.key);
+            const sumOthers = otherKeys.reduce((sum, k) => sum + w[k], 0);
+            otherKeys.forEach((k) => {
+                const proportion = sumOthers > 0 ? w[k] / sumOthers : 1 / otherKeys.length;
+                w[k] = Math.max(0, w[k] - diff * proportion);
+            });
+            w[def.key] = newValue;
+            saveState();
+            refreshAll();
+        });
+    });
+
+    function refreshWeightSliders() {
+        WEIGHT_SLIDER_DEFS.forEach((def) => {
+            const { valEl, range } = sliderEls[def.key];
+            const v = Math.round(WizardState.weights[def.key]);
+            range.value = String(v);
+            valEl.textContent = `${v}%`;
+        });
+        const momWarn = sliderEls.momentum.warn;
+        if (WizardState.weights.momentum > 50) {
+            momWarn.textContent = "That much momentum is performance-chasing with extra steps — you're betting the recent past repeats.";
+            momWarn.classList.remove('hidden');
+        } else {
+            momWarn.classList.add('hidden');
+        }
+        const qualWarn = sliderEls.quality.warn;
+        if (Math.round(WizardState.weights.quality) <= 0) {
+            qualWarn.textContent = 'Nothing anchors this to real businesses anymore.';
+            qualWarn.classList.remove('hidden');
+        } else {
+            qualWarn.classList.add('hidden');
+        }
+    }
+
+    // --- Guardrails ---
+    const guardrailRoot = root.querySelector('#guardrailGrid');
+    const guardrailEls = {};
+    GUARDRAIL_DEFS.forEach((def) => {
+        const item = el('div', 'guardrail-item');
+        const head = el('div', 'guardrail-head');
+        head.appendChild(el('span', 'guardrail-label', esc(def.label)));
+        const valEl = el('span', 'guardrail-value', '');
+        head.appendChild(valEl);
+        item.appendChild(head);
+        item.appendChild(el('p', 'guardrail-meaning', esc(def.meaning)));
+        const range = document.createElement('input');
+        range.type = 'range';
+        range.min = String(def.min);
+        range.max = String(def.max);
+        range.step = String(def.step);
+        range.setAttribute('aria-label', def.label);
+        item.appendChild(range);
+        guardrailRoot.appendChild(item);
+        guardrailEls[def.key] = { valEl, range };
+
+        range.addEventListener('input', () => {
+            WizardState.guardrails[def.key] = Number(range.value);
+            saveState();
+            refreshAll();
+        });
+    });
+
+    function refreshGuardrails() {
+        GUARDRAIL_DEFS.forEach((def) => {
+            const v = WizardState.guardrails[def.key];
+            guardrailEls[def.key].range.value = String(v);
+            guardrailEls[def.key].valEl.textContent = `${v}${def.suffix}`;
+        });
+    }
+
+    // --- Allocation pipeline: preview, table, shortfall, skips, FX ---
+    function refreshAllocationHead(hasAmount) {
+        const thead = root.querySelector('#allocationThead');
+        thead.innerHTML = '';
+        const tr = document.createElement('tr');
+        ['#', 'Stock', 'Sector', 'Weight'].concat(hasAmount ? ['Amount'] : []).forEach((h) => {
+            const th = document.createElement('th');
+            th.textContent = h;
+            tr.appendChild(th);
+        });
+        thead.appendChild(tr);
+    }
+
+    function refreshAll() {
+        refreshWeightSliders();
+        refreshGuardrails();
+
+        const survivors = PortfolioBuilder.applyQualityFloor(universe, WizardState.floor);
+        const ranked = PortfolioBuilder.computeGrowthScores(survivors, WizardState.weights);
+
+        const previewList = root.querySelector('#previewList');
+        previewList.innerHTML = '';
+        appendLines(previewList, ranked.slice(0, 10).map((s) => {
+            const li = el('li', 'preview-item');
+            li.appendChild(el('span', 'preview-ticker', esc(s.ticker)));
+            li.appendChild(el('span', 'preview-name', esc(s.name || s.ticker)));
+            li.appendChild(el('span', 'preview-score', s.growthScore.toFixed(1)));
+            return li;
+        }));
+
+        const picked = PortfolioBuilder.selectPortfolio(ranked, {
+            n: WizardState.guardrails.count,
+            sectorCapPct: WizardState.guardrails.sectorCapPct,
+        });
+        const weighted = PortfolioBuilder.computeWeights(picked, {
+            minPct: WizardState.guardrails.minPosPct,
+            maxPct: WizardState.guardrails.maxPosPct,
+        });
+
+        const shortfallEl = root.querySelector('#allocShortfall');
+        const emptyEl = root.querySelector('#allocEmpty');
+        const wrap = root.querySelector('#allocationWrap');
+        const skipsEl = root.querySelector('#allocationSkips');
+        const fxEl = root.querySelector('#allocationFx');
+
+        if (weighted.length === 0) {
+            wrap.classList.add('hidden');
+            shortfallEl.classList.add('hidden');
+            skipsEl.textContent = '';
+            fxEl.classList.add('hidden');
+            emptyEl.classList.remove('hidden');
+            emptyEl.innerHTML = '';
+            emptyEl.appendChild(el('p', 'tone-bad', 'Your floor left nothing to build an allocation from.'));
+            const link = el('button', 'step-cta', 'Go loosen it in Step 3 →');
+            link.type = 'button';
+            link.addEventListener('click', () => showStep(3));
+            emptyEl.appendChild(link);
+            return;
+        }
+        emptyEl.classList.add('hidden');
+        wrap.classList.remove('hidden');
+
+        if (weighted.length < WizardState.guardrails.count) {
+            shortfallEl.textContent = `Only ${weighted.length} of the ${WizardState.guardrails.count} stocks you asked for are available — loosen your floor (Step 3) or the sector cap to fill the rest.`;
+            shortfallEl.classList.remove('hidden');
+        } else {
+            shortfallEl.classList.add('hidden');
+        }
+
+        const hasAmount = typeof WizardState.amount === 'number' && WizardState.amount > 0;
+        refreshAllocationHead(hasAmount);
+
+        const body = root.querySelector('#allocationBody');
+        body.innerHTML = '';
+        appendLines(body, weighted.map((stock, i) => buildAllocationRow(stock, i + 1, survivors, hasAmount)));
+
+        const skips = computeSectorCapSkips(ranked, WizardState.guardrails);
+        skipsEl.textContent = skips.length
+            ? 'SKIPPED: ' + skips.map((s) => `${s.ticker} — ${s.sector} already at your ${s.capPct}% cap.`).join('  ·  ')
+            : '';
+
+        if (hasAmount) {
+            const fx = PortfolioBuilder.estimateFxCost(weighted, WizardState.amount, 1.5);
+            fxEl.textContent = `≈ ${formatCad(fx.costCad)} eaten by currency conversion on the US-listed part — one-time, only hurts if you churn.`;
+            fxEl.classList.remove('hidden');
+        } else {
+            fxEl.classList.add('hidden');
+        }
+    }
+
+    root.querySelector('#buildCta').addEventListener('click', () => showStep(5));
+
+    refreshAll();
+}
+
+// Builds one collapsible study sheet: company blurb, its 4 card verdicts,
+// score drivers, and the 5-item checklist. `onChange` is called after every
+// checkbox toggle so the caller can refresh the shared progress line + the
+// export button's enabled state.
+function buildStudySheet(stock, survivors, universe, onChange) {
+    const details = document.createElement('details');
+    details.className = 'study-sheet';
+
+    const summary = document.createElement('summary');
+    summary.className = 'study-sheet-summary';
+    summary.appendChild(el('span', 'study-sheet-ticker', esc(stock.ticker)));
+    summary.appendChild(el('span', 'study-sheet-name', esc(stock.name || stock.ticker)));
+    summary.appendChild(el('span', 'study-sheet-weight', `${stock.weightPct.toFixed(2)}%`));
+    const statusBadge = el('span', 'study-sheet-status', '');
+    summary.appendChild(statusBadge);
+    details.appendChild(summary);
+
+    const body = el('div', 'study-sheet-body');
+
+    if (stock.summary) body.appendChild(el('p', 'study-sheet-blurb', esc(firstSentences(stock.summary, 2))));
+
+    const openBtn = el('button', 'study-sheet-open-btn', 'Open full detail sheet →');
+    openBtn.type = 'button';
+    openBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openStockSheet(stock.ticker);
+    });
+    body.appendChild(openBtn);
+
+    const verdictsWrap = el('div', 'study-sheet-verdicts');
+    appendLines(verdictsWrap, Interpret.verdictsForCard(stock, universe).map((line) => renderMetricLine(line.key, stock, universe)));
+    body.appendChild(verdictsWrap);
+
+    const drivers = growthDrivers(stock, survivors, WizardState.weights);
+    const driversWrap = el('div', 'study-sheet-drivers');
+    driversWrap.appendChild(el('h3', '', 'Score drivers'));
+    const list = el('ul', 'study-sheet-drivers-list');
+    drivers.forEach((d) => {
+        list.appendChild(el('li', '', `${esc(d.label)} — ${Math.round(d.pctile)}th percentile, ${Math.round(d.weight)}% of the blend`));
+    });
+    driversWrap.appendChild(list);
+    body.appendChild(driversWrap);
+
+    const checklistWrap = el('div', 'study-sheet-checklist');
+    checklistWrap.appendChild(el('h3', '', 'The checklist'));
+    STUDY_CHECKLIST_ITEMS.forEach((item, idx) => {
+        const label = el('label', 'study-check-item');
+        const cb = document.createElement('input');
+        cb.type = 'checkbox';
+        cb.checked = !!homeworkArr(stock.ticker)[idx];
+        cb.addEventListener('change', () => {
+            const arr = homeworkArr(stock.ticker).slice();
+            arr[idx] = cb.checked;
+            WizardState.homework[stock.ticker] = arr;
+            saveState();
+            refreshStatus();
+            onChange();
+        });
+        label.appendChild(cb);
+        label.appendChild(el('span', '', esc(item)));
+        checklistWrap.appendChild(label);
+    });
+    body.appendChild(checklistWrap);
+
+    details.appendChild(body);
+
+    function refreshStatus() {
+        const complete = sheetComplete(stock.ticker);
+        const done = homeworkArr(stock.ticker).filter(Boolean).length;
+        statusBadge.textContent = complete ? 'Done' : `${done}/${STUDY_CHECKLIST_ITEMS.length}`;
+        statusBadge.classList.toggle('tone-good', complete);
+        statusBadge.classList.toggle('tone-na', !complete);
+        details.classList.toggle('study-sheet-complete', complete);
+    }
+    refreshStatus();
+
+    return details;
+}
+
+function renderStudySheets(root, weighted, survivors, universe) {
+    const container = root.querySelector('#studySheets');
+    container.innerHTML = '';
+
+    function updateProgress() {
+        const done = weighted.filter((s) => sheetComplete(s.ticker)).length;
+        const progressEl = root.querySelector('#homeworkProgress');
+        if (progressEl) progressEl.textContent = `${done} of ${weighted.length} sheets done`;
+        const exportBtn = root.querySelector('#exportCsvBtn');
+        if (exportBtn) {
+            const allDone = done === weighted.length;
+            exportBtn.disabled = !allDone;
+            exportBtn.textContent = allDone ? 'Download CSV' : 'Finish the homework first';
+        }
+    }
+
+    appendLines(container, weighted.map((stock) => buildStudySheet(stock, survivors, universe, updateProgress)));
+    updateProgress();
+}
+
+// Ports old app.js's `exportBuilderCsv` — same header shape, extended to
+// drop the Amount column entirely when no amount is set rather than writing
+// a fabricated $0 figure.
+function exportAllocationCsv(weighted) {
+    if (!weighted.length) return;
+    const hasAmount = typeof WizardState.amount === 'number' && WizardState.amount > 0;
+    const escCsv = (v) => `"${String(v).replace(/"/g, '""')}"`;
+    const header = ['Ticker', 'Company', 'Sector', 'Growth Score', 'Weight %'].concat(hasAmount ? ['Amount CAD'] : []).join(',');
+    const lines = weighted.map((s) => {
+        const row = [escCsv(s.ticker), escCsv(s.name), escCsv(s.sector), s.growthScore.toFixed(1), s.weightPct.toFixed(2)];
+        if (hasAmount) row.push((WizardState.amount * s.weightPct / 100).toFixed(2));
+        return row.join(',');
+    });
+    const blob = new Blob([header + '\n' + lines.join('\n') + '\n'], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'soundhype-allocation.csv';
+    a.click();
+    URL.revokeObjectURL(a.href);
+}
+
+function wireExport(root, weighted) {
+    const btn = root.querySelector('#exportCsvBtn');
+    if (!btn) return;
+    btn.addEventListener('click', () => {
+        if (btn.disabled) return;
+        exportAllocationCsv(weighted);
+    });
+}
+
+// --- Tracker ("What you actually did") ------------------------------------
+// Ports old app.js's mock-portfolio add/list/remove logic, reading and
+// writing the SAME `soundhype_portfolio` localStorage key so holdings
+// entered in the old three-tab UI still show up here.
+const PORTFOLIO_STORAGE_KEY = 'soundhype_portfolio';
+
+function loadPortfolio() {
+    try {
+        const raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
+        if (!raw) return [];
+        const parsed = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
+    } catch (e) {
+        return [];
+    }
+}
+
+function savePortfolio(items) {
+    localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(items));
+}
+
+function buildTrackerRow(item, idx, universe, onChange) {
+    const tr = document.createElement('tr');
+    const masterStock = universe.find((s) => s.ticker === item.ticker);
+    const currentPrice = masterStock ? masterStock.price : null;
+    const name = masterStock ? masterStock.name : item.ticker;
+    const costBasis = item.buyPrice * item.shares;
+    const currentVal = (isFinite(currentPrice) ? currentPrice : item.buyPrice) * item.shares;
+    const gain = currentVal - costBasis;
+    const gainPct = costBasis > 0 ? (gain / costBasis) * 100 : 0;
+
+    const stockTd = document.createElement('td');
+    const wrap = el('div', 'tracker-stock');
+    wrap.appendChild(el('span', 'tracker-ticker', esc(item.ticker)));
+    wrap.appendChild(el('span', 'tracker-name', esc(name)));
+    stockTd.appendChild(wrap);
+    tr.appendChild(stockTd);
+
+    const sharesTd = document.createElement('td');
+    sharesTd.textContent = item.shares.toLocaleString(undefined, { maximumFractionDigits: 4 });
+    tr.appendChild(sharesTd);
+
+    const paidTd = document.createElement('td');
+    paidTd.textContent = formatUsdPrice(item.buyPrice);
+    tr.appendChild(paidTd);
+
+    const nowTd = document.createElement('td');
+    nowTd.textContent = masterStock ? formatUsdPrice(currentPrice) : 'N/A';
+    tr.appendChild(nowTd);
+
+    const valTd = document.createElement('td');
+    valTd.className = 'val-bold';
+    valTd.textContent = formatUsdPrice(currentVal);
+    tr.appendChild(valTd);
+
+    const gainTd = document.createElement('td');
+    gainTd.className = `val-bold ${gain >= 0 ? 'gain-positive' : 'gain-negative'}`;
+    gainTd.textContent = `${gain >= 0 ? '+' : ''}${formatUsdPrice(gain)} (${gain >= 0 ? '+' : ''}${gainPct.toFixed(1)}%)`;
+    tr.appendChild(gainTd);
+
+    const actionTd = document.createElement('td');
+    const removeBtn = el('button', 'tracker-remove-btn', 'Remove');
+    removeBtn.type = 'button';
+    removeBtn.addEventListener('click', () => {
+        const items = loadPortfolio();
+        items.splice(idx, 1);
+        savePortfolio(items);
+        onChange();
+    });
+    actionTd.appendChild(removeBtn);
+    tr.appendChild(actionTd);
+
+    return tr;
+}
+
+function wireTracker(root, universe) {
+    const form = root.querySelector('#trackerForm');
+    const tickerInput = root.querySelector('#trackerTicker');
+    const sharesInput = root.querySelector('#trackerShares');
+    const priceInput = root.querySelector('#trackerPrice');
+
+    function refresh() {
+        const items = loadPortfolio();
+        const emptyEl = root.querySelector('#trackerEmpty');
+        const table = root.querySelector('#trackerTable');
+        const body = root.querySelector('#trackerBody');
+        body.innerHTML = '';
+        if (items.length === 0) {
+            emptyEl.classList.remove('hidden');
+            table.classList.add('hidden');
+            return;
+        }
+        emptyEl.classList.add('hidden');
+        table.classList.remove('hidden');
+        appendLines(body, items.map((item, idx) => buildTrackerRow(item, idx, universe, refresh)));
+    }
+
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const ticker = tickerInput.value.trim().toUpperCase();
+        const shares = parseFloat(sharesInput.value);
+        const price = parseFloat(priceInput.value);
+        if (!ticker || !isFinite(shares) || shares <= 0 || !isFinite(price) || price <= 0) return;
+
+        const items = loadPortfolio();
+        const existing = items.find((it) => it.ticker === ticker);
+        if (existing) {
+            const oldCost = existing.buyPrice * existing.shares;
+            const newCost = price * shares;
+            existing.shares += shares;
+            existing.buyPrice = (oldCost + newCost) / existing.shares;
+        } else {
+            items.push({ ticker, shares, buyPrice: price });
+        }
+        savePortfolio(items);
+        tickerInput.value = '';
+        sharesInput.value = '';
+        priceInput.value = '';
+        refresh();
+    });
+
+    refresh();
+}
+
+// Step 5 — "Homework & track": the gate, one collapsible study sheet per
+// allocation row, CSV export (locked until every sheet is checked off), and
+// the "what you actually did" tracker.
+function renderHomeworkStep(root) {
+    const universe = appData.stocks || [];
+
+    if (universe.length === 0) {
+        root.innerHTML = `
+            <h1>Homework &amp; track</h1>
+            <p class="tone-na">Still loading the universe — hang tight.</p>
+        `;
+        return;
+    }
+
+    const { survivors, weighted } = computeAllocation(universe);
+
+    root.innerHTML = `
+        <h1>Homework &amp; track</h1>
+        <div class="homework-gate">
+            <p><strong>You do not own a stock until you can explain it.</strong> One sheet per holding — check every box or don't buy.</p>
+        </div>
+        <div id="studySection"></div>
+        <section class="tracker">
+            <h2>What you actually did</h2>
+            <p>Record what you actually bought — the tool only knows what you tell it.</p>
+            <form class="tracker-form" id="trackerForm">
+                <input type="text" id="trackerTicker" placeholder="Ticker, e.g. NVDA" maxlength="10" required>
+                <input type="number" id="trackerShares" placeholder="Shares" min="0" step="any" required>
+                <input type="number" id="trackerPrice" placeholder="Price paid" min="0" step="any" required>
+                <button type="submit" class="tracker-add-btn">Add</button>
+            </form>
+            <p class="tracker-empty hidden" id="trackerEmpty">Nothing tracked yet.</p>
+            <div class="tracker-table-wrap">
+                <table class="tracker-table hidden" id="trackerTable">
+                    <thead>
+                        <tr><th>Stock</th><th>Shares</th><th>Paid</th><th>Now</th><th>Value</th><th>Gain</th><th></th></tr>
+                    </thead>
+                    <tbody id="trackerBody"></tbody>
+                </table>
+            </div>
+        </section>
+    `;
+
+    const studySection = root.querySelector('#studySection');
+    if (weighted.length === 0) {
+        studySection.appendChild(el('p', 'tone-bad', 'Nothing to study yet — your floor (Step 3) left no allocation to build homework from.'));
+        const link = el('button', 'step-cta', 'Back to Step 3 →');
+        link.type = 'button';
+        link.addEventListener('click', () => showStep(3));
+        studySection.appendChild(link);
+    } else {
+        studySection.innerHTML = `
+            <p class="homework-progress" id="homeworkProgress"></p>
+            <div class="study-sheets" id="studySheets"></div>
+            <section class="homework-export">
+                <h2>Export &amp; buy</h2>
+                <p>Wealthsimple wants percentage weights, not dollar amounts, and it supports fractional shares — so you never have to round to whole shares or convert weights into exact dollar figures yourself. Enter each ticker, then its weight % from the table below (or the CAD amount, if you set one).</p>
+                <button type="button" class="step-cta homework-export-btn" id="exportCsvBtn" disabled>Finish the homework first</button>
+            </section>
+        `;
+        renderStudySheets(root, weighted, survivors, universe);
+        wireExport(root, weighted);
+    }
+
+    wireTracker(root, universe);
+}
+
 const STEPS = {
     1: { title: STEP_TITLES[0], render: renderIdeaStep },
     2: { title: STEP_TITLES[1], render: renderUniverseStep },
     3: { title: STEP_TITLES[2], render: renderFloorStep },
-    4: stubStep(STEP_TITLES[3]),
-    5: stubStep(STEP_TITLES[4]),
+    4: { title: STEP_TITLES[3], render: renderBuildStep },
+    5: { title: STEP_TITLES[4], render: renderHomeworkStep },
 };
 
 // --- Router / shell --------------------------------------------------------
