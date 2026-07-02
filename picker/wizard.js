@@ -153,8 +153,77 @@ function stubStep(title) {
     };
 }
 
+// Step 1 — "The idea": narrative + data honesty. Pure copy and layout, no
+// state to read or write beyond the CTA's showStep(2). Tolerates rendering
+// before appData.stocks has loaded (falls back to "hundreds").
+function renderIdeaStep(root) {
+    const count = appData.stocks && appData.stocks.length;
+    // "392 stocks" when we know the count, "hundreds of stocks" when we
+    // don't — both read correctly wherever a noun follows immediately.
+    const countOf = count ? String(count) : 'hundreds of';
+    // "Meet the 392 →" / "Meet the hundreds →" — no trailing noun, so no "of".
+    const countBare = count ? String(count) : 'hundreds';
+
+    let updatedLine = 'Every number here comes from Yahoo Finance. Refresh date not available yet — the data is still loading.';
+    let staleHtml = '';
+    if (appData.lastUpdated) {
+        updatedLine = `Every number here comes from Yahoo Finance, last pulled on <strong>${appData.lastUpdated}</strong>. It is a snapshot, not a live feed — treat everything on this site as "true as of that date," not "true right now."`;
+        const updated = new Date(appData.lastUpdated);
+        // Raw (unfloored) days for the >7 comparison — matches renderDataStatus()'s
+        // header-chip threshold exactly, so the two stale indicators on the page
+        // never disagree in the [7,8) window. Floor only for the displayed count.
+        const ageDays = (Date.now() - updated.getTime()) / 86400000;
+        if (isFinite(ageDays) && ageDays > 7) {
+            staleHtml = `<p class="tone-caution idea-stale">These numbers are ${Math.floor(ageDays)} days old — refresh before deciding anything.</p>`;
+        }
+    }
+
+    root.innerHTML = `
+        <h1>The idea</h1>
+        <p class="idea-lede">A guided tool for building a small, aggressive stock portfolio out of the ${countOf} well-known companies on this list — and understanding every choice you make along the way. Five steps, no finance degree required.</p>
+        <p>The theory behind it is simple: find sound businesses — ones that actually make money — right as the market starts noticing them. Too early and you are just guessing that the crowd will eventually show up. Too late and you are paying full price for news everyone already has, buying the top of someone else's story. This app hunts for the window in between: real financial health, plus a spark of momentum the market has only just started pricing in.</p>
+        <p>It will not tell you what to buy. It will show you why a stock looks the way it does, in plain language you can actually check against your own judgment, and leave the final call to you. Every number you see from here on has a short, honest explanation sitting one click away — read those before you trust the headline figure.</p>
+
+        <h2>The two scores</h2>
+        <p>Every stock on the list gets boiled down to two numbers, and every ranking you will see for the rest of this app is built from them. Together, they decide where a company lands — not gut feel, not a hot tip from a group chat, not whatever is trending today.</p>
+        <div class="score-grid">
+            <div class="score-card score-card-quality">
+                <span class="score-card-badge">Quality · 60%</span>
+                <h3>Does it actually run a good business?</h3>
+                <p>Profit margins, return on equity, free cash flow, and how much debt it is carrying. The boring half — and the half that keeps you from losing your shirt when the market turns. It gets the bigger weight on purpose: hype fades, a balance sheet does not lie for long.</p>
+            </div>
+            <div class="score-card score-card-hype">
+                <span class="score-card-badge">Hype · 40%</span>
+                <h3>Is it growing, and has the market noticed?</h3>
+                <p>Revenue growth, earnings growth, and price momentum. The exciting half — and the half that can make you money fast or burn you just as fast. A great business nobody is watching yet can sit flat for years; this is the half that looks for the crowd starting to arrive.</p>
+            </div>
+        </div>
+
+        <div class="callout callout-percentile">
+            <p>A score of 92 does not mean 92/100. It means: <strong>beats 92% of the ${countOf} stocks</strong> in this list. A percentile among peers — nothing more. It says nothing about whether the price is right today, nothing about what happens next, and nothing about companies outside this list. Compare it to a class rank, not a test score.</p>
+        </div>
+
+        <h2>Where the numbers come from</h2>
+        <div class="data-honesty">
+            <p>${updatedLine}</p>
+            ${staleHtml}
+            <p>Numbers can be wrong, or missing entirely — Yahoo Finance is not perfect, and neither is the pipeline that pulls from it. When a company is missing a metric, that gets flagged right on the page — never quietly papered over, never defaulted to zero to make the math work.</p>
+        </div>
+
+        <h2>The disclaimer, bluntly</h2>
+        <div class="disclaimer-box">
+            <p>This is a homemade decision aid, built by one person and an AI on a kitchen-table budget. It is not investment advice, not a research report from a bank, and not a promise of anything. Nobody here is licensed to manage your money, and nobody is going to — you are the one signing the trade.</p>
+            <p>The biggest risk in this whole exercise is not a bad number on this page. It is your own behavior: chasing winners after they have already run, panic-selling on a red day, checking prices every hour like it will change the outcome. The tool will call these out when it sees you doing them — that is the entire point of building it this way instead of just handing you a spreadsheet.</p>
+        </div>
+
+        <button type="button" class="step-cta" id="ideaCta">Meet the ${countBare} →</button>
+    `;
+
+    root.querySelector('#ideaCta').addEventListener('click', () => showStep(2));
+}
+
 const STEPS = {
-    1: stubStep(STEP_TITLES[0]),
+    1: { title: STEP_TITLES[0], render: renderIdeaStep },
     2: stubStep(STEP_TITLES[1]),
     3: stubStep(STEP_TITLES[2]),
     4: stubStep(STEP_TITLES[3]),
