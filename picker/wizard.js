@@ -190,7 +190,7 @@ function renderIdeaStep(root) {
             <div class="score-card score-card-quality">
                 <span class="score-card-badge">Quality · 60%</span>
                 <h3>Does it actually run a good business?</h3>
-                <p>Profit margins, return on equity, free cash flow, and how much debt it is carrying. The boring half — and the half that keeps you from losing your shirt when the market turns. It gets the bigger weight on purpose: hype fades, a balance sheet does not lie for long.</p>
+                <p>Profit margins, how much profit it squeezes out of shareholders' money, whether real cash is left after the bills—not just paper profit—and how much debt it is carrying. The boring half — and the half that keeps you from losing your shirt when the market turns. It gets the bigger weight on purpose: hype fades, a balance sheet does not lie for long.</p>
             </div>
             <div class="score-card score-card-hype">
                 <span class="score-card-badge">Hype · 40%</span>
@@ -199,7 +199,7 @@ function renderIdeaStep(root) {
             </div>
         </div>
 
-        <div class="callout callout-percentile">
+        <div class="callout">
             <p>A score of 92 does not mean 92/100. It means: <strong>beats 92% of the ${countOf} stocks</strong> in this list. A percentile among peers — nothing more. It says nothing about whether the price is right today, nothing about what happens next, and nothing about companies outside this list. Compare it to a class rank, not a test score.</p>
         </div>
 
