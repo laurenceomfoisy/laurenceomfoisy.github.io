@@ -103,6 +103,22 @@ function el(tag, cls, html) {
     return node;
 }
 
+// Appends each node to `container` preceded by a whitespace-only newline
+// text node. Purely cosmetic for humans/tools reading serialized HTML
+// (headless-Chromium DOM dumps, view-source) — repeated block elements
+// built via appendChild land on one compacted line with no separator,
+// unlike innerHTML-templated markup which keeps the source's literal
+// newlines. Does not affect layout (whitespace collapses between block
+// elements) or event listeners (nodes stay live, never round-tripped
+// through a string).
+function appendLines(container, nodes) {
+    nodes.forEach((node) => {
+        container.appendChild(document.createTextNode('\n'));
+        container.appendChild(node);
+    });
+    container.appendChild(document.createTextNode('\n'));
+}
+
 // Renders one `.verdict-line`: metric label + display value (small caps /
 // bold header row), the plain-English verdict sentence, and an ⓘ toggle
 // that reveals an `.info-panel` built from CopyDeck.metrics[key] (short,
@@ -140,6 +156,94 @@ function renderVerdictLine({ label, display, verdict, tone, key }) {
     if (panel) line.appendChild(panel);
 
     return line;
+}
+
+// Looks a metric key up through Interpret + CopyDeck and renders it as a
+// `.verdict-line` in one call — the workhorse every card and sheet uses so
+// no numeric value ever reaches the DOM without going through a verdict.
+function renderMetricLine(key, stock, universe) {
+    const r = Interpret.interpret(key, stock, universe);
+    const meta = CopyDeck.metrics[key];
+    return renderVerdictLine({ label: meta ? meta.label : key, display: r.display, verdict: r.verdict, tone: r.tone, key });
+}
+
+// Renders one of the six `scores.*` as a labeled progress bar with the same
+// ⓘ info-panel pattern as `.verdict-line` (short/why/trap from CopyDeck).
+function renderScoreBar(key, stock, universe) {
+    const r = Interpret.interpret(key, stock, universe);
+    const meta = CopyDeck.metrics[key];
+    const label = meta ? meta.label : key;
+    const wrap = el('div', `score-bar tone-${r.tone}`);
+
+    const head = el('div', 'score-bar-head');
+    head.appendChild(el('span', 'score-bar-label', label));
+    head.appendChild(el('span', 'score-bar-value', r.display));
+
+    let panel = null;
+    if (meta) {
+        const toggle = el('button', 'info-toggle', 'ⓘ');
+        toggle.type = 'button';
+        toggle.setAttribute('aria-label', `More about ${label}`);
+        toggle.setAttribute('aria-expanded', 'false');
+        head.appendChild(toggle);
+
+        let panelHtml = '';
+        if (meta.short) panelHtml += `<p>${meta.short}</p>`;
+        if (meta.why) panelHtml += `<p>${meta.why}</p>`;
+        if (meta.trap) panelHtml += `<p><strong>The trap:</strong> ${meta.trap}</p>`;
+        panel = el('div', 'info-panel hidden', panelHtml);
+
+        toggle.addEventListener('click', () => {
+            const isHidden = panel.classList.toggle('hidden');
+            toggle.setAttribute('aria-expanded', isHidden ? 'false' : 'true');
+        });
+    }
+
+    wrap.appendChild(head);
+    const track = el('div', 'score-bar-track');
+    const fill = el('div', 'score-bar-fill');
+    const pct = Math.max(0, Math.min(100, r.value === null ? 0 : r.value));
+    fill.style.width = `${pct}%`;
+    fill.style.background = `var(--tone-${r.tone})`;
+    track.appendChild(fill);
+    wrap.appendChild(track);
+    if (panel) wrap.appendChild(panel);
+
+    return wrap;
+}
+
+function formatUsdPrice(v) {
+    if (v === null || v === undefined || !isFinite(v)) return 'N/A';
+    return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(v);
+}
+
+// First `n` sentences of a company summary, for the sheet's short blurb —
+// full summaries run several paragraphs, we only want the opening context.
+function firstSentences(text, n) {
+    if (!text) return '';
+    return text.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0, n).join(' ');
+}
+
+// Ported from old app.js `drawSparkline` — same viewBox/scaling, colors
+// swapped to the CSS vars already defined in style.css's :root.
+function renderSparkline(prices, isPositive) {
+    if (!prices || prices.length < 2) {
+        return '<div class="sparkline-empty">No price trend</div>';
+    }
+    const min = Math.min(...prices);
+    const max = Math.max(...prices);
+    const range = max - min === 0 ? 1 : max - min;
+    const width = 280;
+    const height = 40;
+    const points = prices.map((price, index) => {
+        const x = (index / (prices.length - 1)) * width;
+        const y = height - ((price - min) / range) * height;
+        return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
+    const strokeColor = isPositive ? 'var(--color-success)' : 'var(--color-danger)';
+    return `<svg viewBox="0 0 ${width} ${height}" class="sparkline-svg" preserveAspectRatio="none">
+        <polyline fill="none" stroke="${strokeColor}" stroke-width="2" points="${points}" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>`;
 }
 
 // --- Steps (Tasks 4-7 replace these render bodies) ------------------------
@@ -222,9 +326,318 @@ function renderIdeaStep(root) {
     root.querySelector('#ideaCta').addEventListener('click', () => showStep(2));
 }
 
+// Step 2 — "Meet the universe": the full stock list as scannable cards,
+// each carrying its verdict lines, plus a detail sheet with the full
+// interpreted breakdown. State (search/sector/sort/pagination) lives at
+// module scope and resets whenever the step is (re)entered, but persists
+// across in-step re-renders (typing, filtering) so focus/scroll are not
+// lost on every keystroke — only the card list re-renders, not the controls.
+let universeQuery = '';
+let universeSector = '';
+let universeSort = 'overall';
+let universeVisible = 25;
+
+const UNIVERSE_SORT_OPTIONS = [
+    { value: 'overall', key: 'scores.overall', label: 'Best blend first' },
+    { value: 'quality', key: 'scores.quality', label: 'Best businesses first' },
+    { value: 'hype', key: 'scores.hype', label: 'Most market attention first' },
+    { value: 'momentum6m', key: 'momentum_6m', label: 'Biggest 6-month movers first' },
+    { value: 'revgrowth', key: 'revenue_growth', label: 'Fastest sales growth first' },
+];
+
+function filteredSortedUniverse() {
+    const q = universeQuery.trim().toLowerCase();
+    let list = appData.stocks.filter((s) => {
+        if (universeSector && s.sector !== universeSector) return false;
+        if (q && !((s.ticker || '').toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q))) return false;
+        return true;
+    });
+    const sortOpt = UNIVERSE_SORT_OPTIONS.find((o) => o.value === universeSort) || UNIVERSE_SORT_OPTIONS[0];
+    list = list.slice().sort((a, b) => {
+        const av = Interpret.getValue(a, sortOpt.key);
+        const bv = Interpret.getValue(b, sortOpt.key);
+        if (av === null && bv === null) return 0;
+        if (av === null) return 1;
+        if (bv === null) return -1;
+        return bv - av;
+    });
+    return list;
+}
+
+// One card: ticker/name/sector, price + 1y move, sparkline, then the 4
+// `verdictsForCard` lines. `universe` is always the FULL stock list (not
+// the filtered/paginated view) so percentiles inside verdict lines stay
+// meaningful — a percentile against 12 filtered rows would be noise.
+function buildStockCard(stock, universe) {
+    const card = el('article', 'stock-card');
+    card.tabIndex = 0;
+    card.setAttribute('role', 'button');
+    card.setAttribute('aria-label', `Open detail sheet for ${stock.ticker}`);
+
+    const top = el('div', 'stock-card-top');
+    top.appendChild(el('span', 'stock-card-ticker', stock.ticker));
+    top.appendChild(el('span', 'stock-card-name', stock.name || stock.ticker));
+    top.appendChild(el('span', 'sector-chip', stock.sector || 'Unknown sector'));
+    card.appendChild(top);
+
+    const priceRow = el('div', 'stock-card-price-row');
+    priceRow.appendChild(el('span', 'stock-card-price', formatUsdPrice(stock.price)));
+    const mv = Interpret.interpret('momentum_1y', stock, universe);
+    const moveText = mv.value === null ? mv.display : `${mv.value >= 0 ? '+' : ''}${mv.display}`;
+    priceRow.appendChild(el('span', `stock-card-move tone-${mv.tone}`, `${moveText} (1y)`));
+    card.appendChild(priceRow);
+
+    card.appendChild(el('div', 'stock-card-sparkline', renderSparkline(stock.sparkline, (mv.value === null ? 0 : mv.value) >= 0)));
+
+    const verdicts = el('div', 'card-verdicts');
+    appendLines(verdicts, Interpret.verdictsForCard(stock, universe).map((line) => renderMetricLine(line.key, stock, universe)));
+    card.appendChild(verdicts);
+
+    function openIfNotInfo(e) {
+        if (e.target.closest('.info-toggle') || e.target.closest('.info-panel')) return;
+        openStockSheet(stock.ticker);
+    }
+    card.addEventListener('click', openIfNotInfo);
+    card.addEventListener('keydown', (e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.info-toggle')) {
+            e.preventDefault();
+            openStockSheet(stock.ticker);
+        }
+    });
+
+    return card;
+}
+
+// Ports the old app.js:632-680 add-ticker POST flow. The backend only
+// exists when someone is running the local Flask app (app.py); the static
+// GitHub Pages build has nowhere to send the POST, so the whole section
+// stays hidden unless a HEAD /api/stocks probe succeeds.
+function wireAddTickerForm(root, onStocksUpdated) {
+    fetch('/api/stocks', { method: 'HEAD' })
+        .then((r) => {
+            if (r.ok) {
+                const section = root.querySelector('#addTickerSection');
+                if (section) section.classList.remove('hidden');
+            }
+        })
+        .catch(() => { /* no local backend — static build, leave hidden */ });
+
+    const addBtn = root.querySelector('#addTickerBtn');
+    const addInput = root.querySelector('#addTickerInput');
+    const addMsg = root.querySelector('#addTickerMsg');
+    if (!addBtn || !addInput || !addMsg) return;
+
+    async function submitAddTicker() {
+        const ticker = addInput.value.trim().toUpperCase();
+        if (!ticker) return;
+        addBtn.disabled = true;
+        addMsg.className = 'add-ticker-msg hidden';
+        addMsg.textContent = '';
+        try {
+            const response = await fetch('/api/add-ticker', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ticker }),
+            });
+            const result = await response.json();
+            if (result.success) {
+                addMsg.className = 'add-ticker-msg tone-good';
+                addMsg.textContent = `${ticker} was successfully scraped, ranked, and saved.`;
+                appData.stocks = result.stocks;
+                addInput.value = '';
+                onStocksUpdated();
+            } else {
+                addMsg.className = 'add-ticker-msg tone-bad';
+                addMsg.textContent = `Error: ${result.error || 'Failed to fetch ticker details.'}`;
+            }
+        } catch (e) {
+            addMsg.className = 'add-ticker-msg tone-bad';
+            addMsg.textContent = 'Network connection failure. Make sure the backend server is running.';
+        } finally {
+            addBtn.disabled = false;
+        }
+    }
+    addBtn.addEventListener('click', submitAddTicker);
+    addInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitAddTicker(); });
+}
+
+// `?debug-sheet=TICKER` opens that stock's sheet right after render — the
+// only way to drive `openStockSheet` from a one-shot headless Chromium dump
+// (see task brief verification). Harmless in normal use, so it stays.
+function maybeOpenDebugSheet() {
+    const ticker = new URLSearchParams(location.search).get('debug-sheet');
+    if (ticker) openStockSheet(ticker.toUpperCase());
+}
+
+function renderUniverseStep(root) {
+    const universe = appData.stocks || [];
+
+    if (universe.length === 0) {
+        root.innerHTML = `
+            <h1>The universe</h1>
+            <p>Every stock below is scored against the others — here's the whole universe, best blend first.</p>
+            <p class="tone-na">Still loading the universe — hang tight.</p>
+        `;
+        maybeOpenDebugSheet();
+        return;
+    }
+
+    // Reset search/sector/sort/pagination each time the step is (re)entered
+    // (e.g. hopping to step 1 and back) — matches the comment above the
+    // state vars. Within a single visit, input/change handlers below mutate
+    // these and call refreshList() directly so typing doesn't nuke focus.
+    universeQuery = '';
+    universeSector = '';
+    universeSort = 'overall';
+    universeVisible = 25;
+
+    const sectors = Array.from(new Set(universe.map((s) => s.sector).filter(Boolean))).sort();
+
+    root.innerHTML = `
+        <h1>The universe</h1>
+        <p>Every stock below is scored against the other ${universe.length - 1} — here's the whole universe, best blend first.</p>
+        <div class="universe-controls">
+            <input type="search" class="universe-search" id="universeSearch" placeholder="Search by name or ticker" value="${universeQuery.replace(/"/g, '&quot;')}">
+            <select class="universe-select" id="universeSectorSelect">
+                <option value="">All sectors</option>
+                ${sectors.map((s) => `<option value="${s}"${s === universeSector ? ' selected' : ''}>${s}</option>`).join('')}
+            </select>
+            <select class="universe-select" id="universeSortSelect">
+                ${UNIVERSE_SORT_OPTIONS.map((o) => `<option value="${o.value}"${o.value === universeSort ? ' selected' : ''}>${o.label}</option>`).join('')}
+            </select>
+        </div>
+        <div class="add-ticker-section hidden" id="addTickerSection">
+            <p class="add-ticker-label">Don't see a ticker? Add it — it gets pulled fresh from Yahoo Finance and scored the same way as everything else.</p>
+            <div class="add-ticker-row">
+                <input type="text" class="add-ticker-input" id="addTickerInput" placeholder="e.g. NVDA" maxlength="10">
+                <button type="button" class="add-ticker-btn" id="addTickerBtn">Add ticker</button>
+            </div>
+            <p class="add-ticker-msg hidden" id="addTickerMsg"></p>
+        </div>
+        <div class="card-list" id="cardList"></div>
+        <button type="button" class="show-more-btn hidden" id="showMoreBtn">Show 25 more</button>
+    `;
+
+    const searchInput = root.querySelector('#universeSearch');
+    const sectorSelect = root.querySelector('#universeSectorSelect');
+    const sortSelect = root.querySelector('#universeSortSelect');
+    const cardList = root.querySelector('#cardList');
+    const showMoreBtn = root.querySelector('#showMoreBtn');
+
+    function refreshList() {
+        const list = filteredSortedUniverse();
+        cardList.innerHTML = '';
+        if (list.length === 0) {
+            cardList.appendChild(el('p', 'tone-na', 'No stocks match those filters.'));
+            showMoreBtn.classList.add('hidden');
+            return;
+        }
+        appendLines(cardList, list.slice(0, universeVisible).map((stock) => buildStockCard(stock, universe)));
+        showMoreBtn.classList.toggle('hidden', list.length <= universeVisible);
+    }
+
+    searchInput.addEventListener('input', () => {
+        universeQuery = searchInput.value;
+        universeVisible = 25;
+        refreshList();
+    });
+    sectorSelect.addEventListener('change', () => {
+        universeSector = sectorSelect.value;
+        universeVisible = 25;
+        refreshList();
+    });
+    sortSelect.addEventListener('change', () => {
+        universeSort = sortSelect.value;
+        universeVisible = 25;
+        refreshList();
+    });
+    showMoreBtn.addEventListener('click', () => {
+        universeVisible += 25;
+        refreshList();
+    });
+
+    refreshList();
+    // Full re-render (not just refreshList) on a successful add: `universe`
+    // above is captured once per render and handed to every card/verdict
+    // for percentile math, so a stale reference here would silently price
+    // every percentile against the pre-add stock count.
+    wireAddTickerForm(root, () => renderUniverseStep(root));
+    maybeOpenDebugSheet();
+}
+
+// Full-screen detail sheet for one stock. Top-level so Tasks 6/7 can call
+// it directly from their own tables/lists.
+function openStockSheet(ticker) {
+    document.querySelectorAll('.sheet-overlay').forEach((n) => n.remove());
+
+    const universe = appData.stocks || [];
+    const stock = universe.find((s) => s.ticker === ticker);
+    if (!stock) return;
+
+    const overlay = el('div', 'sheet-overlay');
+    const sheet = el('div', 'sheet');
+    overlay.appendChild(sheet);
+
+    function closeSheet() {
+        overlay.remove();
+        document.body.classList.remove('sheet-open');
+        document.removeEventListener('keydown', onKeydown);
+    }
+    function onKeydown(e) {
+        if (e.key === 'Escape') closeSheet();
+    }
+
+    const closeBtn = el('button', 'sheet-close', 'Close ✕');
+    closeBtn.type = 'button';
+    closeBtn.setAttribute('aria-label', 'Close detail sheet');
+    closeBtn.addEventListener('click', closeSheet);
+    sheet.appendChild(closeBtn);
+
+    const header = el('div', 'sheet-header');
+    header.appendChild(el('div', 'sheet-ticker', stock.ticker));
+    header.appendChild(el('h1', 'sheet-name', stock.name || stock.ticker));
+    const metaRow = el('div', 'sheet-meta-row');
+    metaRow.appendChild(el('span', 'sector-chip', stock.sector || 'Unknown sector'));
+    metaRow.appendChild(el('span', 'sheet-price', formatUsdPrice(stock.price)));
+    header.appendChild(metaRow);
+    header.appendChild(renderMetricLine('market_cap', stock, universe));
+    sheet.appendChild(header);
+
+    const summaryBlock = el('div', 'sheet-summary');
+    if (stock.summary) summaryBlock.appendChild(el('p', '', firstSentences(stock.summary, 2)));
+    summaryBlock.appendChild(el('p', 'sheet-ceo', `CEO: ${stock.ceo || 'Not listed'}`));
+    sheet.appendChild(summaryBlock);
+
+    const scoreStrip = el('div', 'score-strip');
+    appendLines(scoreStrip, ['scores.overall', 'scores.quality', 'scores.hype', 'scores.profitability', 'scores.cash_flow', 'scores.safety']
+        .map((key) => renderScoreBar(key, stock, universe)));
+    sheet.appendChild(scoreStrip);
+
+    const SHEET_GROUPS = [
+        { title: 'Does it make money?', keys: ['operating_margin', 'net_margin', 'roe'] },
+        { title: 'Does cash actually come in?', keys: ['fcf_yield'] },
+        { title: 'Can it survive trouble?', keys: ['debt_to_equity', 'current_ratio'] },
+        { title: 'Is it growing?', keys: ['revenue_growth', 'earnings_growth'] },
+        { title: 'Has the market noticed?', keys: ['momentum_6m', 'momentum_1y', 'scores.hype'] },
+        { title: 'What are you paying?', keys: ['forward_pe', 'trailing_pe', 'price_to_book', 'dividend_yield'] },
+    ];
+    SHEET_GROUPS.forEach((group) => {
+        const section = el('div', 'sheet-group');
+        section.appendChild(el('h2', '', group.title));
+        appendLines(section, group.keys.map((key) => renderMetricLine(key, stock, universe)));
+        sheet.appendChild(section);
+    });
+
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeSheet(); });
+    document.addEventListener('keydown', onKeydown);
+
+    document.body.appendChild(overlay);
+    document.body.classList.add('sheet-open');
+}
+
 const STEPS = {
     1: { title: STEP_TITLES[0], render: renderIdeaStep },
-    2: stubStep(STEP_TITLES[1]),
+    2: { title: STEP_TITLES[1], render: renderUniverseStep },
     3: stubStep(STEP_TITLES[2]),
     4: stubStep(STEP_TITLES[3]),
     5: stubStep(STEP_TITLES[4]),
