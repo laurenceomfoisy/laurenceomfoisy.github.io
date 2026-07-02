@@ -1017,10 +1017,10 @@ function growthDrivers(stock, survivors, weights) {
     const pct = (series, v) => PortfolioBuilder.computePercentile(series, v);
 
     const drivers = [
-        { key: 'revenue_growth', label: 'revenue growth', weight: w.revenue_growth, pctile: pct(revSeries, stock.revenue_growth) },
-        { key: 'earnings_growth', label: 'earnings growth', weight: w.earnings_growth, pctile: pct(earnSeries, stock.earnings_growth) },
-        { key: 'momentum', label: 'momentum', weight: w.momentum, pctile: pct(momSeries, momOf(stock)) },
-        { key: 'quality', label: 'quality', weight: w.quality, pctile: (stock.scores && isFinite(stock.scores.quality)) ? stock.scores.quality : 0 },
+        { key: 'revenue_growth', label: 'revenue growth', weight: w.revenue_growth, pctile: pct(revSeries, stock.revenue_growth), isScore: false },
+        { key: 'earnings_growth', label: 'earnings growth', weight: w.earnings_growth, pctile: pct(earnSeries, stock.earnings_growth), isScore: false },
+        { key: 'momentum', label: 'momentum', weight: w.momentum, pctile: pct(momSeries, momOf(stock)), isScore: false },
+        { key: 'quality', label: 'quality', weight: w.quality, pctile: (stock.scores && isFinite(stock.scores.quality)) ? stock.scores.quality : 0, isScore: true },
     ];
     drivers.forEach((d) => { d.contribution = d.weight * d.pctile; });
     drivers.sort((a, b) => b.contribution - a.contribution);
@@ -1158,7 +1158,7 @@ function renderBuildStep(root) {
             <label class="build-amount-label" for="buildAmountInput">How much are you investing?</label>
             <div class="build-amount-row">
                 <span class="build-amount-prefix">$</span>
-                <input type="number" id="buildAmountInput" class="build-amount-input" min="0" step="100" inputmode="decimal" placeholder="e.g. 10000">
+                <input type="number" id="buildAmountInput" class="build-amount-input" min="0" step="100" inputmode="decimal" placeholder="e.g. 5000">
                 <span class="build-amount-suffix">CAD</span>
             </div>
             <p class="build-amount-hint">Leave this blank to browse weights only — dollar amounts show up below only once you fill this in. Nothing here is a default; it's only ever what you actually type.</p>
@@ -1446,7 +1446,8 @@ function buildStudySheet(stock, survivors, universe, onChange) {
     driversWrap.appendChild(el('h3', '', 'Score drivers'));
     const list = el('ul', 'study-sheet-drivers-list');
     drivers.forEach((d) => {
-        list.appendChild(el('li', '', `${esc(d.label)} — ${Math.round(d.pctile)}th percentile, ${Math.round(d.weight)}% of the blend`));
+        const metricLine = d.isScore ? `quality score of ${Math.round(d.pctile)}` : `${Math.round(d.pctile)}th percentile`;
+        list.appendChild(el('li', '', `${esc(d.label)} — ${metricLine}, ${Math.round(d.weight)}% of the blend`));
     });
     driversWrap.appendChild(list);
     body.appendChild(driversWrap);
