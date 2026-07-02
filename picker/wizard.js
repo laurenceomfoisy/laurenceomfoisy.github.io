@@ -17,6 +17,7 @@ function defaultWizardState() {
         guardrails: { count: 18, sectorCapPct: 30, maxPosPct: 10, minPosPct: 3 },
         homework: {},
         visited: {},
+        floorSaved: {},
     };
 }
 
@@ -74,6 +75,7 @@ function loadState() {
                     guardrails: Object.assign({}, d.guardrails, saved.guardrails || {}),
                     homework: (saved.homework && typeof saved.homework === 'object') ? saved.homework : {},
                     visited: (saved.visited && typeof saved.visited === 'object') ? saved.visited : {},
+                    floorSaved: (saved.floorSaved && typeof saved.floorSaved === 'object') ? saved.floorSaved : {},
                 };
             }
         }
@@ -767,21 +769,18 @@ function floorRuleEnabled(rule) {
     return WizardState.floor[rule.field] !== rule.disabledValue;
 }
 
-// Per-visit cache of "last value the user actually set" for each rule, so
-// switching a rule off and back on restores where it was instead of
-// snapping to the shipped default. Reset whenever the step is (re)entered —
-// mirrors the universeQuery/universeSector reset pattern in Step 2. Not
-// part of WizardState: the persisted floor shape must match
-// PortfolioBuilder.DEFAULT_FLOOR exactly, so "what to show while off" is a
-// pure UI concern, not saved state.
-let floorLastValues = {};
-
-// The value a rule's threshold control (and its own kill count) should use
-// right now: the live WizardState value if the rule is on, otherwise the
-// last value the user chose this visit, otherwise the shipped default.
+// Cache of "last value the user actually set" for each rule, so switching a
+// rule off and back on restores where it was instead of snapping to the
+// shipped default. Persisted on WizardState.floorSaved (not reset on
+// render) rather than kept in module scope: showStep re-renders Step 3 on
+// every navigation, so a module-scope stash was wiped by an ordinary visit
+// to another step and back, silently reverting the threshold to the
+// shipped default the next time the rule was re-enabled. It is kept
+// separate from WizardState.floor itself because that shape must match
+// PortfolioBuilder.DEFAULT_FLOOR exactly.
 function floorEffectiveValue(rule) {
     if (floorRuleEnabled(rule)) return WizardState.floor[rule.field];
-    if (rule.id in floorLastValues) return floorLastValues[rule.id];
+    if (rule.id in WizardState.floorSaved) return WizardState.floorSaved[rule.id];
     return PortfolioBuilder.DEFAULT_FLOOR[rule.field];
 }
 
@@ -847,9 +846,9 @@ function buildFloorCard(rule, universe, notifyChange) {
     function commit(enabled, value) {
         if (enabled) {
             WizardState.floor[rule.field] = value;
-            floorLastValues[rule.id] = value;
+            WizardState.floorSaved[rule.id] = value;
         } else {
-            floorLastValues[rule.id] = WizardState.floor[rule.field];
+            WizardState.floorSaved[rule.id] = WizardState.floor[rule.field];
             WizardState.floor[rule.field] = rule.disabledValue;
         }
         saveState();
@@ -858,7 +857,7 @@ function buildFloorCard(rule, universe, notifyChange) {
 
     toggleInput.addEventListener('change', () => {
         if (toggleInput.checked) {
-            const restore = rule.id in floorLastValues ? floorLastValues[rule.id] : PortfolioBuilder.DEFAULT_FLOOR[rule.field];
+            const restore = rule.id in WizardState.floorSaved ? WizardState.floorSaved[rule.id] : PortfolioBuilder.DEFAULT_FLOOR[rule.field];
             commit(true, restore);
         } else {
             commit(false);
@@ -877,7 +876,9 @@ function buildFloorCard(rule, universe, notifyChange) {
         rangeInput.disabled = !enabled;
         thresholdLabel.textContent = rule.thresholdLabel(value);
         const kill = floorRuleKillCount(rule, universe);
-        killLine.innerHTML = `This rule alone removes <strong>${kill}</strong> of ${universe.length}.`;
+        killLine.innerHTML = enabled
+            ? `This rule alone removes <strong>${kill}</strong> of ${universe.length}.`
+            : `Turned on, this rule would remove <strong>${kill}</strong> of ${universe.length}.`;
         card.classList.toggle('floor-card-off', !enabled);
         warningLine.classList.toggle('hidden', enabled);
     }
@@ -927,7 +928,6 @@ function buildFloorBar(universe) {
 
 function renderFloorStep(root) {
     const universe = appData.stocks || [];
-    floorLastValues = {};
 
     if (universe.length === 0) {
         root.innerHTML = `
