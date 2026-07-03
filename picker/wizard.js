@@ -473,7 +473,7 @@ function teachThesis(kind, stock) {
         const hypeDisplay = esc(CopyDeck.format('scores.hype', stock.scores.hype));
         const names = esc(fails.map((id) => TEACH_RULE_PLAIN_NAMES[id] || id).join(', '));
         const ruleWord = fails.length === 1 ? 'rule' : 'rules';
-        return `Hype score ${hypeDisplay}, and it still fails ${fails.length} junk-filter ${ruleWord}: ${names}. Exciting price chart, sick balance sheet — this is the stock that hurts people.`;
+        return `Hype score ${hypeDisplay}, and it still fails ${fails.length} junk-filter ${ruleWord}: ${names}. Don't let the overall score wave you through — it's 40% hype, and here hype is doing the hiding. Exciting price chart, sick balance sheet — this is the stock that hurts people.`;
     }
     if (kind === 'mediocre') {
         return 'Nothing wrong, nothing special — the market is full of these. Learning to shrug at them is the skill.';
