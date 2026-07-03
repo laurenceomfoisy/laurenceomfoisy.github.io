@@ -969,7 +969,164 @@ body.sheet-open {
     margin-bottom: 0;
 }
 
-/* --- Step 3: Set your floor (Task 6) --- */
+/* --- Step 3: The junk filter (Task 4, iteration 2) --- */
+.floor-report {
+    margin-bottom: 1.5rem;
+}
+
+.floor-report-headline {
+    font-size: 1.6rem;
+    margin-bottom: 0.6rem;
+    max-width: none;
+}
+
+.floor-report-headline strong {
+    color: var(--tone-bad);
+}
+
+.floor-report-subline {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    max-width: none;
+    margin-bottom: 1.75rem;
+}
+
+.floor-report-subline strong {
+    color: var(--text-primary);
+}
+
+.floor-report-rules {
+    display: flex;
+    flex-direction: column;
+}
+
+.floor-report-rule {
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.floor-report-rule:first-child {
+    padding-top: 0;
+}
+
+.floor-report-rule:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.floor-report-rule-title {
+    font-size: 1.05rem;
+    margin-bottom: 0.35rem;
+}
+
+.floor-report-rule-protects {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    max-width: none;
+    margin-bottom: 0.5rem;
+}
+
+.floor-report-rule-kill {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    max-width: none;
+    margin-bottom: 0.6rem;
+}
+
+.floor-report-rule-kill strong {
+    color: var(--text-primary);
+    font-family: var(--font-head);
+}
+
+.floor-report-casualties {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+}
+
+.floor-report-casualty {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+}
+
+.floor-report-ticker {
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: none;
+    border: none;
+    padding: 0;
+    text-decoration: underline;
+    text-decoration-color: var(--border-hover);
+    text-underline-offset: 0.15rem;
+    cursor: pointer;
+}
+
+.floor-report-ticker:hover,
+.floor-report-ticker:focus-visible {
+    text-decoration-color: var(--text-primary);
+}
+
+.floor-report-callout {
+    margin-top: 1.5rem;
+    margin-bottom: 0;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem;
+    justify-content: space-between;
+}
+
+.floor-report-callout p {
+    flex: 1 1 16rem;
+}
+
+.floor-reset-btn {
+    font-size: 0.9rem;
+    padding: 0.65rem 1.3rem;
+    flex: none;
+}
+
+.floor-adjust {
+    border: 1px solid var(--border-color);
+    border-radius: 0.9rem;
+    background: var(--bg-tint);
+    margin-bottom: 1.5rem;
+}
+
+.floor-adjust summary {
+    padding: 1rem 1.25rem;
+    cursor: pointer;
+    list-style: none;
+    font-family: var(--font-head);
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+}
+
+.floor-adjust summary::-webkit-details-marker {
+    display: none;
+}
+
+.floor-adjust summary::before {
+    content: '▸';
+    display: inline-block;
+    margin-right: 0.5rem;
+    color: var(--text-muted);
+    transition: transform 0.15s ease;
+}
+
+.floor-adjust[open] summary::before {
+    transform: rotate(90deg);
+}
+
+.floor-adjust .floor-cards {
+    padding: 0 1.25rem 1.25rem;
+    margin-bottom: 0;
+}
+
 .floor-cards {
     display: flex;
     flex-direction: column;

@@ -4,7 +4,7 @@
 // file. DOM only — no test framework covers this file; it is verified with
 // headless Chromium (see task brief).
 
-const STEP_TITLES = ['The idea', 'Reading a stock', 'Your floor', 'Build', 'Homework & track'];
+const STEP_TITLES = ['The idea', 'Reading a stock', 'The junk filter', 'Build', 'Homework & track'];
 
 const STORAGE_KEY = 'soundhype_wizard';
 const LEGACY_STORAGE_KEY = 'soundhype_builder';
@@ -717,8 +717,10 @@ function openStockSheet(ticker) {
     closeBtn.focus();
 }
 
-// Step 3 — "Set your floor": the five quality-floor rules as explained
-// cards with live kill counts. Each rule maps to exactly one field on
+// Step 3 — "The junk filter": an opinionated report of what the five
+// quality-floor rules removed and why, with the interactive controls
+// (toggles/sliders/live kill counts) collapsed behind a "you don't need to"
+// details element. Each rule maps to exactly one field on
 // WizardState.floor (same shape as PortfolioBuilder.DEFAULT_FLOOR).
 // Disabling a rule sets that field to its disabled sentinel (see
 // migrateLegacyState's comment on why these are finite, not +/-Infinity)
@@ -946,36 +948,144 @@ function buildFloorBar(universe) {
     return { node: bar, refresh };
 }
 
+// True iff WizardState.floor is, field by field, the shipped default —
+// i.e. the user has not touched a single toggle or slider. Compared against
+// PortfolioBuilder.DEFAULT_FLOOR's own keys (not FLOOR_RULES) so this stays
+// correct even if FLOOR_RULES' field list ever drifts.
+function isFloorRecommended() {
+    return Object.keys(PortfolioBuilder.DEFAULT_FLOOR).every(
+        (field) => WizardState.floor[field] === PortfolioBuilder.DEFAULT_FLOOR[field]
+    );
+}
+
+// One fixed, rule-specific phrase per casualty line — "cut: TICKER — {this}".
+// Deliberately blunter than FLOOR_RULES' protects/warning copy (those explain
+// the rule in general; this names what's wrong with the specific company).
+// Ids must match FLOOR_RULES/Teach.RULE_FIELDS exactly.
+const FLOOR_CASUALTY_REASON = {
+    fcf: 'burns cash without the growth to excuse it',
+    current: "can't cover this year's bills",
+    debt: 'owes more than twice what shareholders own',
+    rev: 'sales are shrinking',
+    mcap: 'too small to be anything but a lottery ticket',
+};
+
+// One rule's row in the report: plain title, protects-from copy (reused from
+// FLOOR_RULES), the kill count, and up to 3 named casualties. `kill` is one
+// entry of Teach.casualtiesByRule's result — killCount can exceed
+// casualties.length (it also counts data-poor stocks that fail every rule
+// alike; see teach.js's rulesFailed comment), so this never claims the
+// casualties shown are the only ones, or all of the N.
+function buildFloorReportRuleRow(rule, kill) {
+    const row = el('article', 'floor-report-rule');
+    row.appendChild(el('h3', 'floor-report-rule-title', esc(rule.title)));
+    row.appendChild(el('p', 'floor-report-rule-protects', esc(rule.protects)));
+    row.appendChild(el('p', 'floor-report-rule-kill', `This rule alone removes <strong>${kill.killCount}</strong>.`));
+
+    if (kill.casualties.length > 0) {
+        const list = el('ul', 'floor-report-casualties');
+        kill.casualties.forEach((stock) => {
+            const item = document.createElement('li');
+            item.className = 'floor-report-casualty';
+            item.appendChild(document.createTextNode('cut: '));
+            const btn = el('button', 'floor-report-ticker', esc(stock.ticker));
+            btn.type = 'button';
+            btn.addEventListener('click', () => openStockSheet(stock.ticker));
+            item.appendChild(btn);
+            item.appendChild(document.createTextNode(` — ${FLOOR_CASUALTY_REASON[rule.id] || ''}`));
+            list.appendChild(item);
+        });
+        row.appendChild(list);
+    }
+
+    return row;
+}
+
+// The report itself: headline + subline, five rule rows, and — only when
+// the user has actually changed something — a caution callout with a
+// one-click reset. Rebuilt wholesale on every change (cheap: five rules x
+// up to 3 casualties) rather than patched in place, unlike the interactive
+// controls below it, which must NOT be torn down on every keystroke (that
+// would drop an in-progress slider drag).
+function renderFloorReport(container, universe, notifyChange) {
+    const casualties = Teach.casualtiesByRule(universe, WizardState.floor);
+    const survivors = floorSurvivorCount(universe);
+    const cut = universe.length - survivors;
+
+    container.innerHTML = '';
+
+    container.appendChild(el('h2', 'floor-report-headline',
+        `We removed <strong>${cut}</strong> of ${universe.length} companies before ranking.`));
+    container.appendChild(el('p', 'floor-report-subline',
+        `Every one of them has at least one disease from the list below. You didn't have to decide anything — these are the recommended rules. (<strong>${survivors}</strong> survive.)`));
+
+    const rulesWrap = el('div', 'floor-report-rules');
+    FLOOR_RULES.forEach((rule) => {
+        const kill = casualties[rule.id] || { killCount: 0, casualties: [] };
+        rulesWrap.appendChild(buildFloorReportRuleRow(rule, kill));
+    });
+    container.appendChild(rulesWrap);
+
+    if (!isFloorRecommended()) {
+        const callout = el('div', 'callout floor-report-callout');
+        callout.appendChild(el('p', '', `<strong>You've changed the recommended rules</strong> — the numbers above reflect YOUR floor.`));
+        const resetBtn = el('button', 'step-cta floor-reset-btn', 'Reset to recommended');
+        resetBtn.type = 'button';
+        resetBtn.addEventListener('click', () => {
+            WizardState.floor = Object.assign({}, PortfolioBuilder.DEFAULT_FLOOR);
+            WizardState.floorSaved = {};
+            saveState();
+            notifyChange();
+        });
+        callout.appendChild(resetBtn);
+        container.appendChild(callout);
+    }
+}
+
+// The five interactive cards (toggles/sliders/per-rule kill lines), exactly
+// as before Task 4 — just mounted inside the collapsed <details> instead of
+// directly in the step. Returns the {id -> {node, refresh}} map so the
+// caller can refresh every card alongside the report and the sticky bar.
+function renderFloorControls(container, universe, notifyChange) {
+    const cardEls = {};
+    FLOOR_RULES.forEach((rule) => {
+        cardEls[rule.id] = buildFloorCard(rule, universe, notifyChange);
+        container.appendChild(cardEls[rule.id].node);
+    });
+    return cardEls;
+}
+
 function renderFloorStep(root) {
     const universe = appData.stocks || [];
 
     if (universe.length === 0) {
         root.innerHTML = `
-            <h1>Set your floor</h1>
+            <h1>${esc(STEP_TITLES[2])}</h1>
             <p class="tone-na">Still loading the universe — hang tight.</p>
         `;
         return;
     }
 
     root.innerHTML = `
-        <h1>Set your floor</h1>
-        <p>Before we rank anything, we throw out the junk. Each rule below removes companies with a specific disease. You can turn any of them off — but you'll be told what you're letting in.</p>
-        <div class="floor-cards" id="floorCards"></div>
+        <h1>${esc(STEP_TITLES[2])}</h1>
+        <div class="floor-report" id="floorReport"></div>
+        <details class="floor-adjust">
+            <summary>Adjust the rules (you don't need to)</summary>
+            <div class="floor-cards" id="floorCards"></div>
+        </details>
         <div class="floor-spacer"></div>
     `;
 
+    const reportRoot = root.querySelector('#floorReport');
     const cardsRoot = root.querySelector('#floorCards');
-    const cardEls = {};
 
     function refreshAll() {
+        renderFloorReport(reportRoot, universe, refreshAll);
         FLOOR_RULES.forEach((rule) => cardEls[rule.id].refresh());
         bar.refresh();
     }
 
-    FLOOR_RULES.forEach((rule) => {
-        cardEls[rule.id] = buildFloorCard(rule, universe, refreshAll);
-        cardsRoot.appendChild(cardEls[rule.id].node);
-    });
+    const cardEls = renderFloorControls(cardsRoot, universe, refreshAll);
 
     const bar = buildFloorBar(universe);
     root.appendChild(bar.node);
