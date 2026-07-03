@@ -1012,13 +1012,14 @@ function renderFloorReport(container, universe, notifyChange) {
     const survivors = floorSurvivorCount(universe);
     const cut = universe.length - survivors;
     const dataPoor = appData.stocks.length - PortfolioBuilder.applyQualityFloor(appData.stocks, floorAllDisabledConfig()).length;
+    const diseased = cut - dataPoor;
 
     container.innerHTML = '';
 
     container.appendChild(el('h2', 'floor-report-headline',
         `We removed <strong>${cut}</strong> of ${universe.length} companies before ranking.`));
     container.appendChild(el('p', 'floor-report-subline',
-        `Most of them have at least one disease from the list below. ${dataPoor} more were cut because Yahoo doesn't report enough about them to judge — missing data is a reason to pass, not a shrug. You didn't have to decide anything — these are the recommended rules. (<strong>${survivors}</strong> survive.)`));
+        `${diseased} of them have at least one disease from the list below. The other ${dataPoor} were cut because Yahoo doesn't report enough about them to judge — missing data is a reason to pass, not a shrug. You didn't have to decide anything — these are the recommended rules. (<strong>${survivors}</strong> survive.)`));
 
     const rulesWrap = el('div', 'floor-report-rules');
     FLOOR_RULES.forEach((rule) => {
