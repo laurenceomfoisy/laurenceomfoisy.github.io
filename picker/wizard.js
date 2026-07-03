@@ -241,8 +241,12 @@ function firstSentences(text, n) {
     return text.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0, n).join(' ');
 }
 
-// Ported from old app.js `drawSparkline` — same viewBox/scaling, colors
-// swapped to the CSS vars already defined in style.css's :root.
+// Ported from old app.js `drawSparkline` — same viewBox/scaling. Quiet
+// Wealthsimple-light palette: gray by default, muted green only when the
+// series trends up. Thin stroke — sparklines are context, not the headline.
+const SPARKLINE_STROKE_UP = '#1E7B3C';
+const SPARKLINE_STROKE_DEFAULT = '#9BA69C';
+
 function renderSparkline(prices, isPositive) {
     if (!prices || prices.length < 2) {
         return '<div class="sparkline-empty">No price trend</div>';
@@ -257,9 +261,9 @@ function renderSparkline(prices, isPositive) {
         const y = height - ((price - min) / range) * height;
         return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
-    const strokeColor = isPositive ? 'var(--color-success)' : 'var(--color-danger)';
+    const strokeColor = isPositive ? SPARKLINE_STROKE_UP : SPARKLINE_STROKE_DEFAULT;
     return `<svg viewBox="0 0 ${width} ${height}" class="sparkline-svg" preserveAspectRatio="none">
-        <polyline fill="none" stroke="${strokeColor}" stroke-width="2" points="${points}" stroke-linecap="round" stroke-linejoin="round" />
+        <polyline fill="none" stroke="${strokeColor}" stroke-width="1.5" points="${points}" stroke-linecap="round" stroke-linejoin="round" />
     </svg>`;
 }
 
