@@ -4,7 +4,7 @@
 // file. DOM only — no test framework covers this file; it is verified with
 // headless Chromium (see task brief).
 
-const STEP_TITLES = ['The idea', 'The universe', 'Your floor', 'Build', 'Homework & track'];
+const STEP_TITLES = ['The idea', 'Reading a stock', 'The junk filter', 'Build', 'Homework'];
 
 const STORAGE_KEY = 'soundhype_wizard';
 const LEGACY_STORAGE_KEY = 'soundhype_builder';
@@ -241,8 +241,12 @@ function firstSentences(text, n) {
     return text.split(/(?<=[.!?])\s+/).filter(Boolean).slice(0, n).join(' ');
 }
 
-// Ported from old app.js `drawSparkline` — same viewBox/scaling, colors
-// swapped to the CSS vars already defined in style.css's :root.
+// Ported from old app.js `drawSparkline` — same viewBox/scaling. Quiet
+// Wealthsimple-light palette: gray by default, muted green only when the
+// series trends up. Thin stroke — sparklines are context, not the headline.
+const SPARKLINE_STROKE_UP = '#1E7B3C';
+const SPARKLINE_STROKE_DEFAULT = '#9BA69C';
+
 function renderSparkline(prices, isPositive) {
     if (!prices || prices.length < 2) {
         return '<div class="sparkline-empty">No price trend</div>';
@@ -257,9 +261,9 @@ function renderSparkline(prices, isPositive) {
         const y = height - ((price - min) / range) * height;
         return `${x.toFixed(1)},${y.toFixed(1)}`;
     }).join(' ');
-    const strokeColor = isPositive ? 'var(--color-success)' : 'var(--color-danger)';
+    const strokeColor = isPositive ? SPARKLINE_STROKE_UP : SPARKLINE_STROKE_DEFAULT;
     return `<svg viewBox="0 0 ${width} ${height}" class="sparkline-svg" preserveAspectRatio="none">
-        <polyline fill="none" stroke="${strokeColor}" stroke-width="2" points="${points}" stroke-linecap="round" stroke-linejoin="round" />
+        <polyline fill="none" stroke="${strokeColor}" stroke-width="1.5" points="${points}" stroke-linecap="round" stroke-linejoin="round" />
     </svg>`;
 }
 
@@ -273,8 +277,6 @@ function renderIdeaStep(root) {
     // "392 stocks" when we know the count, "hundreds of stocks" when we
     // don't — both read correctly wherever a noun follows immediately.
     const countOf = count ? String(count) : 'hundreds of';
-    // "Meet the 392 →" / "Meet the hundreds →" — no trailing noun, so no "of".
-    const countBare = count ? String(count) : 'hundreds';
 
     let updatedLine = 'Every number here comes from Yahoo Finance. Refresh date not available yet — the data is still loading.';
     let staleHtml = '';
@@ -328,48 +330,10 @@ function renderIdeaStep(root) {
             <p>The biggest risk in this whole exercise is not a bad number on this page. It is your own behavior: chasing winners after they have already run, panic-selling on a red day, checking prices every hour like it will change the outcome. The tool will call these out when it sees you doing them — that is the entire point of building it this way instead of just handing you a spreadsheet.</p>
         </div>
 
-        <button type="button" class="step-cta" id="ideaCta">Meet the ${countBare} →</button>
+        <button type="button" class="step-cta" id="ideaCta">Learn to read one →</button>
     `;
 
     root.querySelector('#ideaCta').addEventListener('click', () => showStep(2));
-}
-
-// Step 2 — "Meet the universe": the full stock list as scannable cards,
-// each carrying its verdict lines, plus a detail sheet with the full
-// interpreted breakdown. State (search/sector/sort/pagination) lives at
-// module scope and resets whenever the step is (re)entered, but persists
-// across in-step re-renders (typing, filtering) so focus/scroll are not
-// lost on every keystroke — only the card list re-renders, not the controls.
-let universeQuery = '';
-let universeSector = '';
-let universeSort = 'overall';
-let universeVisible = 25;
-
-const UNIVERSE_SORT_OPTIONS = [
-    { value: 'overall', key: 'scores.overall', label: 'Best blend first' },
-    { value: 'quality', key: 'scores.quality', label: 'Best businesses first' },
-    { value: 'hype', key: 'scores.hype', label: 'Most market attention first' },
-    { value: 'momentum6m', key: 'momentum_6m', label: 'Biggest 6-month movers first' },
-    { value: 'revgrowth', key: 'revenue_growth', label: 'Fastest sales growth first' },
-];
-
-function filteredSortedUniverse() {
-    const q = universeQuery.trim().toLowerCase();
-    let list = appData.stocks.filter((s) => {
-        if (universeSector && s.sector !== universeSector) return false;
-        if (q && !((s.ticker || '').toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q))) return false;
-        return true;
-    });
-    const sortOpt = UNIVERSE_SORT_OPTIONS.find((o) => o.value === universeSort) || UNIVERSE_SORT_OPTIONS[0];
-    list = list.slice().sort((a, b) => {
-        const av = Interpret.getValue(a, sortOpt.key);
-        const bv = Interpret.getValue(b, sortOpt.key);
-        if (av === null && bv === null) return 0;
-        if (av === null) return 1;
-        if (bv === null) return -1;
-        return bv - av;
-    });
-    return list;
 }
 
 // One card: ticker/name/sector, price + 1y move, sparkline, then the 4
@@ -477,43 +441,133 @@ function maybeOpenDebugSheet() {
     if (ticker) openStockSheet(ticker.toUpperCase());
 }
 
-function renderUniverseStep(root) {
+// Plain-English name for each floor rule, used only in the trap example's
+// thesis line below — must match FLOOR_RULES ids (fcf/current/debt/rev/mcap)
+// and Teach.RULE_FIELDS exactly. Deliberately blunter than FLOOR_RULES'
+// `title`/`warning` copy (those explain the rule; this names the disease).
+const TEACH_RULE_PLAIN_NAMES = {
+    fcf: 'burns cash',
+    current: "can't cover this year's bills",
+    debt: 'drowning in debt',
+    rev: 'shrinking sales',
+    mcap: 'too small to trust',
+};
+
+const TEACH_EYEBROWS = {
+    strong: 'THE STRONG ONE',
+    trap: 'THE TRAP',
+    mediocre: 'THE MIDDLE OF THE PACK',
+};
+
+// One data-driven sentence per example kind. `strong`/`mediocre` are fixed
+// copy (the lesson is the same for any stock that lands there); `trap` is
+// built from that specific stock's hype score and the actual rules it fails
+// — never a canned line, since the whole point of the trap example is
+// "look how good the surface number is, then look what's underneath."
+function teachThesis(kind, stock) {
+    if (kind === 'strong') {
+        return `Everything below is what "good" looks like — notice all four lines agree.`;
+    }
+    if (kind === 'trap') {
+        const fails = Teach.rulesFailed(stock, PortfolioBuilder.DEFAULT_FLOOR);
+        const hypeDisplay = esc(CopyDeck.format('scores.hype', stock.scores.hype));
+        const names = esc(fails.map((id) => TEACH_RULE_PLAIN_NAMES[id] || id).join(', '));
+        const ruleWord = fails.length === 1 ? 'rule' : 'rules';
+        return `Hype score ${hypeDisplay}, and it still fails ${fails.length} junk-filter ${ruleWord}: ${names}. Don't let the overall score wave you through — it's 40% hype, and here hype is doing the hiding. Exciting price chart, sick balance sheet — this is the stock that hurts people.`;
+    }
+    if (kind === 'mediocre') {
+        return 'Nothing wrong, nothing special — the market is full of these. Learning to shrug at them is the skill.';
+    }
+    return '';
+}
+
+// One worked-example block: eyebrow label, data-driven thesis, the stock's
+// own card (same renderer the old universe list used), and an explicit
+// "open the full sheet" link — the card is already a click target, but the
+// link makes that discoverable for anyone scanning by keyboard or screen
+// reader rather than hovering.
+function buildTeachExample(kind, stock, universe) {
+    const section = el('section', `teach-example teach-example-${kind}`);
+    section.appendChild(el('span', 'teach-eyebrow', esc(TEACH_EYEBROWS[kind])));
+    section.appendChild(el('p', 'teach-thesis', teachThesis(kind, stock)));
+    section.appendChild(buildStockCard(stock, universe));
+
+    const link = el('button', 'teach-sheet-link', 'Open the full sheet →');
+    link.type = 'button';
+    link.addEventListener('click', () => openStockSheet(stock.ticker));
+    section.appendChild(link);
+
+    return section;
+}
+
+// As-you-type search results (max 8, ticker + name rows). No list, no
+// sector/sort/pagination — Step 2 is no longer a browse surface, so the only
+// way to reach a specific company here is to already know roughly what
+// you're looking for.
+function renderTeachSearchResults(container, universe, query) {
+    container.innerHTML = '';
+    const q = query.trim().toLowerCase();
+    if (!q) return;
+
+    const matches = universe
+        .filter((s) => (s.ticker || '').toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q))
+        .slice(0, 8);
+
+    if (matches.length === 0) {
+        container.appendChild(el('p', 'teach-search-empty', 'No matches.'));
+        return;
+    }
+
+    matches.forEach((stock) => {
+        const row = el('button', 'teach-search-row',
+            `<span class="teach-search-ticker">${esc(stock.ticker)}</span><span class="teach-search-name">${esc(stock.name || stock.ticker)}</span>`);
+        row.type = 'button';
+        row.addEventListener('click', () => openStockSheet(stock.ticker));
+        container.appendChild(row);
+    });
+}
+
+// Step 2 — "Reading a stock": three worked examples (strong/trap/mediocre,
+// picked by Teach.pickTeachingExamples) teach the four-line card format,
+// then a numbered recap, then search-only lookup for anyone who already
+// knows the ticker they want. Deliberately not a browse surface — that was
+// the old 392-card list this step replaces.
+function renderTeachStep(root) {
     const universe = appData.stocks || [];
 
     if (universe.length === 0) {
         root.innerHTML = `
-            <h1>The universe</h1>
-            <p>Every stock below is scored against the others — here's the whole universe, best blend first.</p>
+            <h1>Reading a stock</h1>
             <p class="tone-na">Still loading the universe — hang tight.</p>
         `;
         maybeOpenDebugSheet();
         return;
     }
 
-    // Reset search/sector/sort/pagination each time the step is (re)entered
-    // (e.g. hopping to step 1 and back) — matches the comment above the
-    // state vars. Within a single visit, input/change handlers below mutate
-    // these and call refreshList() directly so typing doesn't nuke focus.
-    universeQuery = '';
-    universeSector = '';
-    universeSort = 'overall';
-    universeVisible = 25;
-
-    const sectors = Array.from(new Set(universe.map((s) => s.sector).filter(Boolean))).sort();
+    const examples = Teach.pickTeachingExamples(universe, PortfolioBuilder.DEFAULT_FLOOR);
 
     root.innerHTML = `
-        <h1>The universe</h1>
-        <p>Every stock below is scored against the other ${universe.length - 1} — here's the whole universe, best blend first.</p>
-        <div class="universe-controls">
-            <input type="search" class="universe-search" id="universeSearch" placeholder="Search by name or ticker" value="${universeQuery.replace(/"/g, '&quot;')}">
-            <select class="universe-select" id="universeSectorSelect">
-                <option value="">All sectors</option>
-                ${sectors.map((s) => `<option value="${esc(s)}"${s === universeSector ? ' selected' : ''}>${esc(s)}</option>`).join('')}
-            </select>
-            <select class="universe-select" id="universeSortSelect">
-                ${UNIVERSE_SORT_OPTIONS.map((o) => `<option value="${o.value}"${o.value === universeSort ? ' selected' : ''}>${o.label}</option>`).join('')}
-            </select>
-        </div>
+        <h1>Reading a stock</h1>
+        <p class="idea-lede">You do not need to read ${universe.length} stocks — the tool already filters and ranks every one of them for you. You need to be able to read ONE. Here are three that teach the whole skill.</p>
+
+        <div class="teach-examples" id="teachExamples"></div>
+
+        <section class="teach-recap">
+            <h2>How to read any card</h2>
+            <ol class="teach-recap-list">
+                <li><strong>Overall score is a class rank, not a grade.</strong> A 68 doesn't mean 68/100 — it means the stock beats 68% of everything else on this list, nothing more.</li>
+                <li><strong>The money line</strong> asks whether real cash is coming in the door — free cash flow or margins — not just profit on paper.</li>
+                <li><strong>The safety line</strong> asks whether the balance sheet could survive a bad year — how much debt it carries, whether it can cover this year's bills.</li>
+                <li><strong>The growth/momentum line</strong> asks whether sales are actually growing and whether the market has started to notice.</li>
+            </ol>
+        </section>
+
+        <section class="teach-search">
+            <h2>Curious about a specific company?</h2>
+            <input type="search" class="universe-search teach-search-input" id="teachSearchInput" placeholder="Search by name or ticker">
+            <div class="teach-search-results" id="teachSearchResults"></div>
+        </section>
+
         <div class="add-ticker-section hidden" id="addTickerSection">
             <p class="add-ticker-label">Don't see a ticker? Add it — it gets pulled fresh from Yahoo Finance and scored the same way as everything else.</p>
             <div class="add-ticker-row">
@@ -522,54 +576,29 @@ function renderUniverseStep(root) {
             </div>
             <p class="add-ticker-msg hidden" id="addTickerMsg"></p>
         </div>
-        <div class="card-list" id="cardList"></div>
-        <button type="button" class="show-more-btn hidden" id="showMoreBtn">Show 25 more</button>
+
+        <button type="button" class="step-cta" id="teachCta">See what we filtered out →</button>
     `;
 
-    const searchInput = root.querySelector('#universeSearch');
-    const sectorSelect = root.querySelector('#universeSectorSelect');
-    const sortSelect = root.querySelector('#universeSortSelect');
-    const cardList = root.querySelector('#cardList');
-    const showMoreBtn = root.querySelector('#showMoreBtn');
+    const examplesRoot = root.querySelector('#teachExamples');
+    const blocks = ['strong', 'trap', 'mediocre']
+        .filter((kind) => examples[kind])
+        .map((kind) => buildTeachExample(kind, examples[kind], universe));
+    appendLines(examplesRoot, blocks);
 
-    function refreshList() {
-        const list = filteredSortedUniverse();
-        cardList.innerHTML = '';
-        if (list.length === 0) {
-            cardList.appendChild(el('p', 'tone-na', 'No stocks match those filters.'));
-            showMoreBtn.classList.add('hidden');
-            return;
-        }
-        appendLines(cardList, list.slice(0, universeVisible).map((stock) => buildStockCard(stock, universe)));
-        showMoreBtn.classList.toggle('hidden', list.length <= universeVisible);
-    }
-
+    const searchInput = root.querySelector('#teachSearchInput');
+    const searchResults = root.querySelector('#teachSearchResults');
     searchInput.addEventListener('input', () => {
-        universeQuery = searchInput.value;
-        universeVisible = 25;
-        refreshList();
-    });
-    sectorSelect.addEventListener('change', () => {
-        universeSector = sectorSelect.value;
-        universeVisible = 25;
-        refreshList();
-    });
-    sortSelect.addEventListener('change', () => {
-        universeSort = sortSelect.value;
-        universeVisible = 25;
-        refreshList();
-    });
-    showMoreBtn.addEventListener('click', () => {
-        universeVisible += 25;
-        refreshList();
+        renderTeachSearchResults(searchResults, universe, searchInput.value);
     });
 
-    refreshList();
-    // Full re-render (not just refreshList) on a successful add: `universe`
-    // above is captured once per render and handed to every card/verdict
-    // for percentile math, so a stale reference here would silently price
-    // every percentile against the pre-add stock count.
-    wireAddTickerForm(root, () => renderUniverseStep(root));
+    root.querySelector('#teachCta').addEventListener('click', () => showStep(3));
+
+    // Full re-render (not just the search results) on a successful add:
+    // `universe` above is captured once per render and handed to every
+    // example card for percentile math, and a fresh add could change which
+    // stock Teach.pickTeachingExamples even picks.
+    wireAddTickerForm(root, () => renderTeachStep(root));
     maybeOpenDebugSheet();
 }
 
@@ -688,8 +717,10 @@ function openStockSheet(ticker) {
     closeBtn.focus();
 }
 
-// Step 3 — "Set your floor": the five quality-floor rules as explained
-// cards with live kill counts. Each rule maps to exactly one field on
+// Step 3 — "The junk filter": an opinionated report of what the five
+// quality-floor rules removed and why, with the interactive controls
+// (toggles/sliders/live kill counts) collapsed behind a "you don't need to"
+// details element. Each rule maps to exactly one field on
 // WizardState.floor (same shape as PortfolioBuilder.DEFAULT_FLOOR).
 // Disabling a rule sets that field to its disabled sentinel (see
 // migrateLegacyState's comment on why these are finite, not +/-Infinity)
@@ -775,16 +806,18 @@ function floorEffectiveValue(rule) {
     return PortfolioBuilder.DEFAULT_FLOOR[rule.field];
 }
 
-// "This rule alone removes N of {universe.length}" — universe run through
-// applyQualityFloor with every OTHER rule at its disabled sentinel and this
-// one at its current/last threshold. Computed against the full universe
-// (appData.stocks), not the current survivor set, so kill counts never
-// compound with each other.
+// "This rule alone removes N of {universe.length}" — N is the count of
+// complete-data stocks that TRUE-fail this rule (Teach.rulesFailed includes
+// rule.id) under a floor where every OTHER rule sits at its disabled
+// sentinel and this one at its current/last threshold. Computed against the
+// full universe (appData.stocks), not the current survivor set, so kill
+// counts never compound with each other. Data-poor stocks (missing
+// KEY_METRICS) are never counted here — they're cut once, honestly, by the
+// completeness gate reported in the Step 3 subline, not blamed on whichever
+// rule happens to be evaluated.
 function floorRuleKillCount(rule, universe) {
-    const cfg = floorAllDisabledConfig();
-    cfg[rule.field] = floorEffectiveValue(rule);
-    const survivors = PortfolioBuilder.applyQualityFloor(universe, cfg);
-    return universe.length - survivors.length;
+    const floor = Object.assign(floorAllDisabledConfig(), { [rule.field]: floorEffectiveValue(rule) });
+    return universe.filter((s) => Teach.rulesFailed(s, floor).includes(rule.id)).length;
 }
 
 function floorSurvivorCount(universe) {
@@ -917,36 +950,151 @@ function buildFloorBar(universe) {
     return { node: bar, refresh };
 }
 
+// True iff WizardState.floor is, field by field, the shipped default —
+// i.e. the user has not touched a single toggle or slider. Compared against
+// PortfolioBuilder.DEFAULT_FLOOR's own keys (not FLOOR_RULES) so this stays
+// correct even if FLOOR_RULES' field list ever drifts.
+function isFloorRecommended() {
+    return Object.keys(PortfolioBuilder.DEFAULT_FLOOR).every(
+        (field) => WizardState.floor[field] === PortfolioBuilder.DEFAULT_FLOOR[field]
+    );
+}
+
+// One fixed, rule-specific phrase per casualty line — "cut: TICKER — {this}".
+// Deliberately blunter than FLOOR_RULES' protects/warning copy (those explain
+// the rule in general; this names what's wrong with the specific company).
+// Ids must match FLOOR_RULES/Teach.RULE_FIELDS exactly.
+const FLOOR_CASUALTY_REASON = {
+    fcf: 'burns cash without the growth to excuse it',
+    current: "can't cover this year's bills",
+    debt: 'owes more than twice what shareholders own',
+    rev: 'sales are shrinking',
+    mcap: 'too small to be anything but a lottery ticket',
+};
+
+// One rule's row in the report: plain title, protects-from copy (reused from
+// FLOOR_RULES), the kill count, and up to 3 named casualties. `kill` is one
+// entry of Teach.casualtiesByRule's result — killCount is the number of
+// complete-data stocks that TRUE-fail this rule (Teach.rulesFailed includes
+// rule.id), the same population `casualties` is drawn from, so the count and
+// the named examples always describe one thing.
+function buildFloorReportRuleRow(rule, kill, universe) {
+    const row = el('article', 'floor-report-rule');
+    row.appendChild(el('h3', 'floor-report-rule-title', esc(rule.title)));
+    row.appendChild(el('p', 'floor-report-rule-protects', esc(rule.protects)));
+    const killText = kill.killCount === 0
+        ? 'Removes nothing today — every company with full data clears this bar.'
+        : `This rule alone removes <strong>${kill.killCount}</strong> of ${universe.length}.`;
+    row.appendChild(el('p', 'floor-report-rule-kill', killText));
+
+    if (kill.casualties.length > 0) {
+        const list = el('ul', 'floor-report-casualties');
+        kill.casualties.forEach((stock) => {
+            const item = document.createElement('li');
+            item.className = 'floor-report-casualty';
+            item.appendChild(document.createTextNode('cut: '));
+            const btn = el('button', 'floor-report-ticker', esc(stock.ticker));
+            btn.type = 'button';
+            btn.addEventListener('click', () => openStockSheet(stock.ticker));
+            item.appendChild(btn);
+            item.appendChild(document.createTextNode(` — ${FLOOR_CASUALTY_REASON[rule.id] || ''}`));
+            list.appendChild(item);
+        });
+        row.appendChild(list);
+    }
+
+    return row;
+}
+
+// The report itself: headline + subline, five rule rows, and — only when
+// the user has actually changed something — a caution callout with a
+// one-click reset. Rebuilt wholesale on every change (cheap: five rules x
+// up to 3 casualties) rather than patched in place, unlike the interactive
+// controls below it, which must NOT be torn down on every keystroke (that
+// would drop an in-progress slider drag).
+function renderFloorReport(container, universe, notifyChange) {
+    const casualties = Teach.casualtiesByRule(universe, WizardState.floor);
+    const survivors = floorSurvivorCount(universe);
+    const cut = universe.length - survivors;
+    const dataPoor = appData.stocks.length - PortfolioBuilder.applyQualityFloor(appData.stocks, floorAllDisabledConfig()).length;
+    const diseased = cut - dataPoor;
+
+    container.innerHTML = '';
+
+    container.appendChild(el('h2', 'floor-report-headline',
+        `We removed <strong>${cut}</strong> of ${universe.length} companies before ranking — here's why.`));
+    const sublineText = isFloorRecommended()
+        ? `${diseased} of them have at least one disease from the list below. The other ${dataPoor} were cut because Yahoo doesn't report enough about them to judge — missing data is a reason to pass, not a shrug. You didn't have to decide anything — these are the recommended rules. (<strong>${survivors}</strong> survive.)`
+        : `${diseased} of them have at least one disease from the list below. The other ${dataPoor} were cut because Yahoo doesn't report enough about them to judge — missing data is a reason to pass, not a shrug. These numbers reflect your adjusted rules. (<strong>${survivors}</strong> survive.)`;
+    container.appendChild(el('p', 'floor-report-subline', sublineText));
+
+    const rulesWrap = el('div', 'floor-report-rules');
+    FLOOR_RULES.forEach((rule) => {
+        const kill = casualties[rule.id] || { killCount: 0, casualties: [] };
+        rulesWrap.appendChild(buildFloorReportRuleRow(rule, kill, universe));
+    });
+    container.appendChild(rulesWrap);
+
+    if (!isFloorRecommended()) {
+        const callout = el('div', 'callout floor-report-callout');
+        callout.appendChild(el('p', '', `<strong>You've changed the recommended rules</strong> — the numbers above reflect YOUR floor.`));
+        const resetBtn = el('button', 'step-cta floor-reset-btn', 'Reset to recommended');
+        resetBtn.type = 'button';
+        resetBtn.addEventListener('click', () => {
+            WizardState.floor = Object.assign({}, PortfolioBuilder.DEFAULT_FLOOR);
+            WizardState.floorSaved = {};
+            saveState();
+            notifyChange();
+        });
+        callout.appendChild(resetBtn);
+        container.appendChild(callout);
+    }
+}
+
+// The five interactive cards (toggles/sliders/per-rule kill lines), exactly
+// as before Task 4 — just mounted inside the collapsed <details> instead of
+// directly in the step. Returns the {id -> {node, refresh}} map so the
+// caller can refresh every card alongside the report and the sticky bar.
+function renderFloorControls(container, universe, notifyChange) {
+    const cardEls = {};
+    FLOOR_RULES.forEach((rule) => {
+        cardEls[rule.id] = buildFloorCard(rule, universe, notifyChange);
+        container.appendChild(cardEls[rule.id].node);
+    });
+    return cardEls;
+}
+
 function renderFloorStep(root) {
     const universe = appData.stocks || [];
 
     if (universe.length === 0) {
         root.innerHTML = `
-            <h1>Set your floor</h1>
+            <h1>${esc(STEP_TITLES[2])}</h1>
             <p class="tone-na">Still loading the universe — hang tight.</p>
         `;
         return;
     }
 
     root.innerHTML = `
-        <h1>Set your floor</h1>
-        <p>Before we rank anything, we throw out the junk. Each rule below removes companies with a specific disease. You can turn any of them off — but you'll be told what you're letting in.</p>
-        <div class="floor-cards" id="floorCards"></div>
+        <h1>${esc(STEP_TITLES[2])}</h1>
+        <div class="floor-report" id="floorReport"></div>
+        <details class="floor-adjust">
+            <summary>Adjust the rules (you don't need to)</summary>
+            <div class="floor-cards" id="floorCards"></div>
+        </details>
         <div class="floor-spacer"></div>
     `;
 
+    const reportRoot = root.querySelector('#floorReport');
     const cardsRoot = root.querySelector('#floorCards');
-    const cardEls = {};
 
     function refreshAll() {
+        renderFloorReport(reportRoot, universe, refreshAll);
         FLOOR_RULES.forEach((rule) => cardEls[rule.id].refresh());
         bar.refresh();
     }
 
-    FLOOR_RULES.forEach((rule) => {
-        cardEls[rule.id] = buildFloorCard(rule, universe, refreshAll);
-        cardsRoot.appendChild(cardEls[rule.id].node);
-    });
+    const cardEls = renderFloorControls(cardsRoot, universe, refreshAll);
 
     const bar = buildFloorBar(universe);
     root.appendChild(bar.node);
@@ -954,7 +1102,7 @@ function renderFloorStep(root) {
     refreshAll();
 }
 
-// Step 4/5 — "Build" and "Homework & track": both steps rank against the
+// Step 4/5 — "Build" and "Homework": both steps rank against the
 // SAME survivor set (WizardState.floor) and build the SAME weighted
 // allocation (WizardState.weights + guardrails), so this pipeline is
 // factored out here rather than duplicated — Step 5's study sheets always
@@ -1538,139 +1686,14 @@ function wireExport(root, weighted) {
     });
 }
 
-// --- Tracker ("What you actually did") ------------------------------------
-// Ports old app.js's mock-portfolio add/list/remove logic, reading and
-// writing the SAME `soundhype_portfolio` localStorage key so holdings
-// entered in the old three-tab UI still show up here.
-const PORTFOLIO_STORAGE_KEY = 'soundhype_portfolio';
-
-function loadPortfolio() {
-    try {
-        const raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-        return [];
-    }
-}
-
-function savePortfolio(items) {
-    localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(items));
-}
-
-function buildTrackerRow(item, idx, universe, onChange) {
-    const tr = document.createElement('tr');
-    const masterStock = universe.find((s) => s.ticker === item.ticker);
-    const currentPrice = masterStock ? masterStock.price : null;
-    const name = masterStock ? masterStock.name : item.ticker;
-    const costBasis = item.buyPrice * item.shares;
-    const currentVal = (isFinite(currentPrice) ? currentPrice : item.buyPrice) * item.shares;
-    const gain = currentVal - costBasis;
-    const gainPct = costBasis > 0 ? (gain / costBasis) * 100 : 0;
-
-    const stockTd = document.createElement('td');
-    const wrap = el('div', 'tracker-stock');
-    wrap.appendChild(el('span', 'tracker-ticker', esc(item.ticker)));
-    wrap.appendChild(el('span', 'tracker-name', esc(name)));
-    stockTd.appendChild(wrap);
-    tr.appendChild(stockTd);
-
-    const sharesTd = document.createElement('td');
-    sharesTd.textContent = item.shares.toLocaleString(undefined, { maximumFractionDigits: 4 });
-    tr.appendChild(sharesTd);
-
-    const paidTd = document.createElement('td');
-    paidTd.textContent = formatUsdPrice(item.buyPrice);
-    tr.appendChild(paidTd);
-
-    const nowTd = document.createElement('td');
-    nowTd.textContent = masterStock ? formatUsdPrice(currentPrice) : 'N/A';
-    tr.appendChild(nowTd);
-
-    const valTd = document.createElement('td');
-    valTd.className = 'val-bold';
-    valTd.textContent = formatUsdPrice(currentVal);
-    tr.appendChild(valTd);
-
-    const gainTd = document.createElement('td');
-    gainTd.className = `val-bold ${gain >= 0 ? 'gain-positive' : 'gain-negative'}`;
-    gainTd.textContent = `${gain >= 0 ? '+' : ''}${formatUsdPrice(gain)} (${gain >= 0 ? '+' : ''}${gainPct.toFixed(1)}%)`;
-    tr.appendChild(gainTd);
-
-    const actionTd = document.createElement('td');
-    const removeBtn = el('button', 'tracker-remove-btn', 'Remove');
-    removeBtn.type = 'button';
-    removeBtn.addEventListener('click', () => {
-        const items = loadPortfolio();
-        items.splice(idx, 1);
-        savePortfolio(items);
-        onChange();
-    });
-    actionTd.appendChild(removeBtn);
-    tr.appendChild(actionTd);
-
-    return tr;
-}
-
-function wireTracker(root, universe) {
-    const form = root.querySelector('#trackerForm');
-    const tickerInput = root.querySelector('#trackerTicker');
-    const sharesInput = root.querySelector('#trackerShares');
-    const priceInput = root.querySelector('#trackerPrice');
-
-    function refresh() {
-        const items = loadPortfolio();
-        const emptyEl = root.querySelector('#trackerEmpty');
-        const table = root.querySelector('#trackerTable');
-        const body = root.querySelector('#trackerBody');
-        body.innerHTML = '';
-        if (items.length === 0) {
-            emptyEl.classList.remove('hidden');
-            table.classList.add('hidden');
-            return;
-        }
-        emptyEl.classList.add('hidden');
-        table.classList.remove('hidden');
-        appendLines(body, items.map((item, idx) => buildTrackerRow(item, idx, universe, refresh)));
-    }
-
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const ticker = tickerInput.value.trim().toUpperCase();
-        const shares = parseFloat(sharesInput.value);
-        const price = parseFloat(priceInput.value);
-        if (!ticker || !isFinite(shares) || shares <= 0 || !isFinite(price) || price <= 0) return;
-
-        const items = loadPortfolio();
-        const existing = items.find((it) => it.ticker === ticker);
-        if (existing) {
-            const oldCost = existing.buyPrice * existing.shares;
-            const newCost = price * shares;
-            existing.shares += shares;
-            existing.buyPrice = (oldCost + newCost) / existing.shares;
-        } else {
-            items.push({ ticker, shares, buyPrice: price });
-        }
-        savePortfolio(items);
-        tickerInput.value = '';
-        sharesInput.value = '';
-        priceInput.value = '';
-        refresh();
-    });
-
-    refresh();
-}
-
-// Step 5 — "Homework & track": the gate, one collapsible study sheet per
-// allocation row, CSV export (locked until every sheet is checked off), and
-// the "what you actually did" tracker.
+// Step 5 — "Homework": the gate, one collapsible study sheet per allocation
+// row, and CSV export (locked until every sheet is checked off).
 function renderHomeworkStep(root) {
     const universe = appData.stocks || [];
 
     if (universe.length === 0) {
         root.innerHTML = `
-            <h1>Homework &amp; track</h1>
+            <h1>Homework</h1>
             <p class="tone-na">Still loading the universe — hang tight.</p>
         `;
         return;
@@ -1679,30 +1702,11 @@ function renderHomeworkStep(root) {
     const { survivors, weighted } = computeAllocation(universe);
 
     root.innerHTML = `
-        <h1>Homework &amp; track</h1>
+        <h1>Homework</h1>
         <div class="homework-gate">
             <p><strong>You do not own a stock until you can explain it.</strong> One sheet per holding — check every box or don't buy.</p>
         </div>
         <div id="studySection"></div>
-        <section class="tracker">
-            <h2>What you actually did</h2>
-            <p>Record what you actually bought — the tool only knows what you tell it.</p>
-            <form class="tracker-form" id="trackerForm">
-                <input type="text" id="trackerTicker" placeholder="Ticker, e.g. NVDA" maxlength="10" required>
-                <input type="number" id="trackerShares" placeholder="Shares" min="0" step="any" required>
-                <input type="number" id="trackerPrice" placeholder="Price paid" min="0" step="any" required>
-                <button type="submit" class="tracker-add-btn">Add</button>
-            </form>
-            <p class="tracker-empty hidden" id="trackerEmpty">Nothing tracked yet.</p>
-            <div class="tracker-table-wrap">
-                <table class="tracker-table hidden" id="trackerTable">
-                    <thead>
-                        <tr><th>Stock</th><th>Shares</th><th>Paid</th><th>Now</th><th>Value</th><th>Gain</th><th></th></tr>
-                    </thead>
-                    <tbody id="trackerBody"></tbody>
-                </table>
-            </div>
-        </section>
     `;
 
     const studySection = root.querySelector('#studySection');
@@ -1725,13 +1729,11 @@ function renderHomeworkStep(root) {
         renderStudySheets(root, weighted, survivors, universe);
         wireExport(root, weighted);
     }
-
-    wireTracker(root, universe);
 }
 
 const STEPS = {
     1: { title: STEP_TITLES[0], render: renderIdeaStep },
-    2: { title: STEP_TITLES[1], render: renderUniverseStep },
+    2: { title: STEP_TITLES[1], render: renderTeachStep },
     3: { title: STEP_TITLES[2], render: renderFloorStep },
     4: { title: STEP_TITLES[3], render: renderBuildStep },
     5: { title: STEP_TITLES[4], render: renderHomeworkStep },

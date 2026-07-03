@@ -38,10 +38,10 @@ This command spins up a web server at [http://localhost:3000](http://localhost:3
 SoundHype is a five-step guided wizard, not a set of tabs — each step builds on the last, and your choices carry forward automatically:
 
 1. **The idea** — what the tool does, how the Quality/Hype scores work, and a data-honesty box showing how fresh `portfolio_data.json` is.
-2. **The universe** — every scored stock as a searchable, sortable card list; tap a card for the full detail sheet (all metrics, plain-English verdicts).
-3. **Your floor** — five quality filters (cash flow, debt, current ratio, growth, market cap) you can loosen or tighten, each with a live "removes N of 392" count so you see the tradeoff.
+2. **Reading a stock** — three worked examples that teach you how to read any card's score, money line, and safety line, so you don't need to read all of them.
+3. **The junk filter** — five quality filters (cash flow, debt, current ratio, growth, market cap) you can loosen or tighten, each with a live "removes N of 392" count so you see the tradeoff.
 4. **Build** — set an investment amount, tune the four scoring weights (quality, momentum, growth, value), and watch the ranked allocation table update with sector caps and a "why it's here" line per pick.
-5. **Homework & track** — one study checklist per holding (gates the CSV export until you've done it), plus a simple tracker for what you actually bought.
+5. **Homework** — one study checklist per holding, gating the CSV export until you've checked every box.
 
 Every metric shown anywhere in the wizard is backed by an explanatory entry in `copy-deck.js` — `tests/deck-completeness.test.mjs` fails the build if a rendered metric key has no matching explanation.
 
@@ -84,4 +84,4 @@ This directory is served as-is by GitHub Pages at **https://mfoisy.com/picker/**
 - **Refresh the live data:** `./venv/bin/python3 screener.py` (~10 min), then commit and push `portfolio_data.json`. Cloudflare may serve the old file for up to ~10 minutes.
 - **Add Ticker** requires the local Flask backend (live Yahoo Finance scrape) — the section auto-hides on the static site and appears when running `npm run dev` locally.
 - `portfolio_data.json` must stay strict JSON (no bare `NaN`/`Infinity`) — browsers' `JSON.parse` rejects it otherwise. Both writers sanitize automatically; `tests/test_app.py` guards this.
-- Portfolios and builder config live in the browser's localStorage: they do **not** sync between localhost and mfoisy.com, or between devices.
+- Builder config lives in the browser's localStorage: it does **not** sync between localhost and mfoisy.com, or between devices.
