@@ -4,7 +4,7 @@
 // file. DOM only — no test framework covers this file; it is verified with
 // headless Chromium (see task brief).
 
-const STEP_TITLES = ['The idea', 'The universe', 'Your floor', 'Build', 'Homework & track'];
+const STEP_TITLES = ['The idea', 'Reading a stock', 'Your floor', 'Build', 'Homework & track'];
 
 const STORAGE_KEY = 'soundhype_wizard';
 const LEGACY_STORAGE_KEY = 'soundhype_builder';
@@ -277,8 +277,6 @@ function renderIdeaStep(root) {
     // "392 stocks" when we know the count, "hundreds of stocks" when we
     // don't — both read correctly wherever a noun follows immediately.
     const countOf = count ? String(count) : 'hundreds of';
-    // "Meet the 392 →" / "Meet the hundreds →" — no trailing noun, so no "of".
-    const countBare = count ? String(count) : 'hundreds';
 
     let updatedLine = 'Every number here comes from Yahoo Finance. Refresh date not available yet — the data is still loading.';
     let staleHtml = '';
@@ -332,48 +330,10 @@ function renderIdeaStep(root) {
             <p>The biggest risk in this whole exercise is not a bad number on this page. It is your own behavior: chasing winners after they have already run, panic-selling on a red day, checking prices every hour like it will change the outcome. The tool will call these out when it sees you doing them — that is the entire point of building it this way instead of just handing you a spreadsheet.</p>
         </div>
 
-        <button type="button" class="step-cta" id="ideaCta">Meet the ${countBare} →</button>
+        <button type="button" class="step-cta" id="ideaCta">Learn to read one →</button>
     `;
 
     root.querySelector('#ideaCta').addEventListener('click', () => showStep(2));
-}
-
-// Step 2 — "Meet the universe": the full stock list as scannable cards,
-// each carrying its verdict lines, plus a detail sheet with the full
-// interpreted breakdown. State (search/sector/sort/pagination) lives at
-// module scope and resets whenever the step is (re)entered, but persists
-// across in-step re-renders (typing, filtering) so focus/scroll are not
-// lost on every keystroke — only the card list re-renders, not the controls.
-let universeQuery = '';
-let universeSector = '';
-let universeSort = 'overall';
-let universeVisible = 25;
-
-const UNIVERSE_SORT_OPTIONS = [
-    { value: 'overall', key: 'scores.overall', label: 'Best blend first' },
-    { value: 'quality', key: 'scores.quality', label: 'Best businesses first' },
-    { value: 'hype', key: 'scores.hype', label: 'Most market attention first' },
-    { value: 'momentum6m', key: 'momentum_6m', label: 'Biggest 6-month movers first' },
-    { value: 'revgrowth', key: 'revenue_growth', label: 'Fastest sales growth first' },
-];
-
-function filteredSortedUniverse() {
-    const q = universeQuery.trim().toLowerCase();
-    let list = appData.stocks.filter((s) => {
-        if (universeSector && s.sector !== universeSector) return false;
-        if (q && !((s.ticker || '').toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q))) return false;
-        return true;
-    });
-    const sortOpt = UNIVERSE_SORT_OPTIONS.find((o) => o.value === universeSort) || UNIVERSE_SORT_OPTIONS[0];
-    list = list.slice().sort((a, b) => {
-        const av = Interpret.getValue(a, sortOpt.key);
-        const bv = Interpret.getValue(b, sortOpt.key);
-        if (av === null && bv === null) return 0;
-        if (av === null) return 1;
-        if (bv === null) return -1;
-        return bv - av;
-    });
-    return list;
 }
 
 // One card: ticker/name/sector, price + 1y move, sparkline, then the 4
@@ -481,43 +441,133 @@ function maybeOpenDebugSheet() {
     if (ticker) openStockSheet(ticker.toUpperCase());
 }
 
-function renderUniverseStep(root) {
+// Plain-English name for each floor rule, used only in the trap example's
+// thesis line below — must match FLOOR_RULES ids (fcf/current/debt/rev/mcap)
+// and Teach.RULE_FIELDS exactly. Deliberately blunter than FLOOR_RULES'
+// `title`/`warning` copy (those explain the rule; this names the disease).
+const TEACH_RULE_PLAIN_NAMES = {
+    fcf: 'burns cash',
+    current: "can't cover this year's bills",
+    debt: 'drowning in debt',
+    rev: 'shrinking sales',
+    mcap: 'too small to trust',
+};
+
+const TEACH_EYEBROWS = {
+    strong: 'THE STRONG ONE',
+    trap: 'THE TRAP',
+    mediocre: 'THE MIDDLE OF THE PACK',
+};
+
+// One data-driven sentence per example kind. `strong`/`mediocre` are fixed
+// copy (the lesson is the same for any stock that lands there); `trap` is
+// built from that specific stock's hype score and the actual rules it fails
+// — never a canned line, since the whole point of the trap example is
+// "look how good the surface number is, then look what's underneath."
+function teachThesis(kind, stock) {
+    if (kind === 'strong') {
+        return `Everything below is what "good" looks like — notice all four lines agree.`;
+    }
+    if (kind === 'trap') {
+        const fails = Teach.rulesFailed(stock, PortfolioBuilder.DEFAULT_FLOOR);
+        const hypeDisplay = esc(CopyDeck.format('scores.hype', stock.scores.hype));
+        const names = esc(fails.map((id) => TEACH_RULE_PLAIN_NAMES[id] || id).join(', '));
+        const ruleWord = fails.length === 1 ? 'rule' : 'rules';
+        return `Hype score ${hypeDisplay}, and it still fails ${fails.length} junk-filter ${ruleWord}: ${names}. Exciting price chart, sick balance sheet — this is the stock that hurts people.`;
+    }
+    if (kind === 'mediocre') {
+        return 'Nothing wrong, nothing special — the market is full of these. Learning to shrug at them is the skill.';
+    }
+    return '';
+}
+
+// One worked-example block: eyebrow label, data-driven thesis, the stock's
+// own card (same renderer the old universe list used), and an explicit
+// "open the full sheet" link — the card is already a click target, but the
+// link makes that discoverable for anyone scanning by keyboard or screen
+// reader rather than hovering.
+function buildTeachExample(kind, stock, universe) {
+    const section = el('section', `teach-example teach-example-${kind}`);
+    section.appendChild(el('span', 'teach-eyebrow', esc(TEACH_EYEBROWS[kind])));
+    section.appendChild(el('p', 'teach-thesis', teachThesis(kind, stock)));
+    section.appendChild(buildStockCard(stock, universe));
+
+    const link = el('button', 'teach-sheet-link', 'Open the full sheet →');
+    link.type = 'button';
+    link.addEventListener('click', () => openStockSheet(stock.ticker));
+    section.appendChild(link);
+
+    return section;
+}
+
+// As-you-type search results (max 8, ticker + name rows). No list, no
+// sector/sort/pagination — Step 2 is no longer a browse surface, so the only
+// way to reach a specific company here is to already know roughly what
+// you're looking for.
+function renderTeachSearchResults(container, universe, query) {
+    container.innerHTML = '';
+    const q = query.trim().toLowerCase();
+    if (!q) return;
+
+    const matches = universe
+        .filter((s) => (s.ticker || '').toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q))
+        .slice(0, 8);
+
+    if (matches.length === 0) {
+        container.appendChild(el('p', 'teach-search-empty', 'No matches.'));
+        return;
+    }
+
+    matches.forEach((stock) => {
+        const row = el('button', 'teach-search-row',
+            `<span class="teach-search-ticker">${esc(stock.ticker)}</span><span class="teach-search-name">${esc(stock.name || stock.ticker)}</span>`);
+        row.type = 'button';
+        row.addEventListener('click', () => openStockSheet(stock.ticker));
+        container.appendChild(row);
+    });
+}
+
+// Step 2 — "Reading a stock": three worked examples (strong/trap/mediocre,
+// picked by Teach.pickTeachingExamples) teach the four-line card format,
+// then a numbered recap, then search-only lookup for anyone who already
+// knows the ticker they want. Deliberately not a browse surface — that was
+// the old 392-card list this step replaces.
+function renderTeachStep(root) {
     const universe = appData.stocks || [];
 
     if (universe.length === 0) {
         root.innerHTML = `
-            <h1>The universe</h1>
-            <p>Every stock below is scored against the others — here's the whole universe, best blend first.</p>
+            <h1>Reading a stock</h1>
             <p class="tone-na">Still loading the universe — hang tight.</p>
         `;
         maybeOpenDebugSheet();
         return;
     }
 
-    // Reset search/sector/sort/pagination each time the step is (re)entered
-    // (e.g. hopping to step 1 and back) — matches the comment above the
-    // state vars. Within a single visit, input/change handlers below mutate
-    // these and call refreshList() directly so typing doesn't nuke focus.
-    universeQuery = '';
-    universeSector = '';
-    universeSort = 'overall';
-    universeVisible = 25;
-
-    const sectors = Array.from(new Set(universe.map((s) => s.sector).filter(Boolean))).sort();
+    const examples = Teach.pickTeachingExamples(universe, PortfolioBuilder.DEFAULT_FLOOR);
 
     root.innerHTML = `
-        <h1>The universe</h1>
-        <p>Every stock below is scored against the other ${universe.length - 1} — here's the whole universe, best blend first.</p>
-        <div class="universe-controls">
-            <input type="search" class="universe-search" id="universeSearch" placeholder="Search by name or ticker" value="${universeQuery.replace(/"/g, '&quot;')}">
-            <select class="universe-select" id="universeSectorSelect">
-                <option value="">All sectors</option>
-                ${sectors.map((s) => `<option value="${esc(s)}"${s === universeSector ? ' selected' : ''}>${esc(s)}</option>`).join('')}
-            </select>
-            <select class="universe-select" id="universeSortSelect">
-                ${UNIVERSE_SORT_OPTIONS.map((o) => `<option value="${o.value}"${o.value === universeSort ? ' selected' : ''}>${o.label}</option>`).join('')}
-            </select>
-        </div>
+        <h1>Reading a stock</h1>
+        <p class="idea-lede">You do not need to read ${universe.length} stocks — the tool already filters and ranks every one of them for you. You need to be able to read ONE. Here are three that teach the whole skill.</p>
+
+        <div class="teach-examples" id="teachExamples"></div>
+
+        <section class="teach-recap">
+            <h2>How to read any card</h2>
+            <ol class="teach-recap-list">
+                <li><strong>Overall score is a class rank, not a grade.</strong> A 68 doesn't mean 68/100 — it means the stock beats 68% of everything else on this list, nothing more.</li>
+                <li><strong>The money line</strong> asks whether real cash is coming in the door — free cash flow or margins — not just profit on paper.</li>
+                <li><strong>The safety line</strong> asks whether the balance sheet could survive a bad year — how much debt it carries, whether it can cover this year's bills.</li>
+                <li><strong>The growth/momentum line</strong> asks whether sales are actually growing and whether the market has started to notice.</li>
+            </ol>
+        </section>
+
+        <section class="teach-search">
+            <h2>Curious about a specific company?</h2>
+            <input type="search" class="universe-search teach-search-input" id="teachSearchInput" placeholder="Search by name or ticker">
+            <div class="teach-search-results" id="teachSearchResults"></div>
+        </section>
+
         <div class="add-ticker-section hidden" id="addTickerSection">
             <p class="add-ticker-label">Don't see a ticker? Add it — it gets pulled fresh from Yahoo Finance and scored the same way as everything else.</p>
             <div class="add-ticker-row">
@@ -526,54 +576,29 @@ function renderUniverseStep(root) {
             </div>
             <p class="add-ticker-msg hidden" id="addTickerMsg"></p>
         </div>
-        <div class="card-list" id="cardList"></div>
-        <button type="button" class="show-more-btn hidden" id="showMoreBtn">Show 25 more</button>
+
+        <button type="button" class="step-cta" id="teachCta">See what we filtered out →</button>
     `;
 
-    const searchInput = root.querySelector('#universeSearch');
-    const sectorSelect = root.querySelector('#universeSectorSelect');
-    const sortSelect = root.querySelector('#universeSortSelect');
-    const cardList = root.querySelector('#cardList');
-    const showMoreBtn = root.querySelector('#showMoreBtn');
+    const examplesRoot = root.querySelector('#teachExamples');
+    const blocks = ['strong', 'trap', 'mediocre']
+        .filter((kind) => examples[kind])
+        .map((kind) => buildTeachExample(kind, examples[kind], universe));
+    appendLines(examplesRoot, blocks);
 
-    function refreshList() {
-        const list = filteredSortedUniverse();
-        cardList.innerHTML = '';
-        if (list.length === 0) {
-            cardList.appendChild(el('p', 'tone-na', 'No stocks match those filters.'));
-            showMoreBtn.classList.add('hidden');
-            return;
-        }
-        appendLines(cardList, list.slice(0, universeVisible).map((stock) => buildStockCard(stock, universe)));
-        showMoreBtn.classList.toggle('hidden', list.length <= universeVisible);
-    }
-
+    const searchInput = root.querySelector('#teachSearchInput');
+    const searchResults = root.querySelector('#teachSearchResults');
     searchInput.addEventListener('input', () => {
-        universeQuery = searchInput.value;
-        universeVisible = 25;
-        refreshList();
-    });
-    sectorSelect.addEventListener('change', () => {
-        universeSector = sectorSelect.value;
-        universeVisible = 25;
-        refreshList();
-    });
-    sortSelect.addEventListener('change', () => {
-        universeSort = sortSelect.value;
-        universeVisible = 25;
-        refreshList();
-    });
-    showMoreBtn.addEventListener('click', () => {
-        universeVisible += 25;
-        refreshList();
+        renderTeachSearchResults(searchResults, universe, searchInput.value);
     });
 
-    refreshList();
-    // Full re-render (not just refreshList) on a successful add: `universe`
-    // above is captured once per render and handed to every card/verdict
-    // for percentile math, so a stale reference here would silently price
-    // every percentile against the pre-add stock count.
-    wireAddTickerForm(root, () => renderUniverseStep(root));
+    root.querySelector('#teachCta').addEventListener('click', () => showStep(3));
+
+    // Full re-render (not just the search results) on a successful add:
+    // `universe` above is captured once per render and handed to every
+    // example card for percentile math, and a fresh add could change which
+    // stock Teach.pickTeachingExamples even picks.
+    wireAddTickerForm(root, () => renderTeachStep(root));
     maybeOpenDebugSheet();
 }
 
@@ -1735,7 +1760,7 @@ function renderHomeworkStep(root) {
 
 const STEPS = {
     1: { title: STEP_TITLES[0], render: renderIdeaStep },
-    2: { title: STEP_TITLES[1], render: renderUniverseStep },
+    2: { title: STEP_TITLES[1], render: renderTeachStep },
     3: { title: STEP_TITLES[2], render: renderFloorStep },
     4: { title: STEP_TITLES[3], render: renderBuildStep },
     5: { title: STEP_TITLES[4], render: renderHomeworkStep },
