@@ -976,11 +976,11 @@ const FLOOR_CASUALTY_REASON = {
 // casualties.length (it also counts data-poor stocks that fail every rule
 // alike; see teach.js's rulesFailed comment), so this never claims the
 // casualties shown are the only ones, or all of the N.
-function buildFloorReportRuleRow(rule, kill) {
+function buildFloorReportRuleRow(rule, kill, universe) {
     const row = el('article', 'floor-report-rule');
     row.appendChild(el('h3', 'floor-report-rule-title', esc(rule.title)));
     row.appendChild(el('p', 'floor-report-rule-protects', esc(rule.protects)));
-    row.appendChild(el('p', 'floor-report-rule-kill', `This rule alone removes <strong>${kill.killCount}</strong>.`));
+    row.appendChild(el('p', 'floor-report-rule-kill', `This rule alone removes <strong>${kill.killCount}</strong> of ${universe.length}.`));
 
     if (kill.casualties.length > 0) {
         const list = el('ul', 'floor-report-casualties');
@@ -1018,13 +1018,15 @@ function renderFloorReport(container, universe, notifyChange) {
 
     container.appendChild(el('h2', 'floor-report-headline',
         `We removed <strong>${cut}</strong> of ${universe.length} companies before ranking.`));
-    container.appendChild(el('p', 'floor-report-subline',
-        `${diseased} of them have at least one disease from the list below. The other ${dataPoor} were cut because Yahoo doesn't report enough about them to judge — missing data is a reason to pass, not a shrug. You didn't have to decide anything — these are the recommended rules. (<strong>${survivors}</strong> survive.)`));
+    const sublineText = isFloorRecommended()
+        ? `${diseased} of them have at least one disease from the list below. The other ${dataPoor} were cut because Yahoo doesn't report enough about them to judge — missing data is a reason to pass, not a shrug. You didn't have to decide anything — these are the recommended rules. (<strong>${survivors}</strong> survive.)`
+        : `${diseased} of them have at least one disease from the list below. The other ${dataPoor} were cut because Yahoo doesn't report enough about them to judge — missing data is a reason to pass, not a shrug. These numbers reflect your adjusted rules. (<strong>${survivors}</strong> survive.)`;
+    container.appendChild(el('p', 'floor-report-subline', sublineText));
 
     const rulesWrap = el('div', 'floor-report-rules');
     FLOOR_RULES.forEach((rule) => {
         const kill = casualties[rule.id] || { killCount: 0, casualties: [] };
-        rulesWrap.appendChild(buildFloorReportRuleRow(rule, kill));
+        rulesWrap.appendChild(buildFloorReportRuleRow(rule, kill, universe));
     });
     container.appendChild(rulesWrap);
 
