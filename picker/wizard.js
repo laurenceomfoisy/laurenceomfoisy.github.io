@@ -4,7 +4,7 @@
 // file. DOM only — no test framework covers this file; it is verified with
 // headless Chromium (see task brief).
 
-const STEP_TITLES = ['The idea', 'Reading a stock', 'The junk filter', 'Build', 'Homework & track'];
+const STEP_TITLES = ['The idea', 'Reading a stock', 'The junk filter', 'Build', 'Homework'];
 
 const STORAGE_KEY = 'soundhype_wizard';
 const LEGACY_STORAGE_KEY = 'soundhype_builder';
@@ -1097,7 +1097,7 @@ function renderFloorStep(root) {
     refreshAll();
 }
 
-// Step 4/5 — "Build" and "Homework & track": both steps rank against the
+// Step 4/5 — "Build" and "Homework": both steps rank against the
 // SAME survivor set (WizardState.floor) and build the SAME weighted
 // allocation (WizardState.weights + guardrails), so this pipeline is
 // factored out here rather than duplicated — Step 5's study sheets always
@@ -1681,139 +1681,14 @@ function wireExport(root, weighted) {
     });
 }
 
-// --- Tracker ("What you actually did") ------------------------------------
-// Ports old app.js's mock-portfolio add/list/remove logic, reading and
-// writing the SAME `soundhype_portfolio` localStorage key so holdings
-// entered in the old three-tab UI still show up here.
-const PORTFOLIO_STORAGE_KEY = 'soundhype_portfolio';
-
-function loadPortfolio() {
-    try {
-        const raw = localStorage.getItem(PORTFOLIO_STORAGE_KEY);
-        if (!raw) return [];
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
-    } catch (e) {
-        return [];
-    }
-}
-
-function savePortfolio(items) {
-    localStorage.setItem(PORTFOLIO_STORAGE_KEY, JSON.stringify(items));
-}
-
-function buildTrackerRow(item, idx, universe, onChange) {
-    const tr = document.createElement('tr');
-    const masterStock = universe.find((s) => s.ticker === item.ticker);
-    const currentPrice = masterStock ? masterStock.price : null;
-    const name = masterStock ? masterStock.name : item.ticker;
-    const costBasis = item.buyPrice * item.shares;
-    const currentVal = (isFinite(currentPrice) ? currentPrice : item.buyPrice) * item.shares;
-    const gain = currentVal - costBasis;
-    const gainPct = costBasis > 0 ? (gain / costBasis) * 100 : 0;
-
-    const stockTd = document.createElement('td');
-    const wrap = el('div', 'tracker-stock');
-    wrap.appendChild(el('span', 'tracker-ticker', esc(item.ticker)));
-    wrap.appendChild(el('span', 'tracker-name', esc(name)));
-    stockTd.appendChild(wrap);
-    tr.appendChild(stockTd);
-
-    const sharesTd = document.createElement('td');
-    sharesTd.textContent = item.shares.toLocaleString(undefined, { maximumFractionDigits: 4 });
-    tr.appendChild(sharesTd);
-
-    const paidTd = document.createElement('td');
-    paidTd.textContent = formatUsdPrice(item.buyPrice);
-    tr.appendChild(paidTd);
-
-    const nowTd = document.createElement('td');
-    nowTd.textContent = masterStock ? formatUsdPrice(currentPrice) : 'N/A';
-    tr.appendChild(nowTd);
-
-    const valTd = document.createElement('td');
-    valTd.className = 'val-bold';
-    valTd.textContent = formatUsdPrice(currentVal);
-    tr.appendChild(valTd);
-
-    const gainTd = document.createElement('td');
-    gainTd.className = `val-bold ${gain >= 0 ? 'gain-positive' : 'gain-negative'}`;
-    gainTd.textContent = `${gain >= 0 ? '+' : ''}${formatUsdPrice(gain)} (${gain >= 0 ? '+' : ''}${gainPct.toFixed(1)}%)`;
-    tr.appendChild(gainTd);
-
-    const actionTd = document.createElement('td');
-    const removeBtn = el('button', 'tracker-remove-btn', 'Remove');
-    removeBtn.type = 'button';
-    removeBtn.addEventListener('click', () => {
-        const items = loadPortfolio();
-        items.splice(idx, 1);
-        savePortfolio(items);
-        onChange();
-    });
-    actionTd.appendChild(removeBtn);
-    tr.appendChild(actionTd);
-
-    return tr;
-}
-
-function wireTracker(root, universe) {
-    const form = root.querySelector('#trackerForm');
-    const tickerInput = root.querySelector('#trackerTicker');
-    const sharesInput = root.querySelector('#trackerShares');
-    const priceInput = root.querySelector('#trackerPrice');
-
-    function refresh() {
-        const items = loadPortfolio();
-        const emptyEl = root.querySelector('#trackerEmpty');
-        const table = root.querySelector('#trackerTable');
-        const body = root.querySelector('#trackerBody');
-        body.innerHTML = '';
-        if (items.length === 0) {
-            emptyEl.classList.remove('hidden');
-            table.classList.add('hidden');
-            return;
-        }
-        emptyEl.classList.add('hidden');
-        table.classList.remove('hidden');
-        appendLines(body, items.map((item, idx) => buildTrackerRow(item, idx, universe, refresh)));
-    }
-
-    form.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const ticker = tickerInput.value.trim().toUpperCase();
-        const shares = parseFloat(sharesInput.value);
-        const price = parseFloat(priceInput.value);
-        if (!ticker || !isFinite(shares) || shares <= 0 || !isFinite(price) || price <= 0) return;
-
-        const items = loadPortfolio();
-        const existing = items.find((it) => it.ticker === ticker);
-        if (existing) {
-            const oldCost = existing.buyPrice * existing.shares;
-            const newCost = price * shares;
-            existing.shares += shares;
-            existing.buyPrice = (oldCost + newCost) / existing.shares;
-        } else {
-            items.push({ ticker, shares, buyPrice: price });
-        }
-        savePortfolio(items);
-        tickerInput.value = '';
-        sharesInput.value = '';
-        priceInput.value = '';
-        refresh();
-    });
-
-    refresh();
-}
-
-// Step 5 — "Homework & track": the gate, one collapsible study sheet per
-// allocation row, CSV export (locked until every sheet is checked off), and
-// the "what you actually did" tracker.
+// Step 5 — "Homework": the gate, one collapsible study sheet per allocation
+// row, and CSV export (locked until every sheet is checked off).
 function renderHomeworkStep(root) {
     const universe = appData.stocks || [];
 
     if (universe.length === 0) {
         root.innerHTML = `
-            <h1>Homework &amp; track</h1>
+            <h1>Homework</h1>
             <p class="tone-na">Still loading the universe — hang tight.</p>
         `;
         return;
@@ -1822,30 +1697,11 @@ function renderHomeworkStep(root) {
     const { survivors, weighted } = computeAllocation(universe);
 
     root.innerHTML = `
-        <h1>Homework &amp; track</h1>
+        <h1>Homework</h1>
         <div class="homework-gate">
             <p><strong>You do not own a stock until you can explain it.</strong> One sheet per holding — check every box or don't buy.</p>
         </div>
         <div id="studySection"></div>
-        <section class="tracker">
-            <h2>What you actually did</h2>
-            <p>Record what you actually bought — the tool only knows what you tell it.</p>
-            <form class="tracker-form" id="trackerForm">
-                <input type="text" id="trackerTicker" placeholder="Ticker, e.g. NVDA" maxlength="10" required>
-                <input type="number" id="trackerShares" placeholder="Shares" min="0" step="any" required>
-                <input type="number" id="trackerPrice" placeholder="Price paid" min="0" step="any" required>
-                <button type="submit" class="tracker-add-btn">Add</button>
-            </form>
-            <p class="tracker-empty hidden" id="trackerEmpty">Nothing tracked yet.</p>
-            <div class="tracker-table-wrap">
-                <table class="tracker-table hidden" id="trackerTable">
-                    <thead>
-                        <tr><th>Stock</th><th>Shares</th><th>Paid</th><th>Now</th><th>Value</th><th>Gain</th><th></th></tr>
-                    </thead>
-                    <tbody id="trackerBody"></tbody>
-                </table>
-            </div>
-        </section>
     `;
 
     const studySection = root.querySelector('#studySection');
@@ -1868,8 +1724,6 @@ function renderHomeworkStep(root) {
         renderStudySheets(root, weighted, survivors, universe);
         wireExport(root, weighted);
     }
-
-    wireTracker(root, universe);
 }
 
 const STEPS = {
