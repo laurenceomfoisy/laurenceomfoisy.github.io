@@ -59,3 +59,21 @@ test('casualtiesByRule: counts match single-rule semantics, casualties capped at
   assert.deepEqual(r.debt.casualties.map(s => s.ticker), ['BIG', 'MED', 'SML']);
   assert.equal(r.rev.killCount, 0);
 });
+
+test('casualtiesByRule: data-poor stocks (missing a KEY_METRIC) are never counted against any rule', () => {
+  const stocks = [
+    mk('BIG', { debt_to_equity: 300, market_cap: 900e9 }), // true debt failure
+    mk('POOR', { free_cash_flow: null }), // data-poor: fails the completeness gate, not any rule
+    mk('OK1'),
+  ];
+  const r = Teach.casualtiesByRule(stocks, FLOOR);
+  // POOR must not be blamed on debt (it doesn't even breach the debt rule)...
+  assert.equal(r.debt.killCount, 1);
+  assert.deepEqual(r.debt.casualties.map(s => s.ticker), ['BIG']);
+  // ...nor on any other rule, including ones it never breaches (POOR passes
+  // debt/current/rev/mcap outright — only its missing data disqualifies it).
+  for (const ruleId of Object.keys(Teach.RULE_FIELDS)) {
+    assert.ok(!r[ruleId].casualties.some(s => s.ticker === 'POOR'), `POOR must not appear in ${ruleId} casualties`);
+  }
+  assert.deepEqual(Teach.rulesFailed(stocks[1], FLOOR), []);
+});

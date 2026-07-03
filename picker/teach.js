@@ -134,24 +134,23 @@
         return { strong, trap, mediocre };
     }
 
-    // killCount = stocks removed by ONLY that rule active — same semantics
-    // as wizard.js's floorRuleKillCount.
-    // casualties = the 3 largest-market_cap stocks that fail that rule (by
-    // rulesFailed containing it under the full floor config).
+    // killCount = number of stocks that TRUE-fail that rule, i.e. stocks with
+    // complete KEY_METRICS whose rulesFailed(stock, floor) includes ruleId.
+    // Data-poor stocks (missing KEY_METRICS) are excluded from every rule's
+    // count — they're cut once, honestly, by the completeness gate, not
+    // blamed on whichever rule happens to be evaluated. Same population as
+    // `casualties` below, so count and named examples describe one thing.
     function casualtiesByRule(stocks, floor) {
         const result = {};
         for (const ruleId of Object.keys(RULE_FIELDS)) {
-            const cfg = singleRuleConfig(ruleId, floor);
-            const survivors = PortfolioBuilder.applyQualityFloor(stocks, cfg);
-            const killCount = stocks.length - survivors.length;
+            const failing = stocks.filter(s => rulesFailed(s, floor).includes(ruleId));
 
-            const casualties = stocks
-                .filter(s => rulesFailed(s, floor).includes(ruleId))
+            const casualties = failing
                 .slice()
                 .sort((a, b) => b.market_cap - a.market_cap)
                 .slice(0, 3);
 
-            result[ruleId] = { killCount, casualties };
+            result[ruleId] = { killCount: failing.length, casualties };
         }
         return result;
     }

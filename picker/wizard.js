@@ -806,16 +806,18 @@ function floorEffectiveValue(rule) {
     return PortfolioBuilder.DEFAULT_FLOOR[rule.field];
 }
 
-// "This rule alone removes N of {universe.length}" — universe run through
-// applyQualityFloor with every OTHER rule at its disabled sentinel and this
-// one at its current/last threshold. Computed against the full universe
-// (appData.stocks), not the current survivor set, so kill counts never
-// compound with each other.
+// "This rule alone removes N of {universe.length}" — N is the count of
+// complete-data stocks that TRUE-fail this rule (Teach.rulesFailed includes
+// rule.id) under a floor where every OTHER rule sits at its disabled
+// sentinel and this one at its current/last threshold. Computed against the
+// full universe (appData.stocks), not the current survivor set, so kill
+// counts never compound with each other. Data-poor stocks (missing
+// KEY_METRICS) are never counted here — they're cut once, honestly, by the
+// completeness gate reported in the Step 3 subline, not blamed on whichever
+// rule happens to be evaluated.
 function floorRuleKillCount(rule, universe) {
-    const cfg = floorAllDisabledConfig();
-    cfg[rule.field] = floorEffectiveValue(rule);
-    const survivors = PortfolioBuilder.applyQualityFloor(universe, cfg);
-    return universe.length - survivors.length;
+    const floor = Object.assign(floorAllDisabledConfig(), { [rule.field]: floorEffectiveValue(rule) });
+    return universe.filter((s) => Teach.rulesFailed(s, floor).includes(rule.id)).length;
 }
 
 function floorSurvivorCount(universe) {
@@ -972,15 +974,18 @@ const FLOOR_CASUALTY_REASON = {
 
 // One rule's row in the report: plain title, protects-from copy (reused from
 // FLOOR_RULES), the kill count, and up to 3 named casualties. `kill` is one
-// entry of Teach.casualtiesByRule's result — killCount can exceed
-// casualties.length (it also counts data-poor stocks that fail every rule
-// alike; see teach.js's rulesFailed comment), so this never claims the
-// casualties shown are the only ones, or all of the N.
+// entry of Teach.casualtiesByRule's result — killCount is the number of
+// complete-data stocks that TRUE-fail this rule (Teach.rulesFailed includes
+// rule.id), the same population `casualties` is drawn from, so the count and
+// the named examples always describe one thing.
 function buildFloorReportRuleRow(rule, kill, universe) {
     const row = el('article', 'floor-report-rule');
     row.appendChild(el('h3', 'floor-report-rule-title', esc(rule.title)));
     row.appendChild(el('p', 'floor-report-rule-protects', esc(rule.protects)));
-    row.appendChild(el('p', 'floor-report-rule-kill', `This rule alone removes <strong>${kill.killCount}</strong> of ${universe.length}.`));
+    const killText = kill.killCount === 0
+        ? 'Removes nothing today — every company with full data clears this bar.'
+        : `This rule alone removes <strong>${kill.killCount}</strong> of ${universe.length}.`;
+    row.appendChild(el('p', 'floor-report-rule-kill', killText));
 
     if (kill.casualties.length > 0) {
         const list = el('ul', 'floor-report-casualties');
@@ -1017,7 +1022,7 @@ function renderFloorReport(container, universe, notifyChange) {
     container.innerHTML = '';
 
     container.appendChild(el('h2', 'floor-report-headline',
-        `We removed <strong>${cut}</strong> of ${universe.length} companies before ranking.`));
+        `We removed <strong>${cut}</strong> of ${universe.length} companies before ranking — here's why.`));
     const sublineText = isFloorRecommended()
         ? `${diseased} of them have at least one disease from the list below. The other ${dataPoor} were cut because Yahoo doesn't report enough about them to judge — missing data is a reason to pass, not a shrug. You didn't have to decide anything — these are the recommended rules. (<strong>${survivors}</strong> survive.)`
         : `${diseased} of them have at least one disease from the list below. The other ${dataPoor} were cut because Yahoo doesn't report enough about them to judge — missing data is a reason to pass, not a shrug. These numbers reflect your adjusted rules. (<strong>${survivors}</strong> survive.)`;
