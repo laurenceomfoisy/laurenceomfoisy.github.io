@@ -14,6 +14,7 @@ on:
 
 permissions:
   contents: write
+  actions: write  # rerun flaky pages-build-deployment runs
 
 concurrency:
   group: update-data
@@ -48,6 +49,7 @@ jobs:
         run: python tests/test_app.py
 
       - name: Commit if changed
+        id: commit
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email 'github-actions[bot]@users.noreply.github.com'
@@ -58,3 +60,36 @@ jobs:
           fi
           git commit -m "data: daily refresh $(date -u +%F)"
           git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure Pages deploys the fresh data
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # The data push triggers GitHub's own pages-build-deployment
+          # workflow, which fails transiently often enough to matter
+          # ("Deployment failed, try again later" during syncing_files —
+          # 3 of 4 deploys on 2026-07-04). A failed deploy never retries
+          # itself and would silently leave the site a day stale, so poll
+          # it and rerun the failed attempt up to twice.
+          sleep 30
+          run_id=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow pages-build-deployment --limit 1 --json databaseId -q '.[0].databaseId')
+          for attempt in 1 2 3; do
+            for i in $(seq 1 40); do
+              status=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json status -q .status)
+              [ "$status" = "completed" ] && break
+              sleep 15
+            done
+            conclusion=$(gh run view "$run_id" --repo "$GITHUB_REPOSITORY" --json conclusion -q .conclusion)
+            echo "pages-build-deployment attempt $attempt: $conclusion"
+            if [ "$conclusion" = "success" ]; then
+              exit 0
+            fi
+            if [ "$attempt" = "3" ]; then
+              echo "Pages deploy still failing after 2 reruns — site serves the previous data."
+              exit 1
+            fi
+            gh run rerun "$run_id" --repo "$GITHUB_REPOSITORY" --failed
+            sleep 20
+          done
