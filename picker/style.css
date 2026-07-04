@@ -80,6 +80,42 @@ h1, h2, h3, h4 {
     color: var(--tone-caution);
 }
 
+#sectionNav {
+    display: flex;
+    gap: 1.25rem;
+    margin-right: auto;
+    margin-left: 1rem;
+}
+
+#sectionNav:empty {
+    display: none;
+}
+
+.section-link {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.25rem 0;
+    border-bottom: 2px solid transparent;
+    white-space: nowrap;
+    transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.section-link:hover {
+    color: var(--text-primary);
+}
+
+.section-link.active {
+    color: var(--text-primary);
+    border-bottom-color: var(--text-primary);
+}
+
+/* The step rail belongs to the tutorial alone. */
+body:not([data-section="tutorial"]) #progressRail {
+    display: none;
+}
+
 .data-chip {
     font-size: 0.8rem;
     color: var(--text-secondary);
