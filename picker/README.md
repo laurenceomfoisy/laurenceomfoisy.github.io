@@ -1,87 +1,80 @@
 # SoundHype - Investment Screener
 
-SoundHype is an interactive, premium-designed web application that helps you build an investment portfolio by merging **fundamental financial soundness** with **market momentum ("hype")**. 
+SoundHype is an interactive, premium-designed web application that helps you build an investment portfolio by merging **fundamental financial soundness** with **market momentum ("hype")**.
 
-This project uses objective financial data retrieved directly from Yahoo Finance and the SEC to grade and screen popular stocks.
+This project uses objective financial data retrieved from Yahoo Finance to grade and screen ~400 stocks mirroring the XEQT universe (US, Canada, developed international, emerging markets). Every explanation in the app is hand-written (`copy-deck.js`) or deterministically computed from the data (`interpret.js`) — no LLM-generated text anywhere, so the daily automated data refresh never needs a copy pass.
 
-## 🚀 Getting Started
+## 🧭 The app
 
-Follow these steps to run the application locally:
+The app opens on a **dashboard** and has three sections, switchable from the header:
 
-### 1. Requirements & Setup
-The project uses Python (for data scraping) and Node.js (for serving the dashboard). We have already configured a Python virtual environment and installed the dependencies (`yfinance`, `pandas`, `requests`).
+1. **Dashboard** (default, `#dashboard`) — every tracked stock in one ranked, sortable, searchable table. Column ⓘ toggles explain each metric; clicking a row opens the full stock sheet with plain-English verdicts. Stocks deep-link as `#stock-TICKER`.
+2. **Simulations** (`#simulate`) — "what would have happened" tools over 3 years of weekly prices (`prices.json`, fetched lazily):
+   - **Lump sum**: one stock, one amount, one date → value today, with the honest "order filled at the weekly close of …" note.
+   - **Portfolio backtest**: buy the portfolio you built in the tutorial (or a hand-picked equal-weight basket) at a past date, with a per-holding breakdown and a mandatory hindsight-bias warning.
+   - **Benchmarks**: overlay the S&P 500 and/or XEQT.TO on any simulation.
+   - Results display in CAD by default (week-matched FX), toggleable to USD.
+3. **Learn the method** (`#step-1` … `#step-5`) — the original five-step guided tutorial: The idea → Reading a stock → The junk filter → Build → Homework. Choices persist in localStorage and the Build step's allocation feeds the backtest.
 
-If you ever need to reinstall dependencies:
+## 🚀 Getting started locally
+
+Python (data scraping) + Node (tests). Setup:
+
 ```bash
 python3 -m venv venv
 ./venv/bin/pip install -r requirements.txt
 ```
 
-### 2. Fetch/Refresh Financial Data
-To run the background data collector which scrapes financial details, CIK indicators, and executive info:
-```bash
-./venv/bin/python3 screener.py
-```
-This script queries the latest financials, executive boards (such as CEOs), margins, cash flows, and growth rates, writing the results to `portfolio_data.json`.
+- **Refresh data**: `./venv/bin/python3 screener.py` (~10-15 min) writes `portfolio_data.json` (snapshot + scores) and `prices.json` (weekly price grid).
+- **Validate data**: `./venv/bin/python3 validate_data.py` — the same gate CI uses.
+- **Serve the app**: `npm run dev` → http://localhost:3000 (Flask, also enables the local-only Add Ticker flow), or any static server.
+- **Tests**: `npm test` (pure-logic modules: portfolio builder, interpret, teach, sim-core, copy deck) and `./venv/bin/python3 tests/test_app.py` (strict-JSON guard).
 
-### 3. Launch the Web Dashboard
-Start the local development server:
-```bash
-npm run dev
-```
-This command spins up a web server at [http://localhost:3000](http://localhost:3000) where you can walk through the guided wizard.
+## 🤖 Daily data refresh
 
----
+`.github/workflows/update-data.yml` (repo root) runs the screener every weekday at 22:30 UTC (after the US close), then commits `portfolio_data.json` + `prices.json` **only if** `validate_data.py` and the data tests pass. A failed or rate-limited scrape keeps the last good snapshot live. It can also be triggered manually from the Actions tab (`workflow_dispatch`).
 
-## 🧭 How to Use It
+## 📊 Methodology: fusing soundness & hype
 
-SoundHype is a five-step guided wizard, not a set of tabs — each step builds on the last, and your choices carry forward automatically:
+We evaluate each stock across two major dimensions, normalized on a relative 0-100 percentile scale (a score is a class rank, not a grade):
 
-1. **The idea** — what the tool does, how the Quality/Hype scores work, and a data-honesty box showing how fresh `portfolio_data.json` is.
-2. **Reading a stock** — three worked examples that teach you how to read any card's score, money line, and safety line, so you don't need to read all of them.
-3. **The junk filter** — five quality filters (cash flow, debt, current ratio, growth, market cap) you can loosen or tighten, each with a live "removes N of 392" count so you see the tradeoff.
-4. **Build** — set an investment amount, tune the four scoring weights (quality, momentum, growth, value), and watch the ranked allocation table update with sector caps and a "why it's here" line per pick.
-5. **Homework** — one study checklist per holding, gating the CSV export until you've checked every box.
+### 1. Fundamental Quality Score (60% weight)
+*   **Profitability (40%)**: Operating Margin, Net Profit Margin, and Return on Equity percentiles.
+*   **Cash Flow (40%)**: Free Cash Flow yield (FCF relative to market cap) and whether FCF is positive.
+*   **Financial Safety (20%)**: Debt-to-Equity (lower is better) and Current Ratio (higher is better).
 
-Every metric shown anywhere in the wizard is backed by an explanatory entry in `copy-deck.js` — `tests/deck-completeness.test.mjs` fails the build if a rendered metric key has no matching explanation.
+### 2. Hype & Momentum Score (40% weight)
+*   **Revenue Growth (30%)** and **Earnings Growth (20%)**: Year-over-Year percentiles.
+*   **Stock Momentum (50%)**: 6-month and 1-year price performance (computed from weekly closes).
 
----
+## 🎲 Simulation honesty rules
 
-## 📊 Methodology: Fusing Soundness & Hype
-
-We evaluate each stock across two major dimensions, which are normalized on a relative 0 to 100 scale:
-
-### 1. Fundamental Quality Score (60% Weight)
-This indicates the "soundness" of the business and consists of:
-*   **Profitability (40%)**: Calculated using Operating Margin, Net Profit Margin, and Return on Equity (ROE) percentiles.
-*   **Cash Flow (40%)**: Derived from Free Cash Flow (FCF) yield (FCF relative to market cap) and whether FCF is positive.
-*   **Financial Safety (20%)**: Evaluated using the Debt-to-Equity ratio (lower is better) and Current Ratio (higher is better).
-
-### 2. Hype & Momentum Score (40% Weight)
-This indicates the growth trajectory and market excitement around the stock:
-*   **Revenue Growth (30%)**: Year-over-Year revenue growth percentile.
-*   **Earnings Growth (20%)**: Year-over-Year earnings growth percentile.
-*   **Stock Momentum (50%)**: Derived from historical 6-month and 1-year price performance.
-
----
-
-## 🔍 Frequently Asked Questions
-
-### 1. What is the best free database for financial information about companies?
-The best free database is the **official SEC EDGAR API** (`data.sec.gov`). It is the source of truth for all U.S. public filings and provides machine-readable XBRL data for free. For general market data, company metrics, and executive lists, the **Yahoo Finance API** (via the `yfinance` library) is the most popular community resource, although unofficial.
-
-### 2. Can we get SEC reports for free?
-Yes! Under the U.S. Securities and Exchange Commission (SEC) fair access policy, all reports (10-K, 10-Q, 8-K, etc.) are public domain and completely free. You can access them:
-*   **Directly:** Through the SEC EDGAR API (`https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json`). You must include a descriptive `User-Agent` header (identifying your name and email) or your request will be blocked.
-*   **Python Wrapper Libraries:** Libraries like `edgartools` parse raw XBRL filings into pandas DataFrames, making them clean and readable.
-
----
+- Prices are **weekly closes**, split- and dividend-adjusted (total-return approximation; old prices won't match nominal prices you remember).
+- A buy "fills" at the first weekly close **on or after** the chosen date; stocks with no data then are dropped and their weight is spread over the rest — always disclosed, never silent.
+- The backtest of "the portfolio you built" picks stocks with **today's** numbers, then pretend-buys them in the past. The UI says so every time — hindsight bias is disclosed, not hidden.
+- Math runs in USD; CAD display converts week-by-week at that week's actual rate, so currency drift is part of the result.
 
 ## 🌐 Deployment (mfoisy.com/picker)
 
-This directory is served as-is by GitHub Pages at **https://mfoisy.com/picker/**. There is no build step: the frontend fetches `portfolio_data.json` with a relative path, so the same files work locally (Flask) and statically (Pages).
+This directory is served as-is by GitHub Pages at **https://mfoisy.com/picker/**. There is no build step: the frontend fetches `portfolio_data.json` (and, on the Simulations page, `prices.json`) with relative paths, so the same files work locally (Flask) and statically (Pages).
 
-- **Refresh the live data:** `./venv/bin/python3 screener.py` (~10 min), then commit and push `portfolio_data.json`. Cloudflare may serve the old file for up to ~10 minutes.
-- **Add Ticker** requires the local Flask backend (live Yahoo Finance scrape) — the section auto-hides on the static site and appears when running `npm run dev` locally.
-- `portfolio_data.json` must stay strict JSON (no bare `NaN`/`Infinity`) — browsers' `JSON.parse` rejects it otherwise. Both writers sanitize automatically; `tests/test_app.py` guards this.
-- Builder config lives in the browser's localStorage: it does **not** sync between localhost and mfoisy.com, or between devices.
+- Data refresh is automated (see above); a manual `./venv/bin/python3 screener.py` + commit still works. Cloudflare may serve the old file for up to ~10 minutes.
+- **Add Ticker** requires the local Flask backend (live Yahoo Finance scrape) — the section auto-hides on the static site.
+- Both JSON files must stay strict JSON (no bare `NaN`/`Infinity`) — browsers' `JSON.parse` rejects it otherwise. The writers sanitize automatically; `tests/test_app.py` and `validate_data.py` guard this.
+- Tutorial/build state lives in the browser's localStorage: it does **not** sync between localhost and mfoisy.com, or between devices.
+
+## 🗂 Module map
+
+| File | Role |
+|---|---|
+| `shell.js` | App shell: data fetch, hash router, header nav |
+| `dashboard.js` | Ranked/sortable/searchable universe table |
+| `simulate.js` | Simulations UI (charts, forms, CAD/USD display) |
+| `sim-core.js` | Pure backtest math (node-tested) |
+| `wizard.js` | Five-step tutorial + shared render helpers |
+| `portfolio-builder-core.js` | Pure floor/rank/allocation pipeline (node-tested) |
+| `interpret.js` | Value → blunt verdict engine (node-tested) |
+| `copy-deck.js` | Every explanatory word, as data (node-tested) |
+| `teach.js` | Worked-example picking for Step 2/3 (node-tested) |
+| `screener.py` | Yahoo Finance scraper → `portfolio_data.json` + `prices.json` |
+| `validate_data.py` | Strict data gate used by CI before committing |

@@ -46,6 +46,20 @@ test('deck: verdicts never restate the ratio jargon', () => {
   }
 });
 
+test('deck: sections exist and every leaf is real copy', () => {
+  assert.ok(CopyDeck.sections && typeof CopyDeck.sections === 'object', 'CopyDeck.sections missing');
+  assert.ok(CopyDeck.sections.dashboard, 'sections.dashboard missing');
+  const walk = (node, path) => {
+    for (const [k, v] of Object.entries(node)) {
+      const p = `${path}.${k}`;
+      if (typeof v === 'string') assert.ok(v.length > 0, `${p} is empty`);
+      else if (v && typeof v === 'object') walk(v, p);
+      else assert.fail(`${p} is neither copy nor a group`);
+    }
+  };
+  walk(CopyDeck.sections, 'sections');
+});
+
 test('format: units render correctly', () => {
   assert.equal(CopyDeck.format('operating_margin', 0.581), '58.1%');
   assert.equal(CopyDeck.format('debt_to_equity', 79.548), '79.5%');

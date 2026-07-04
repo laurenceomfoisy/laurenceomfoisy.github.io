@@ -1,4 +1,6 @@
-yfinance>=0.2.38
+# yfinance pinned: a surprise release must not silently change the daily
+# CI scrape's output shape. Bump deliberately, locally, with a test run.
+yfinance==1.5.1
 pandas>=2.0.0
 requests>=2.31.0
 numpy>=1.24.0

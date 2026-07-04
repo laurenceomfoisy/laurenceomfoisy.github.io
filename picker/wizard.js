@@ -1,8 +1,11 @@
-// SoundHype Wizard — shell, router, and shared state for the five-step
-// guided picker. Depends on PortfolioBuilder (defaults), CopyDeck (metric
-// copy) and Interpret (verdicts), all loaded as classic scripts before this
-// file. DOM only — no test framework covers this file; it is verified with
-// headless Chromium (see task brief).
+// SoundHype Wizard — the five-step tutorial section, plus the shared render
+// helpers (el, esc, renderScoreBar, renderSparkline, buildStockCard,
+// openStockSheet, computeAllocation, ...) consumed as globals by shell.js,
+// dashboard.js and simulate.js. Routing and data fetch live in shell.js,
+// loaded after this file. Depends on PortfolioBuilder (defaults), CopyDeck
+// (metric copy) and Interpret (verdicts), all loaded as classic scripts
+// before this file. DOM only — no test framework covers this file; it is
+// verified with headless Chromium (see task brief).
 
 const STEP_TITLES = ['The idea', 'Reading a stock', 'The junk filter', 'Build', 'Homework'];
 
@@ -18,6 +21,10 @@ function defaultWizardState() {
         homework: {},
         visited: {},
         floorSaved: {},
+        // The last allocation the Build step actually produced
+        // ({builtOn, holdings: [{ticker, weightPct}]}) — persisted so the
+        // simulator can backtest "the portfolio you built" verbatim.
+        lastBuild: null,
     };
 }
 
@@ -76,6 +83,7 @@ function loadState() {
                     homework: (saved.homework && typeof saved.homework === 'object') ? saved.homework : {},
                     visited: (saved.visited && typeof saved.visited === 'object') ? saved.visited : {},
                     floorSaved: (saved.floorSaved && typeof saved.floorSaved === 'object') ? saved.floorSaved : {},
+                    lastBuild: (saved.lastBuild && typeof saved.lastBuild === 'object') ? saved.lastBuild : null,
                 };
             }
         }
@@ -639,6 +647,13 @@ function openStockSheet(ticker) {
         overlay.remove();
         document.body.classList.remove('sheet-open');
         document.removeEventListener('keydown', onKeydown);
+        // A sheet deep-linked as #stock-TICKER hands the hash back to the
+        // dashboard on close. replaceState fires no hashchange, so the
+        // table keeps its sort and scroll. Tutorial-opened sheets carry a
+        // #step-N hash and are untouched.
+        if (/^#stock-/.test(location.hash)) {
+            history.replaceState(null, '', '#dashboard');
+        }
         if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
             previouslyFocused.focus();
         }
@@ -1500,6 +1515,15 @@ function renderBuildStep(root) {
             maxPct: WizardState.guardrails.maxPosPct,
         });
 
+        // Snapshot what was actually built so the simulator backtests THIS
+        // allocation, not a from-defaults recomputation. saveState() is
+        // already called by every control that funnels into refreshAll.
+        WizardState.lastBuild = weighted.length === 0 ? null : {
+            builtOn: appData.lastUpdated || '',
+            holdings: weighted.map((s) => ({ ticker: s.ticker, weightPct: s.weightPct })),
+        };
+        saveState();
+
         const shortfallEl = root.querySelector('#allocShortfall');
         const emptyEl = root.querySelector('#allocEmpty');
         const wrap = root.querySelector('#allocationWrap');
@@ -1739,9 +1763,7 @@ const STEPS = {
     5: { title: STEP_TITLES[4], render: renderHomeworkStep },
 };
 
-// --- Router / shell --------------------------------------------------------
-
-let currentStep = null;
+// --- Tutorial section (router and app shell live in shell.js) --------------
 
 function renderProgressRail() {
     const rail = document.getElementById('progressRail');
@@ -1765,52 +1787,16 @@ function updateProgressRail(n) {
     });
 }
 
+// Every step CTA and rail button funnels through here; the shell router
+// calls renderTutorialStep back once the hash settles.
 function showStep(n) {
     if (!STEPS[n]) return;
-    const root = document.getElementById('stepRoot');
+    navigate('#step-' + n);
+}
+
+function renderTutorialStep(n, root) {
     WizardState.visited[n] = true;
     STEPS[n].render(root);
     updateProgressRail(n);
-    currentStep = n;
-    if (location.hash !== '#step-' + n) location.hash = 'step-' + n;
     saveState();
 }
-
-function renderDataStatus() {
-    const chip = document.getElementById('dataStatus');
-    if (!appData.lastUpdated) {
-        chip.textContent = '';
-        return;
-    }
-    const updated = new Date(appData.lastUpdated);
-    const ageDays = (Date.now() - updated.getTime()) / 86400000;
-    const stale = isFinite(ageDays) && ageDays > 7;
-    chip.textContent = `Refreshed: ${appData.lastUpdated}`;
-    chip.classList.toggle('stale', stale);
-    chip.title = stale ? 'This data is more than 7 days old.' : '';
-}
-
-async function init() {
-    renderProgressRail();
-    try {
-        const res = await fetch('portfolio_data.json');
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        appData.stocks = data.stocks;
-        appData.lastUpdated = data.last_updated;
-    } catch (e) {
-        document.getElementById('stepRoot').innerHTML =
-            '<p class="tone-bad">Could not load the stock data. If you are offline, that is why. Otherwise, tell Laurence the site is broken.</p>';
-        return;
-    }
-    renderDataStatus();
-    const fromHash = parseInt((location.hash.match(/step-(\d)/) || [])[1], 10);
-    showStep(fromHash >= 1 && fromHash <= 5 ? fromHash : 1);
-}
-
-window.addEventListener('hashchange', () => {
-    const n = parseInt((location.hash.match(/step-(\d)/) || [])[1], 10);
-    if (n >= 1 && n <= 5 && n !== currentStep) showStep(n);
-});
-
-init();
