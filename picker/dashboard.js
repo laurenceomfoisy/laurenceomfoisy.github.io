@@ -41,9 +41,7 @@
 
     function matchesQuery(stock) {
         if (!query) return true;
-        const q = query.toLowerCase();
-        return [stock.ticker, stock.name, stock.sector]
-            .some((f) => f && String(f).toLowerCase().includes(q));
+        return Teach.searchMatches(stock, query);
     }
 
     // One toned cell for a score/momentum column: value + tone dot. The
