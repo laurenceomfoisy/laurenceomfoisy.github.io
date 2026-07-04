@@ -1,6 +1,14 @@
 <!doctype html>
 <html>
   <head>
+    <script>
+      // Enforce HTTPS client-side: Cloudflare proxies this domain without
+      // "Always Use HTTPS", and GitHub Pages can't provision its own cert
+      // behind the proxy.
+      if (location.protocol === "http:" && location.hostname !== "localhost" && location.hostname !== "127.0.0.1") {
+        location.replace("https:" + location.href.substring(5));
+      }
+    </script>
     <title>Laurence-Olivier M. Foisy</title>
     <meta charset="utf-8" />
     <meta
