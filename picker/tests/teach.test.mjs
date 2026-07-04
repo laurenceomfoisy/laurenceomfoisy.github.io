@@ -77,3 +77,22 @@ test('casualtiesByRule: data-poor stocks (missing a KEY_METRIC) are never counte
   }
   assert.deepEqual(Teach.rulesFailed(stocks[1], FLOOR), []);
 });
+
+test('searchMatches: nickname aliases find the Yahoo-named stock', () => {
+  const cibc = { ticker: 'CM.TO', name: 'Canadian Imperial Bank of Commerce', sector: 'Financial Services' };
+  const coke = { ticker: 'KO', name: 'The Coca-Cola Company', sector: 'Consumer Defensive' };
+  assert.ok(Teach.searchMatches(cibc, 'cibc'));
+  assert.ok(Teach.searchMatches(cibc, 'CIB'), 'prefix of an alias already surfaces it');
+  assert.ok(Teach.searchMatches(cibc, 'imperial bank'), 'name substring still works');
+  assert.ok(Teach.searchMatches(coke, 'coke'));
+  assert.ok(Teach.searchMatches(coke, 'coca cola'), 'unhyphenated form matches via alias');
+  assert.ok(!Teach.searchMatches(coke, 'cibc'), 'alias only matches its own tickers');
+  assert.ok(!Teach.searchMatches(coke, ''), 'empty query matches nothing');
+});
+
+test('searchMatches: every alias ticker looks like a real ticker', () => {
+  for (const [alias, tickers] of Object.entries(Teach.SEARCH_ALIASES)) {
+    assert.ok(tickers.length > 0, `${alias} maps to nothing`);
+    for (const t of tickers) assert.match(t, /^[A-Z0-9]+([.-][A-Z]+)*$/, `${alias} -> ${t}`);
+  }
+});

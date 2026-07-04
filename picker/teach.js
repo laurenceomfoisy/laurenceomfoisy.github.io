@@ -155,6 +155,47 @@
         return result;
     }
 
+    // Nicknames people actually type, mapped to the tickers Yahoo files
+    // them under. Yahoo's official names miss the acronyms ("Canadian
+    // Imperial Bank of Commerce" ≠ "CIBC") and hyphenates words apart
+    // ("Coca-Cola" never matches "coca cola"). Hand-written like all copy.
+    const SEARCH_ALIASES = {
+        'cibc': ['CM.TO'],
+        'rbc': ['RY.TO'],
+        'scotia': ['BNS.TO'],
+        'scotiabank': ['BNS.TO'],
+        'national bank': ['NA.TO'],
+        'couche tard': ['ATD.TO'],
+        'canadian tire': ['CTC-A.TO'],
+        'google': ['GOOGL', 'GOOG'],
+        'facebook': ['META'],
+        'fb': ['META'],
+        'coke': ['KO'],
+        'coca cola': ['KO'],
+        'mcdonalds': ['MCD'],
+        'amex': ['AXP'],
+        'p&g': ['PG'],
+        'procter': ['PG'],
+        'j&j': ['JNJ'],
+    };
+
+    // Shared search predicate for every lookup box (dashboard, simulator,
+    // tutorial Step 2): ticker/name/sector substring, plus the alias map.
+    // Alias matching is prefix-tolerant both ways so "cib" already surfaces
+    // CIBC and "cibc stock" still lands.
+    function searchMatches(stock, query) {
+        const q = String(query || '').trim().toLowerCase();
+        if (!q) return false;
+        const fields = [stock.ticker, stock.name, stock.sector];
+        if (fields.some((f) => f && String(f).toLowerCase().includes(q))) return true;
+        for (const alias in SEARCH_ALIASES) {
+            if (alias.includes(q) || q.includes(alias)) {
+                if (SEARCH_ALIASES[alias].indexOf(stock.ticker) !== -1) return true;
+            }
+        }
+        return false;
+    }
+
     return {
         RULE_FIELDS,
         disabledConfig,
@@ -162,5 +203,7 @@
         rulesFailed,
         pickTeachingExamples,
         casualtiesByRule,
+        SEARCH_ALIASES,
+        searchMatches,
     };
 });

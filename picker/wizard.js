@@ -518,7 +518,7 @@ function renderTeachSearchResults(container, universe, query) {
     if (!q) return;
 
     const matches = universe
-        .filter((s) => (s.ticker || '').toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q))
+        .filter((s) => Teach.searchMatches(s, q))
         .slice(0, 8);
 
     if (matches.length === 0) {

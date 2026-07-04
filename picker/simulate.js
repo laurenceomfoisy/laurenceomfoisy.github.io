@@ -206,7 +206,7 @@
             results.innerHTML = '';
             if (!q) return;
             const matches = (appData.stocks || [])
-                .filter((s) => (s.ticker || '').toLowerCase().includes(q) || (s.name || '').toLowerCase().includes(q))
+                .filter((s) => Teach.searchMatches(s, q))
                 .slice(0, 8);
             if (matches.length === 0) {
                 results.appendChild(el('p', 'teach-search-empty', 'No matches.'));
