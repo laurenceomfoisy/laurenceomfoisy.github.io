@@ -58,27 +58,32 @@ def get_xeqt_500_tickers():
     print("Dynamically compiling XEQT 500 list from Wikipedia...")
     tickers = []
     
+    # Wikipedia pages carry several tables (infoboxes, sector weights,
+    # navboxes) and their order shifts — never trust an index. Find the
+    # constituents table by its Symbol column.
+    def constituents_table(url):
+        html = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'}).text
+        tables = pd.read_html(io.StringIO(html))
+        return next(t for t in tables if 'Symbol' in t.columns and len(t) >= 50)
+
     # 1. Fetch S&P 500 (US - ~45% allocation)
     try:
-        url_sp500 = "https://en.wikipedia.org/wiki/List_of_S%26P_500_companies"
-        html = requests.get(url_sp500, headers={'User-Agent': 'Mozilla/5.0'}).text
-        df_sp500 = pd.read_html(io.StringIO(html))[0]
+        df_sp500 = constituents_table("https://en.wikipedia.org/wiki/List_of_S%26P_500_companies")
         # Keep top 300 US stocks to represent the core of S&P 500
         sp500_tickers = df_sp500['Symbol'].tolist()
-        sp500_tickers = [t.replace('.', '-') for t in sp500_tickers]
+        sp500_tickers = [str(t).replace('.', '-') for t in sp500_tickers]
         tickers.extend(sp500_tickers[:300])
         print(f"Added {len(sp500_tickers[:300])} S&P 500 tickers.")
     except Exception as e:
         print(f"Error fetching S&P 500: {e}")
         tickers.extend(TICKERS[:36])  # fallback
-        
+
     # 2. Fetch TSX 60 (Canada - ~25% allocation)
     try:
-        url_tsx60 = "https://en.wikipedia.org/wiki/S%26P/TSX_60"
-        html = requests.get(url_tsx60, headers={'User-Agent': 'Mozilla/5.0'}).text
-        df_tsx60 = pd.read_html(io.StringIO(html))[0]
-        tsx_tickers = df_tsx60['Symbol'].tolist()
-        tsx_tickers = [f"{t}.TO" for t in tsx_tickers]
+        df_tsx60 = constituents_table("https://en.wikipedia.org/wiki/S%26P/TSX_60")
+        # Yahoo writes dual-class dots as dashes: CTC.A -> CTC-A.TO.
+        # dropna: the table can carry a blank row that str()s into "nan".
+        tsx_tickers = [f"{str(t).replace('.', '-')}.TO" for t in df_tsx60['Symbol'].dropna().tolist()]
         tickers.extend(tsx_tickers)
         print(f"Added {len(tsx_tickers)} TSX 60 tickers.")
     except Exception as e:
