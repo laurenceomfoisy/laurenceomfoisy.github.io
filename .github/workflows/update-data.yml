@@ -59,6 +59,11 @@ jobs:
             exit 0
           fi
           git commit -m "data: daily refresh $(date -u +%F)"
+          # main can move during the ~25-minute scrape (any merge lands
+          # first) — rebase our data commit on top rather than failing the
+          # whole run on a non-fast-forward push. The data files are wholly
+          # regenerated here, so ours wins any overlap.
+          git pull --rebase -X ours origin main || { git rebase --abort; exit 1; }
           git push
           echo "pushed=true" >> "$GITHUB_OUTPUT"
 
