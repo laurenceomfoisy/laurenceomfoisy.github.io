@@ -382,18 +382,26 @@
 
         const bench = benchmarkRuns(portState, amountUsd, portState.startDate, mainReturnPct, amountDisplay);
 
+        const endDate = run.series[run.series.length - 1].date;
         const holdingRows = run.perHolding
             .slice()
             .sort((a, b) => b.endValue - a.endValue)
             .map((h) => {
-                const tone = h.returnPct >= 0 ? 'good' : 'bad';
-                const sign = h.returnPct >= 0 ? '+' : '−';
+                // Each holding's buy converts at ITS OWN start week (a late
+                // listing buys later), so Invested / Now / Return all agree
+                // in the display currency — never a USD return beside CAD
+                // dollar figures.
+                const investedDisp = toDisplayValue(h.amount, h.startDate);
+                const nowDisp = toDisplayValue(h.endValue, endDate);
+                const retPct = (nowDisp / investedDisp - 1) * 100;
+                const tone = retPct >= 0 ? 'good' : 'bad';
+                const sign = retPct >= 0 ? '+' : '−';
                 return `<tr>
                     <td class="sim-h-ticker">${esc(h.ticker)}</td>
                     <td class="sim-h-num">${h.weightPct.toFixed(1)}%</td>
-                    <td class="sim-h-num">${fmtMoney(toDisplayValue(h.amount, run.series[0].date))}</td>
-                    <td class="sim-h-num">${fmtMoney(toDisplayValue(h.endValue, run.series[run.series.length - 1].date))}</td>
-                    <td class="sim-h-num tone-${tone}">${sign}${Math.abs(h.returnPct).toFixed(1)}%</td>
+                    <td class="sim-h-num">${fmtMoney(investedDisp)}</td>
+                    <td class="sim-h-num">${fmtMoney(nowDisp)}</td>
+                    <td class="sim-h-num tone-${tone}">${sign}${Math.abs(retPct).toFixed(1)}%</td>
                 </tr>`;
             }).join('');
 
@@ -483,6 +491,20 @@
 
     // ---- Section entry -------------------------------------------------------
 
+    // `?debug-sim=TICKER` pre-fills the lump-sum tool ($1,000, one year
+    // ago, S&P 500 overlay) right after render — the only way a one-shot
+    // headless-Chromium DOM dump can verify a filled-in simulation. Same
+    // convention as wizard.js's `?debug-sheet=`.
+    function maybeDebugPrefill() {
+        const ticker = new URLSearchParams(location.search).get('debug-sim');
+        if (!ticker) return;
+        lumpState.ticker = ticker;
+        lumpState.amount = 1000;
+        lumpState.gspc = true;
+        portState.amount = 1000;
+        portState.xeqt = true;
+    }
+
     function renderTools(root) {
         const deck = CopyDeck.sections.simulate;
         const body = root.querySelector('#simBody');
@@ -498,6 +520,7 @@
             </section>
         `;
         const cards = body.querySelector('#simCards');
+        maybeDebugPrefill();
         renderLumpCard(cards);
         renderPortfolioCard(cards);
 

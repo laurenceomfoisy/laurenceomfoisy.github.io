@@ -140,6 +140,15 @@ body:not([data-section="tutorial"]) #progressRail {
         flex-wrap: wrap;
     }
 
+    #sectionNav {
+        gap: 0.85rem;
+        margin-left: 0.5rem;
+    }
+
+    .section-link {
+        font-size: 0.8rem;
+    }
+
     .data-chip {
         white-space: normal;
         font-size: 0.7rem;
@@ -2000,8 +2009,8 @@ body.sheet-open {
 .dashboard-table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.88rem;
-    min-width: 40rem;
+    font-size: 0.85rem;
+    min-width: 0;
 }
 
 .dashboard-table th {
@@ -2011,7 +2020,7 @@ body.sheet-open {
     text-transform: uppercase;
     letter-spacing: 0.06em;
     color: var(--text-muted);
-    padding: 0.9rem 0.85rem 0.6rem;
+    padding: 0.9rem 0.45rem 0.6rem;
     border-bottom: 1px solid var(--border-color);
     white-space: nowrap;
 }
@@ -2047,7 +2056,7 @@ body.sheet-open {
 }
 
 .dashboard-table td {
-    padding: 0.7rem 0.85rem;
+    padding: 0.7rem 0.45rem;
     border-bottom: 1px solid var(--border-color);
     vertical-align: middle;
     white-space: nowrap;
@@ -2081,7 +2090,8 @@ body.sheet-open {
     flex-direction: column;
     gap: 0.1rem;
     white-space: normal;
-    min-width: 12rem;
+    min-width: 9rem;
+    max-width: 14rem;
 }
 
 .dash-ticker {
@@ -2092,6 +2102,15 @@ body.sheet-open {
 
 .dash-row:hover .dash-ticker {
     text-decoration: underline;
+}
+
+.dash-name,
+.dash-sector {
+    display: block;
+    max-width: 11rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .dash-name {
@@ -2118,11 +2137,11 @@ body.sheet-open {
 }
 
 .dash-spark {
-    width: 6rem;
+    width: 4rem;
 }
 
 .dash-spark .sparkline-svg {
-    width: 5rem;
+    width: 3.5rem;
     height: 1.5rem;
     display: block;
 }
@@ -2133,12 +2152,24 @@ body.sheet-open {
 }
 
 @media (max-width: 640px) {
-    .dash-col-secondary {
+    .dash-col-secondary,
+    .dash-col-mobile-hide {
         display: none;
     }
 
-    .dashboard-table {
-        min-width: 0;
+    .dashboard-table td,
+    .dashboard-table th {
+        padding-left: 0.4rem;
+        padding-right: 0.4rem;
+    }
+
+    .dash-company {
+        min-width: 7rem;
+    }
+
+    .dash-name,
+    .dash-sector {
+        max-width: 8rem;
     }
 
     .dash-controls {

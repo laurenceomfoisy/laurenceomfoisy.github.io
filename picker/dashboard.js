@@ -11,7 +11,7 @@
     // `secondary: true` columns disappear on narrow screens (CSS).
     const COLUMNS = [
         { key: 'company', label: 'Company' },
-        { key: 'price', label: 'Price', numeric: true },
+        { key: 'price', label: 'Price', numeric: true, mobileHide: true },
         { key: 'scores.overall', label: 'Overall', numeric: true, deck: true },
         { key: 'scores.quality', label: 'Quality', numeric: true, deck: true, secondary: true },
         { key: 'scores.hype', label: 'Hype', numeric: true, deck: true, secondary: true },
@@ -67,7 +67,7 @@
                 <span class="dash-name">${esc(stock.name)}</span>
                 <span class="dash-sector">${esc(stock.sector || '')}</span>
             </td>
-            <td class="dash-num">${formatUsdPrice(stock.price)}</td>
+            <td class="dash-num dash-col-mobile-hide">${formatUsdPrice(stock.price)}</td>
             <td class="dash-num">${tonedCellHtml('scores.overall', stock, universe)}</td>
             <td class="dash-num dash-col-secondary">${tonedCellHtml('scores.quality', stock, universe)}</td>
             <td class="dash-num dash-col-secondary">${tonedCellHtml('scores.hype', stock, universe)}</td>
@@ -175,7 +175,7 @@
         // Rank column header (not sortable — it IS the current sort order).
         thead.appendChild(el('th', 'dash-rank', '#'));
         COLUMNS.forEach((col) => {
-            const th = el('th', col.secondary ? 'dash-col-secondary' : '');
+            const th = el('th', col.secondary ? 'dash-col-secondary' : (col.mobileHide ? 'dash-col-mobile-hide' : ''));
             if (col.numeric) th.classList.add('dash-num');
             const btn = el('button', 'dash-sort',
                 `${esc(col.label)} <span class="dash-sort-arrow"></span>`);
