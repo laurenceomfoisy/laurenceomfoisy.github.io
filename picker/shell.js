@@ -6,7 +6,7 @@
 // nav light those sections up only when present. DOM only — no test
 // framework covers this file; it is verified with headless Chromium.
 
-const DEFAULT_HASH = '#step-1';
+const DEFAULT_HASH = '#dashboard';
 
 const NAV_LINKS = [
     { hash: '#dashboard', label: 'Dashboard', section: 'dashboard', ready: () => !!window.Dashboard },

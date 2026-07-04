@@ -642,6 +642,13 @@ function openStockSheet(ticker) {
         overlay.remove();
         document.body.classList.remove('sheet-open');
         document.removeEventListener('keydown', onKeydown);
+        // A sheet deep-linked as #stock-TICKER hands the hash back to the
+        // dashboard on close. replaceState fires no hashchange, so the
+        // table keeps its sort and scroll. Tutorial-opened sheets carry a
+        // #step-N hash and are untouched.
+        if (/^#stock-/.test(location.hash)) {
+            history.replaceState(null, '', '#dashboard');
+        }
         if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
             previouslyFocused.focus();
         }

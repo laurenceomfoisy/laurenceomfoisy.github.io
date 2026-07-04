@@ -290,5 +290,19 @@
 
     const GENERIC_MISSING = `Yahoo doesn't report this for {ticker} — treat it as a yellow flag, not a shrug.`;
 
-    return { metrics, format, GENERIC_MISSING };
+    // Section copy — everything the dashboard (and later the simulator)
+    // says that is not about one metric. Hand-written like the rest of the
+    // deck; {curly} placeholders are filled by the UI at render time. Never
+    // generated — the daily data refresh must never need a copy pass.
+    const sections = {
+        dashboard: {
+            lede: 'Every stock we track, ranked by the overall score. A score is a class rank, not a grade — a 92 beats 92% of this universe, it does not mean "92% good". Click any row for the full read on that company.',
+            learnCta: 'New here? Learn the method',
+            simulateCta: 'Test a strategy',
+            tableHint: 'Click a column header to re-rank. The ⓘ explains what each number actually measures — and how it can lie to you.',
+            searchEmpty: 'Nothing matches that. We track the big US, Canadian and international names — if it is not here, we do not cover it. That is a data gap, not a verdict.',
+        },
+    };
+
+    return { metrics, sections, format, GENERIC_MISSING };
 });

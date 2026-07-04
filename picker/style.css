@@ -1919,3 +1919,229 @@ body.sheet-open {
     box-shadow: none;
     transform: none;
 }
+
+/* --- Dashboard --- */
+.dashboard h1 {
+    margin-bottom: 0.75rem;
+}
+
+.dash-lede {
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+
+.dash-lede-links {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.dash-lede-link {
+    color: var(--text-primary);
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid var(--text-primary);
+}
+
+.dash-lede-link:hover {
+    color: var(--text-secondary);
+    border-bottom-color: var(--text-secondary);
+}
+
+.dash-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+#dashSearch {
+    flex: 1 1 16rem;
+    max-width: 22rem;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    padding: 0.55rem 1.1rem;
+}
+
+#dashSearch:focus {
+    outline: 2px solid var(--text-primary);
+    outline-offset: 1px;
+}
+
+.dash-count {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    white-space: nowrap;
+}
+
+.dash-hint {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+}
+
+.dash-deck-panel {
+    margin-bottom: 1rem;
+}
+
+.dashboard-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border-color);
+    border-radius: 14px;
+    background: var(--bg-card);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 2.5rem;
+}
+
+.dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    min-width: 40rem;
+}
+
+.dashboard-table th {
+    text-align: left;
+    font-family: var(--font-head);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-muted);
+    padding: 0.9rem 0.85rem 0.6rem;
+    border-bottom: 1px solid var(--border-color);
+    white-space: nowrap;
+}
+
+.dashboard-table th.dash-num,
+.dashboard-table td.dash-num {
+    text-align: right;
+}
+
+.dashboard-table th .info-toggle {
+    margin-left: 0.25rem;
+}
+
+.dash-sort {
+    background: none;
+    border: none;
+    padding: 0;
+    font: inherit;
+    color: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+    cursor: pointer;
+}
+
+.dash-sort:hover,
+.dash-sort.active {
+    color: var(--text-primary);
+}
+
+.dash-sort-arrow {
+    display: inline-block;
+    min-width: 0.7em;
+}
+
+.dashboard-table td {
+    padding: 0.7rem 0.85rem;
+    border-bottom: 1px solid var(--border-color);
+    vertical-align: middle;
+    white-space: nowrap;
+}
+
+.dash-row {
+    cursor: pointer;
+}
+
+.dash-row:hover {
+    background: var(--bg-tint);
+}
+
+.dash-row:focus-visible {
+    outline: 2px solid var(--text-primary);
+    outline-offset: -2px;
+}
+
+.dash-row:last-child td {
+    border-bottom: none;
+}
+
+.dash-rank {
+    color: var(--text-muted);
+    font-family: var(--font-head);
+    width: 2.5rem;
+}
+
+.dash-company {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+    white-space: normal;
+    min-width: 12rem;
+}
+
+.dash-ticker {
+    font-family: var(--font-head);
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.dash-row:hover .dash-ticker {
+    text-decoration: underline;
+}
+
+.dash-name {
+    color: var(--text-secondary);
+    font-size: 0.82rem;
+}
+
+.dash-sector {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.dash-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 999px;
+    margin-right: 0.4rem;
+    vertical-align: baseline;
+}
+
+.dash-na {
+    color: var(--text-muted);
+}
+
+.dash-spark {
+    width: 6rem;
+}
+
+.dash-spark .sparkline-svg {
+    width: 5rem;
+    height: 1.5rem;
+    display: block;
+}
+
+.dash-deck-label {
+    font-family: var(--font-head);
+    font-weight: 600;
+}
+
+@media (max-width: 640px) {
+    .dash-col-secondary {
+        display: none;
+    }
+
+    .dashboard-table {
+        min-width: 0;
+    }
+
+    .dash-controls {
+        flex-wrap: wrap;
+    }
+}
