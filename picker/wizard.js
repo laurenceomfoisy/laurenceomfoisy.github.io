@@ -21,6 +21,10 @@ function defaultWizardState() {
         homework: {},
         visited: {},
         floorSaved: {},
+        // The last allocation the Build step actually produced
+        // ({builtOn, holdings: [{ticker, weightPct}]}) — persisted so the
+        // simulator can backtest "the portfolio you built" verbatim.
+        lastBuild: null,
     };
 }
 
@@ -79,6 +83,7 @@ function loadState() {
                     homework: (saved.homework && typeof saved.homework === 'object') ? saved.homework : {},
                     visited: (saved.visited && typeof saved.visited === 'object') ? saved.visited : {},
                     floorSaved: (saved.floorSaved && typeof saved.floorSaved === 'object') ? saved.floorSaved : {},
+                    lastBuild: (saved.lastBuild && typeof saved.lastBuild === 'object') ? saved.lastBuild : null,
                 };
             }
         }
@@ -1509,6 +1514,15 @@ function renderBuildStep(root) {
             minPct: WizardState.guardrails.minPosPct,
             maxPct: WizardState.guardrails.maxPosPct,
         });
+
+        // Snapshot what was actually built so the simulator backtests THIS
+        // allocation, not a from-defaults recomputation. saveState() is
+        // already called by every control that funnels into refreshAll.
+        WizardState.lastBuild = weighted.length === 0 ? null : {
+            builtOn: appData.lastUpdated || '',
+            holdings: weighted.map((s) => ({ ticker: s.ticker, weightPct: s.weightPct })),
+        };
+        saveState();
 
         const shortfallEl = root.querySelector('#allocShortfall');
         const emptyEl = root.querySelector('#allocEmpty');

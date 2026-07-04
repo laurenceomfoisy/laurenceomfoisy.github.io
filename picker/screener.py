@@ -119,6 +119,30 @@ except Exception as e:
     print(f"Error fetching CADUSD rate, using fallback: {e}")
     CAD_USD = 0.73  # Fallback exchange rate
 
+# Weekly historical FX series, one fetch per currency. Price *series* must be
+# converted week-by-week at that week's rate — applying today's rate to a
+# 2023 close would fabricate returns. Current-snapshot dollar figures
+# (market cap, FCF) correctly keep using today's rate above.
+_FX_WEEKLY_CACHE = {}
+
+def get_fx_weekly(currency):
+    """{currency}->USD weekly Close series over 3y, or None on failure."""
+    if currency == "USD" or not currency:
+        return None
+    if currency in _FX_WEEKLY_CACHE:
+        return _FX_WEEKLY_CACHE[currency]
+    series = None
+    try:
+        fx = yf.Ticker(f"{currency}USD=X").history(period="3y", interval="1wk")['Close']
+        if not fx.empty:
+            fx.index = fx.index.tz_localize(None).normalize()
+            series = fx
+    except Exception as e:
+        print(f"Warning: no weekly FX history for {currency} ({e}); "
+              f"falling back to today's rate for its price series.")
+    _FX_WEEKLY_CACHE[currency] = series
+    return series
+
 def extract_historical_metrics(ticker, fx_rate):
     try:
         financials = ticker.financials
@@ -225,42 +249,45 @@ def get_stock_data(ticker_symbol):
             except:
                 fx_rate = 1.0  # Fallback
 
-        # Fetch 1-year historical data for momentum
-        hist = ticker.history(period="1y")
+        # 3 years of weekly closes in ONE request: powers momentum, the
+        # sparkline, and the prices.json backtest grid.
+        hist = ticker.history(period="3y", interval="1wk")
         momentum_3m = None
         momentum_6m = None
         momentum_1y = None
         current_price = get_float("currentPrice") or get_float("regularMarketPrice")
 
         sparkline_prices = []
+        weekly_closes = None
         if not hist.empty:
             close_prices = hist['Close']
+            weekly_closes = close_prices.copy()
+            weekly_closes.index = weekly_closes.index.tz_localize(None).normalize()
             current_close = close_prices.iloc[-1]
             if current_price is None:
                 current_price = float(current_close)
-            
-            # Normalise sparkline prices to USD
-            close_prices_usd = close_prices * fx_rate
-            
-            # Downsample to 15 points for sparkline
+
+            # Sparkline stays a 1-year window: last 52 weekly closes in USD,
+            # downsampled to the same 15 points as before.
+            close_prices_usd = close_prices.iloc[-52:] * fx_rate
             n = len(close_prices_usd)
             if n > 0:
                 indices = np.linspace(0, n - 1, min(15, n), dtype=int)
                 sparkline_prices = [float(close_prices_usd.iloc[i]) for i in indices]
-            
-            # Approximate trading days: 252 in a year, 126 in 6m, 63 in 3m
-            n_days = len(close_prices)
-            
-            if n_days >= 63:
-                price_3m = close_prices.iloc[-63]
+
+            # Weekly bars: 13 weeks back for 3m, 26 for 6m, 52 for 1y.
+            n_weeks = len(close_prices)
+
+            if n_weeks >= 14:
+                price_3m = close_prices.iloc[-14]
                 momentum_3m = float((current_close - price_3m) / price_3m)
-            if n_days >= 126:
-                price_6m = close_prices.iloc[-126]
+            if n_weeks >= 27:
+                price_6m = close_prices.iloc[-27]
                 momentum_6m = float((current_close - price_6m) / price_6m)
-            if n_days >= 252:
-                price_1y = close_prices.iloc[-252]
+            if n_weeks >= 53:
+                price_1y = close_prices.iloc[-53]
                 momentum_1y = float((current_close - price_1y) / price_1y)
-            elif n_days > 0:
+            elif n_weeks > 0:
                 price_1y = close_prices.iloc[0]
                 momentum_1y = float((current_close - price_1y) / price_1y)
 
@@ -341,13 +368,33 @@ def get_stock_data(ticker_symbol):
             # CEO / Officers
             "ceo": ceo_name,
             "officers": officers[:5],  # Top 5 officers
-            "history": extract_historical_metrics(ticker, fx_rate)
+            "history": extract_historical_metrics(ticker, fx_rate),
+
+            # Raw weekly closes in the ticker's NATIVE currency, plus what
+            # that currency is — main() pops these into prices.json (with
+            # week-matched FX) before the stock dict is serialized.
+            "_weekly_closes": weekly_closes,
+            "_currency": currency,
+            "_fx_rate_now": fx_rate,
         }
-        
+
         return data
     except Exception as e:
         print(f"Error fetching {ticker_symbol}: {e}")
         return None
+
+def get_stock_data_with_retry(ticker_symbol, attempts=2):
+    """One retry with backoff — CI runners get rate-limited more readily
+    than a residential connection, and a single transient failure should
+    not cost the ticker for the whole day."""
+    for i in range(attempts):
+        data = get_stock_data(ticker_symbol)
+        if data is not None:
+            return data
+        if i + 1 < attempts:
+            time.sleep(2)
+            print(f"Retrying {ticker_symbol}...")
+    return None
 
 def score_and_rank_stocks(stocks):
     scored_stocks = []
@@ -437,6 +484,76 @@ def score_and_rank_stocks(stocks):
     scored_stocks = sorted(scored_stocks, key=lambda x: x["scores"]["overall"], reverse=True)
     return scored_stocks
 
+def build_prices_payload(weekly_map):
+    """Assemble prices.json: a global weekly W-FRI date grid (~3 years) with
+    per-ticker USD close arrays aligned to it (null-padded), benchmark
+    series, and a weekly USDCAD array so the UI can display CAD honestly.
+
+    weekly_map: {ticker: {"closes": Series in native currency (tz-naive
+    index), "currency": str, "fx_now": float}}.
+    """
+    today = pd.Timestamp.today().normalize()
+    # Most recent Friday on or before today. The in-progress week's partial
+    # bar resamples to NEXT Friday's label and falls off the grid.
+    end = today - pd.Timedelta(days=(today.weekday() - 4) % 7)
+    grid = pd.date_range(end=end, periods=157, freq='W-FRI')
+
+    def to_grid(closes, currency, fx_now):
+        s = closes.resample('W-FRI').last().reindex(grid)
+        fx = get_fx_weekly(currency)
+        if fx is not None:
+            fx_grid = fx.resample('W-FRI').last().reindex(grid).ffill().bfill()
+            s = s * fx_grid
+        elif currency != "USD":
+            s = s * fx_now
+        out = []
+        for v in s:
+            if v is None or pd.isna(v) or not math.isfinite(float(v)):
+                out.append(None)
+            else:
+                v = float(v)
+                out.append(round(v, 4 if abs(v) < 1 else 2))
+        return out
+
+    series = {}
+    for ticker_symbol, rec in weekly_map.items():
+        closes = rec["closes"]
+        if closes is None or closes.empty:
+            continue
+        arr = to_grid(closes, rec["currency"], rec["fx_now"])
+        if sum(1 for v in arr if v is not None) < 2:
+            continue
+        series[ticker_symbol] = arr
+
+    benchmarks = {}
+    # ^GSPC keyed as "GSPC": the caret is hostile to JS property access and
+    # URL hashes. XEQT.TO trades in CAD and converts like any .TO ticker.
+    for symbol, key, currency in [("^GSPC", "GSPC", "USD"), ("XEQT.TO", "XEQT.TO", "CAD")]:
+        try:
+            h = yf.Ticker(symbol).history(period="3y", interval="1wk")['Close']
+            h.index = h.index.tz_localize(None).normalize()
+            benchmarks[key] = to_grid(h, currency, CAD_USD if currency == "CAD" else 1.0)
+        except Exception as e:
+            print(f"Warning: benchmark {symbol} failed: {e}")
+
+    usd_cad = []
+    try:
+        h = yf.Ticker("USDCAD=X").history(period="3y", interval="1wk")['Close']
+        h.index = h.index.tz_localize(None).normalize()
+        usd_cad = to_grid(h, "USD", 1.0)
+    except Exception as e:
+        print(f"Warning: USDCAD weekly series failed: {e}")
+
+    return {
+        "as_of": time.strftime("%Y-%m-%d"),
+        "interval": "1wk",
+        "currency": "USD",
+        "dates": [d.strftime("%Y-%m-%d") for d in grid],
+        "series": series,
+        "benchmarks": benchmarks,
+        "usd_cad": usd_cad,
+    }
+
 def main():
     results = []
     try:
@@ -444,18 +561,28 @@ def main():
     except Exception as e:
         print(f"Error compiling XEQT 500, falling back to static list: {e}")
         target_tickers = TICKERS
-        
+
     print(f"Starting financial data scraper for {len(target_tickers)} XEQT core holdings...")
-    
-    # Let's run the scraper on the compiled core holdings. 
+
+    # Let's run the scraper on the compiled core holdings.
     # Since we are scraping ~400-500 stocks, we'll keep a small sleep delay to respect API servers.
     for symbol in target_tickers:
-        data = get_stock_data(symbol)
+        data = get_stock_data_with_retry(symbol)
         if data:
             results.append(data)
         time.sleep(0.3)  # Respect rate limits
-        
+
     if results:
+        # Pop the raw weekly series out before scoring/serialization —
+        # pandas objects are not JSON and do not belong in portfolio_data.
+        weekly_map = {}
+        for s in results:
+            weekly_map[s["ticker"]] = {
+                "closes": s.pop("_weekly_closes", None),
+                "currency": s.pop("_currency", "USD"),
+                "fx_now": s.pop("_fx_rate_now", 1.0),
+            }
+
         scored = score_and_rank_stocks(results)
         output_file = "portfolio_data.json"
         with open(output_file, "w") as f:
@@ -464,6 +591,12 @@ def main():
                 "stocks": scored
             }), f, indent=2, allow_nan=False)
         print(f"Scraped and scored {len(scored)} stocks successfully. Saved to {output_file}")
+
+        prices = build_prices_payload(weekly_map)
+        with open("prices.json", "w") as f:
+            json.dump(sanitize_for_json(prices), f, separators=(",", ":"), allow_nan=False)
+        print(f"Wrote prices.json: {len(prices['series'])} tickers, "
+              f"{len(prices['benchmarks'])} benchmarks, {len(prices['dates'])} weeks")
     else:
         print("Failed to scrape any data.")
 

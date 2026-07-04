@@ -302,6 +302,40 @@
             tableHint: 'Click a column header to re-rank. The ⓘ explains what each number actually measures — and how it can lie to you.',
             searchEmpty: 'Nothing matches that. We track the big US, Canadian and international names — if it is not here, we do not cover it. That is a data gap, not a verdict.',
         },
+        simulate: {
+            lede: 'This page answers "what WOULD have happened" — never "what will". The past three years were one specific path the world took; the next three will be a different one. Use this to build intuition about swings and sizes, not to prove a strategy works.',
+            weeklyNote: 'Prices here are weekly closes, not tick-by-tick. Your order "fills" at the first weekly close on or after the date you pick.',
+            dividendNote: 'Prices are adjusted for splits and dividends — payouts show up as a smoother price history instead of cash landing in your account. That approximates total return, and it also means old prices will not match what you remember seeing on the news.',
+            currencyNote: 'The math runs in US dollars; the display converts to CAD at each week’s actual exchange rate. Currency drift is part of your real return, so it is included, not hidden.',
+            lumpSum: {
+                title: 'If I had bought…',
+                blurb: 'One stock, one amount, one date. See what holding it until today would have done.',
+                filledTemplate: 'Order filled at the weekly close of {date} — {price} per share, {shares} shares.',
+            },
+            backtest: {
+                title: 'Backtest a portfolio',
+                blurb: 'Buy a whole basket at a past date and hold it to today, with the gain broken down per holding.',
+                hindsightWarning: 'Honesty check: these picks are made with TODAY’s numbers, then pretend-bought in the past. Stocks look good today partly BECAUSE the last few years went well for them — hindsight is doing some of the work. Treat this as a feel for volatility, not proof the method works.',
+                defaultsNote: 'You have not built a portfolio in the tutorial yet, so this uses the default rules and weights. Walk through "Learn the method" to make it yours.',
+                builtNote: 'This is the portfolio from your Build step — same tickers, same weights.',
+                basketHint: 'Search and add tickers. Every pick gets an equal slice of the money.',
+                skippedTemplate: '{ticker} had no price data on that date — dropped, and its share of the money was spread over the rest.',
+            },
+            benchmark: {
+                title: 'Compare against the market',
+                beatTemplate: 'You beat {name} by {diff} points.',
+                lostTemplate: '{name} beat you by {diff} points. No shame — most professionals lose to the index too. This is why boring index ETFs are so hard to argue with.',
+                tiedTemplate: 'Dead heat with {name} — all that picking for the same ride.',
+            },
+            errors: {
+                'bad-amount': 'Enter a dollar amount above zero first.',
+                'before-history': 'No price history that far back for this pick — choose a later date.',
+                'no-data': 'No price data for that date range — try a different date.',
+                'no-holdings': 'Nothing to buy — add at least one ticker first.',
+                loading: 'Loading three years of price history…',
+                loadFailed: 'Price history has not loaded — if you are offline, that is why. Otherwise, tell Laurence the site is broken.',
+            },
+        },
     };
 
     return { metrics, sections, format, GENERIC_MISSING };
