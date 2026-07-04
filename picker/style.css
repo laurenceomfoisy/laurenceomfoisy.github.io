@@ -238,11 +238,24 @@ body:not([data-section="tutorial"]) #progressRail {
     }
 }
 
-/* --- Content column --- */
+/* --- Content column ---
+   The tutorial is a 52rem reading column. The dashboard is a data surface
+   and the simulator carries charts — both get wider containers, matched
+   by the header so the brand stays aligned with the content edge. */
 #stepRoot {
     max-width: 52rem;
     margin-inline: auto;
     padding: 2.5rem 1.5rem 5rem;
+}
+
+body[data-section="dashboard"] #stepRoot,
+body[data-section="dashboard"] .site-header {
+    max-width: 72rem;
+}
+
+body[data-section="simulate"] #stepRoot,
+body[data-section="simulate"] .site-header {
+    max-width: 60rem;
 }
 
 #stepRoot h1 {
@@ -2097,12 +2110,12 @@ body.sheet-open {
 }
 
 .dash-company {
-    display: flex;
-    flex-direction: column;
-    gap: 0.1rem;
     white-space: normal;
     min-width: 9rem;
-    max-width: 14rem;
+}
+
+.dash-ticker {
+    display: block;
 }
 
 .dash-ticker {
@@ -2162,6 +2175,66 @@ body.sheet-open {
     font-weight: 600;
 }
 
+/* Mobile sort control — the table header (and its sort buttons) is a
+   desktop affordance; on phones a native select does the job. */
+.dash-sort-mobile {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.dash-sort-mobile select {
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    color: var(--text-primary);
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 0.6rem;
+    padding: 0.45rem 0.6rem;
+}
+
+@media (min-width: 900px) {
+    /* The wide container fits every column — no inner scrollbar, which
+       also lets the header row stick while 600+ rows scroll under it. */
+    .dashboard-table-wrap {
+        overflow-x: visible;
+    }
+
+    .dashboard-table th {
+        position: sticky;
+        top: 0;
+        background: var(--bg-card);
+        box-shadow: 0 1px 0 var(--border-color);
+        z-index: 2;
+    }
+
+    .dashboard-table td,
+    .dashboard-table th {
+        padding-left: 0.8rem;
+        padding-right: 0.8rem;
+    }
+
+    .dashboard-table {
+        font-size: 0.88rem;
+    }
+
+    .dash-name,
+    .dash-sector {
+        max-width: 22rem;
+    }
+
+    .dash-spark {
+        width: 6.5rem;
+    }
+
+    .dash-spark .sparkline-svg {
+        width: 5.5rem;
+    }
+}
+
 @media (max-width: 640px) {
     #stepRoot {
         padding-top: 1.5rem;
@@ -2169,44 +2242,6 @@ body.sheet-open {
 
     #stepRoot h1 {
         font-size: 1.6rem;
-    }
-
-    .dash-col-secondary,
-    .dash-col-mobile-hide {
-        display: none;
-    }
-
-    .dashboard-table td,
-    .dashboard-table th {
-        padding-left: 0.3rem;
-        padding-right: 0.3rem;
-    }
-
-    .dash-rank {
-        width: 1.6rem;
-    }
-
-    .dash-company {
-        min-width: 0;
-    }
-
-    .dash-name,
-    .dash-sector {
-        max-width: 5.5rem;
-    }
-
-    .dashboard-table {
-        font-size: 0.8rem;
-    }
-
-    .dash-dot {
-        margin-right: 0.25rem;
-    }
-
-    /* The header explainers don't fit 390px; the stock sheet still
-       carries every ⓘ, so learning survives on mobile. */
-    .dashboard-table th .info-toggle {
-        display: none;
     }
 
     .dash-lede-links {
@@ -2220,10 +2255,132 @@ body.sheet-open {
 
     .dash-controls {
         flex-wrap: wrap;
+        gap: 0.6rem;
     }
 
     #dashSearch {
         max-width: none;
+        flex-basis: 100%;
+    }
+
+    .dash-sort-mobile {
+        display: inline-flex;
+    }
+
+    .dash-count {
+        margin-left: auto;
+    }
+
+    /* --- Rows become cards: company + big Overall up top, labeled
+       metric chips underneath. More data than the old squeezed table,
+       zero horizontal scroll. --- */
+    .dashboard-table,
+    .dashboard-table tbody {
+        display: block;
+    }
+
+    .dashboard-table thead {
+        display: none;
+    }
+
+    .dash-row {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 0.65rem 0.5rem;
+        padding: 0.9rem 1rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .dash-row:last-child {
+        border-bottom: none;
+    }
+
+    .dashboard-table td {
+        display: block;
+        padding: 0;
+        border: none;
+        white-space: normal;
+    }
+
+    .dashboard-table td.dash-rank,
+    .dashboard-table td.dash-spark {
+        display: none;
+    }
+
+    .dash-hint {
+        display: none;
+    }
+
+    .dash-company {
+        grid-column: 1 / 4;
+        grid-row: 1;
+        min-width: 0;
+        max-width: none;
+    }
+
+    .dash-name,
+    .dash-sector {
+        max-width: none;
+        white-space: normal;
+    }
+
+    .dash-cell-overall {
+        grid-column: 4;
+        grid-row: 1;
+        justify-self: end;
+        align-self: start;
+        font-family: var(--font-head);
+        font-size: 1.35rem;
+        font-weight: 600;
+        text-align: right;
+    }
+
+    .dash-cell-overall::before {
+        content: attr(data-label);
+        display: block;
+        font-family: var(--font-head);
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+    }
+
+    /* Metric chips: label over value, one grid cell each. */
+    .dash-cell-price,
+    .dash-cell-quality,
+    .dash-cell-hype,
+    .dash-cell-mom {
+        grid-row: 2;
+        display: block;
+        text-align: left;
+        font-size: 0.85rem;
+    }
+
+    .dash-cell-price { grid-column: 1; }
+    .dash-cell-quality { grid-column: 2; display: block; }
+    .dash-cell-hype { grid-column: 3; display: block; }
+    .dash-cell-mom { grid-column: 4; }
+
+    .dash-cell-price::before,
+    .dash-cell-quality::before,
+    .dash-cell-hype::before,
+    .dash-cell-mom::before {
+        content: attr(data-label);
+        display: block;
+        font-family: var(--font-head);
+        font-size: 0.6rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        margin-bottom: 0.1rem;
+    }
+
+    .dash-dot {
+        margin-right: 0.25rem;
+        width: 0.45rem;
+        height: 0.45rem;
     }
 }
 

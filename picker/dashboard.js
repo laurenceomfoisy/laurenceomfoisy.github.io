@@ -65,11 +65,11 @@
                 <span class="dash-name">${esc(stock.name)}</span>
                 <span class="dash-sector">${esc(stock.sector || '')}</span>
             </td>
-            <td class="dash-num dash-col-mobile-hide">${formatUsdPrice(stock.price)}</td>
-            <td class="dash-num">${tonedCellHtml('scores.overall', stock, universe)}</td>
-            <td class="dash-num dash-col-secondary">${tonedCellHtml('scores.quality', stock, universe)}</td>
-            <td class="dash-num dash-col-secondary">${tonedCellHtml('scores.hype', stock, universe)}</td>
-            <td class="dash-num">${tonedCellHtml('momentum_1y', stock, universe)}</td>
+            <td class="dash-num dash-cell-price" data-label="Price">${formatUsdPrice(stock.price)}</td>
+            <td class="dash-num dash-cell-overall" data-label="Overall">${tonedCellHtml('scores.overall', stock, universe)}</td>
+            <td class="dash-num dash-cell-quality dash-col-secondary" data-label="Quality">${tonedCellHtml('scores.quality', stock, universe)}</td>
+            <td class="dash-num dash-cell-hype dash-col-secondary" data-label="Hype">${tonedCellHtml('scores.hype', stock, universe)}</td>
+            <td class="dash-num dash-cell-mom" data-label="1y move">${tonedCellHtml('momentum_1y', stock, universe)}</td>
             <td class="dash-spark dash-col-secondary">${spark}</td>
         `;
     }
@@ -152,6 +152,16 @@
                 <p class="dash-lede-links"><a class="dash-lede-link" href="#step-1">${s.learnCta} →</a>${simLink}</p>
                 <div class="dash-controls">
                     <input type="search" id="dashSearch" placeholder="Search ticker, name, or sector" aria-label="Search stocks">
+                    <label class="dash-sort-mobile">Sort
+                        <select id="dashSortSelect" aria-label="Sort stocks">
+                            <option value="scores.overall">Overall</option>
+                            <option value="scores.quality">Quality</option>
+                            <option value="scores.hype">Hype</option>
+                            <option value="momentum_1y">1y move</option>
+                            <option value="price">Price</option>
+                            <option value="company">Company A–Z</option>
+                        </select>
+                    </label>
                     <span class="dash-count" id="dashCount"></span>
                 </div>
                 <p class="dash-hint">${s.tableHint}</p>
@@ -173,7 +183,7 @@
         // Rank column header (not sortable — it IS the current sort order).
         thead.appendChild(el('th', 'dash-rank', '#'));
         COLUMNS.forEach((col) => {
-            const th = el('th', col.secondary ? 'dash-col-secondary' : (col.mobileHide ? 'dash-col-mobile-hide' : ''));
+            const th = el('th', col.secondary ? 'dash-col-secondary' : '');
             if (col.numeric) th.classList.add('dash-num');
             const btn = el('button', 'dash-sort',
                 `${esc(col.label)} <span class="dash-sort-arrow"></span>`);
@@ -200,6 +210,15 @@
             thead.appendChild(th);
         });
         thead.appendChild(el('th', 'dash-spark dash-col-secondary', 'Trend'));
+
+        const sortSelect = root.querySelector('#dashSortSelect');
+        sortSelect.value = sortKey;
+        sortSelect.addEventListener('change', () => {
+            sortKey = sortSelect.value;
+            sortDesc = sortKey !== 'company';
+            renderTbody(tbody, countLine);
+            updateHeaderState(thead);
+        });
 
         root.querySelector('#dashSearch').addEventListener('input', (e) => {
             query = e.target.value.trim();
