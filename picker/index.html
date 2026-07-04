@@ -2,6 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <script>
+        // Cloudflare fronts this domain without "Always Use HTTPS", and
+        // GitHub Pages can't provision its cert behind the proxy — so
+        // enforce HTTPS here until the Cloudflare setting is flipped.
+        if (location.protocol === 'http:' && location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
+            location.replace('https:' + location.href.substring(5));
+        }
+    </script>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>SoundHype — Guided Stock Picker</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
