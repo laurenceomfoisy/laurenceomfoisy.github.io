@@ -38,11 +38,19 @@ def validate_portfolio():
     stocks = data["stocks"]
     check(len(stocks) >= 300, f"only {len(stocks)} stocks (need >= 300)")
     scored = 0
+    priced = 0
     for s in stocks:
-        for field in ("ticker", "name", "price"):
+        for field in ("ticker", "name"):
             check(s.get(field) is not None, f"{s.get('ticker', '?')}: missing {field}")
+        if s.get("price") is not None:
+            priced += 1
         if s.get("scores") and s["scores"].get("overall") is not None:
             scored += 1
+    # A couple of thin ADRs chronically lack a Yahoo price (the UI shows
+    # N/A and the junk filter kills them) — demand near-total coverage, not
+    # perfection, or every daily run would fail on Yahoo's quirks.
+    check(priced >= 0.98 * len(stocks),
+          f"only {priced}/{len(stocks)} stocks have a price (need >= 98%)")
     check(scored >= 300, f"only {scored} stocks carry an overall score (need >= 300)")
     return stocks
 
