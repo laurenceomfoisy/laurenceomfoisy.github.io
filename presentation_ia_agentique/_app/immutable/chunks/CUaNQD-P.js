@@ -1,0 +1,11 @@
+import{E as e,H as t,I as n,J as r,L as i,M as a,Q as o,R as s,T as c,V as l,_ as u,b as d,f,o as p,q as m,v as h,z as g}from"./CZvYVtin.js";import"./xihTtKlq.js";var _=d(`<div class="proto-deck svelte-tq43at" tabindex="-1"><!></div> <div class="proto-folio svelte-tq43at"> </div>`,1);function v(d,v){r(v,!0);let y=t(null),b=t(0);function x(){e(y)&&l(b,Math.round(e(y).scrollTop/e(y).clientHeight),!0)}function S(t){if(!e(y))return;let n=[`ArrowRight`,`ArrowDown`,`PageDown`,` `].includes(t.key)?1:[`ArrowLeft`,`ArrowUp`,`PageUp`].includes(t.key)?-1:0;if(!n)return;t.preventDefault();let r=Math.min(Math.max(e(b)+n,0),v.total-1);e(y).children[r]?.scrollIntoView({block:`start`})}var C=_();c(`keydown`,n,S);var w=s(C),T=i(w);f(T,()=>v.children),o(w),p(w,e=>l(y,e),()=>e(y));var E=g(w,2),D=i(E);o(E),a(()=>u(D,`${e(b)+1} / ${v.total??``}`)),c(`scroll`,w,x),h(d,C),m()}var y=[{jour:`lundi`,verbe:`Accéder`,gain:`une mesure brute, produite par vous`,court:`une mesure brute`},{jour:`mardi`,verbe:`Valider`,gain:`la preuve que la mesure tient`,court:`une preuve`},{jour:`mercredi`,verbe:`Mesurer`,gain:`une variable d'analyse`,court:`une variable`},{jour:`jeudi`,verbe:`Agir`,gain:`des agents dans votre flux de travail`,court:`des agents`},{jour:`vendredi`,verbe:`Intégrer`,gain:`de la question à la diffusion`,court:`un flux complet`}],b=[`Entraîné sur vos données annotées, pour une tâche`,`Sortie contrainte par construction`,`Reproductible au bit près`,`Exige des annotations humaines`],x=[`Généraliste, utilisable sans entraînement`,`Sortie en texte libre à contraindre`,`Reproductibilité fragile`,`Aucune annotation requise pour démarrer`],S=`note_avis <- type_object(
+  note = type_integer(
+    "Note de 1 a 5 etoiles inferee du texte"
+  ),
+  sentiment = type_enum(
+    c("negatif", "neutre", "positif"),
+    "Tonalite generale"
+  )
+)
+
+resultat <- chat$chat_structured(avis, type = note_avis)`,C=`L'IA en recherche`,w=`Parcours L'intelligence artificielle (IA) et la recherche`,T=`EIOM 2026 · Université Laval · 24 au 28 août`,E=`Laurence-Olivier M. Foisy`;export{x as a,C as c,T as i,v as l,b as n,y as o,S as r,w as s,E as t};
