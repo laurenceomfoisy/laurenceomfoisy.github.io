@@ -31,6 +31,12 @@ PRESENTATIONS = [
     # thumbnail from the running deck instead of batch mode:
     #   python generate_thumbnail.py http://localhost:3000 images/pres_cpsa_2026.png
     ("presentation_mpsa_2025/pres.html", "images/pres_mpsa_2025.png"),
+    # Le deck « L'IA agentique » est un deck SvelteKit a defilement, pas un
+    # deck reveal.js en file:// : le mode batch ne sait pas l'ouvrir. Sa
+    # vignette se refait depuis le depot du deck, apres npm run build :
+    #   npx vite preview --port 4185
+    #   node outils/capture.mjs http://localhost:4185/diapos/ia-agentique/ /tmp 1920 1080 0
+    #   cp /tmp/d1920x1080-0.png images/pres_ia_agentique.png
     # Non-grid presentations (thumbnails generated for future use)
     ("presentation_automatisation/index.html", "images/pres_automatisation.png"),
     ("presentation_zotero_mq/index.html", "images/pres_zotero.png"),
