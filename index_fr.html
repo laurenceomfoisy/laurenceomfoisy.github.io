@@ -227,18 +227,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        aspect-ratio: 16 / 9;
-        padding: 0 11%;
-        background: #fff;
+        aspect-ratio: 5 / 2;
+        padding: 0 6%;
         border: 0;
-        border-radius: 5px;
-        box-shadow: 0 4px 18px rgba(0,0,0,0.18);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: transform 0.2s ease;
       }
-      .proj-tile:hover {
-        transform: translateY(-3px);
-        box-shadow: 0 10px 30px rgba(0,0,0,0.25);
-      }
+      .proj-tile:hover { transform: translateY(-3px); }
       .proj-tile img { width: 100%; height: auto; display: block; }
       @media screen and (max-width: 736px) {
         .proj-grid { grid-template-columns: 1fr; }
