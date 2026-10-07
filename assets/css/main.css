@@ -2657,6 +2657,47 @@ a.customButton {
   .social-nav a {
     padding: 0 8px !important;
   }
+
+  /* Two-row nav on phones: section links, then icons and language switch */
+  body {
+    padding-top: 80px;
+  }
+
+  #nav {
+    height: auto;
+  }
+
+  #nav ul {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  #nav ul::before {
+    content: "";
+    flex-basis: 100%;
+    order: 1;
+  }
+
+  #nav li:not(.social-nav) a {
+    padding: 0 0.6em;
+  }
+
+  #nav li.social-nav {
+    order: 2;
+    margin-left: 0;
+  }
+
+  #nav li.social-nav a {
+    height: 36px;
+    line-height: 36px;
+  }
+}
+
+@media screen and (max-width: 360px) {
+  #nav li:not(.social-nav) a {
+    padding: 0 0.35em;
+  }
 }
 
 /* Papers */
