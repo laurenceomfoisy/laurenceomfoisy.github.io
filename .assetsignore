@@ -1,0 +1,15 @@
+# Files in the repo that must not be published on mfoisy.com
+.git
+.github
+.claude
+.wrangler
+node_modules
+/.assetsignore
+/.gitignore
+/wrangler.jsonc
+/CNAME
+/.nojekyll
+/README.md
+/LICENSE.txt
+/generate_thumbnail.py
+/generate_thumbnail.sh
