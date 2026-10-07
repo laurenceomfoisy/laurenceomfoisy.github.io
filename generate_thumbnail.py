@@ -31,6 +31,7 @@ PRESENTATIONS = [
     # thumbnail from the running deck instead of batch mode:
     #   python generate_thumbnail.py http://localhost:3000 images/pres_cpsa_2026.png
     ("presentation_mpsa_2025/pres.html", "images/pres_mpsa_2025.png"),
+    ("presentation_mm26/index.html", "images/pres_mm26.png"),
     # Le deck « L'IA agentique » est un deck SvelteKit a defilement, pas un
     # deck reveal.js en file:// : le mode batch ne sait pas l'ouvrir. Sa
     # vignette se refait depuis le depot du deck, apres npm run build :
