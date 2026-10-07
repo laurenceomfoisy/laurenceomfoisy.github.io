@@ -95,6 +95,7 @@
       <ul class="container">
         <li><a href="#top">À propos</a></li>
         <li><a href="#papers">Publications</a></li>
+        <li><a href="#projects">Projets</a></li>
         <li><a href="#portfolio">Présentations</a></li>
         <li><a href="#cv">CV</a></li>
         <li class="social-nav">
@@ -213,6 +214,96 @@
        </div>
       </div>
     </article>
+    <!-- Projects -->
+    <article id="projects" class="wrapper style2">
+    <style>
+      .proj-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.6em;
+        margin-top: 0.75em;
+        text-align: left;
+      }
+      .proj-card {
+        display: flex;
+        flex-direction: column;
+        background: #fff;
+        border-radius: 5px;
+        overflow: hidden;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.12);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .proj-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      }
+      .proj-thumb {
+        display: flex; align-items: center; justify-content: center;
+        aspect-ratio: 2 / 1; padding: 1.4em 1.8em;
+        background: #f4f4f4; border: 0; border-bottom: 1px solid rgba(0,0,0,0.06);
+      }
+      .proj-thumb img { width: 100%; height: 100%; object-fit: contain; display: block; }
+      .proj-body { padding: 1.1em 1.3em 1.3em; font-size: 0.9em; line-height: 1.6; }
+      .proj-body h3 { margin: 0 0 0.2em; font-size: 1.25em; }
+      .proj-body h3 a { text-decoration: none; border: 0; }
+      .proj-role {
+        margin: 0 0 0.8em;
+        font-size: 0.8em;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: rgba(0,0,0,0.55);
+      }
+      .proj-body p { margin-bottom: 0.8em; }
+      .proj-editions { list-style: none; margin: 0 0 0.8em; padding: 0; }
+      .proj-editions li { padding: 0.15em 0; border-top: 1px solid rgba(0,0,0,0.08); }
+      .proj-editions li:first-child { border-top: 0; }
+      .proj-org { margin: 0 !important; font-size: 0.8em; color: rgba(0,0,0,0.45); }
+      @media screen and (max-width: 980px) {
+        .proj-grid { grid-template-columns: 1fr; max-width: 34em; margin-left: auto; margin-right: auto; }
+      }
+    </style>
+      <div class="container">
+        <header>
+          <h2>Projets</h2>
+          <p>Plateformes de recherche ouvertes au public</p>
+        </header>
+        <div class="proj-grid">
+          <div class="proj-card">
+            <a class="proj-thumb" href="https://prof-datagotchi.com" target="_blank" rel="noopener"><img src="images/proj_prof_datagotchi_logo.png" alt="Robot conversationnel Prof. Datagotchi" loading="lazy" /></a>
+            <div class="proj-body">
+              <h3><a href="https://prof-datagotchi.com" target="_blank" rel="noopener">Prof. Datagotchi</a></h3>
+              <p class="proj-role">Cocréateur et chargé de projet · 2026</p>
+              <p>Un robot conversationnel qui répond aux questions sur ce que les chefs des partis québécois ont dit durant la campagne électorale de 2026, en citant leurs entrevues, débats et plateformes.</p>
+              <p class="proj-org">CAPP, Université Laval</p>
+            </div>
+          </div>
+          <div class="proj-card">
+            <a class="proj-thumb" href="https://datagotchi.com" target="_blank" rel="noopener"><img src="images/proj_defi_datagotchi_logo.png" alt="Défi Datagotchi" loading="lazy" /></a>
+            <div class="proj-body">
+              <h3><a href="https://datagotchi.com" target="_blank" rel="noopener">Défi Datagotchi</a></h3>
+              <p class="proj-role">Éditions électorales · 2024 à 2026</p>
+              <p>Une application de sondage illustrée qui prédit le choix de vote à partir des habitudes de vie, déployée lors de trois campagnes électorales.</p>
+              <ul class="proj-editions">
+                <li><a href="https://quebec.datagotchi.com" target="_blank" rel="noopener">Québec 2026</a>, chargé de projet</li>
+                <li>Canada 2025, analyste en chef</li>
+                <li>États-Unis 2024, analyste en chef</li>
+              </ul>
+              <p class="proj-org">CAPP, Université Laval</p>
+            </div>
+          </div>
+          <div class="proj-card">
+            <a class="proj-thumb" href="https://vitrinedemocratique.com" target="_blank" rel="noopener"><img src="images/proj_vitrine_logo.png" alt="La Vitrine démocratique" loading="lazy" /></a>
+            <div class="proj-body">
+              <h3><a href="https://vitrinedemocratique.com" target="_blank" rel="noopener">La Vitrine démocratique</a></h3>
+              <p class="proj-role">Responsable du déploiement · 2026</p>
+              <p>Analyse scientifique en continu de la couverture médiatique et des discours politiques au Québec, mise à jour six fois par jour.</p>
+              <p class="proj-org">CAPP, Université Laval</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+
     <!-- Portfolio -->
     <article id="portfolio" class="wrapper style3">
       <div class="container">

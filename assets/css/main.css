@@ -2701,7 +2701,7 @@ a.customButton {
 }
 
 /* Just above the phone layout the one-row nav is tight: shrink icon spacing */
-@media screen and (min-width: 737px) and (max-width: 840px) {
+@media screen and (min-width: 737px) and (max-width: 900px) {
   .social-nav {
     margin-left: 2px;
   }
@@ -2709,11 +2709,24 @@ a.customButton {
   .social-nav a {
     padding: 0 7px !important;
   }
+
+  #nav li:not(.social-nav) a {
+    padding: 0 0.55em;
+  }
+}
+
+/* Small phones: keep the five section links on one row */
+@media screen and (max-width: 420px) {
+  #nav li:not(.social-nav) a {
+    padding: 0 0.4em;
+    font-size: 0.9em;
+  }
 }
 
 @media screen and (max-width: 360px) {
   #nav li:not(.social-nav) a {
-    padding: 0 0.35em;
+    padding: 0 0.3em;
+    font-size: 0.84em;
   }
 }
 
